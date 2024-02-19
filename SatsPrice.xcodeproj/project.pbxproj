@@ -1,0 +1,710 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3AE2D39D2B83338D00DE5F31 /* SatsPriceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */; };
+		3AE2D3A22B83338D00DE5F31 /* SatsPrice.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A02B83338D00DE5F31 /* SatsPrice.xcdatamodeld */; };
+		3AE2D3A42B83338D00DE5F31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A32B83338D00DE5F31 /* ContentView.swift */; };
+		3AE2D3A62B83338D00DE5F31 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A52B83338D00DE5F31 /* Assets.xcassets */; };
+		3AE2D3AA2B83338D00DE5F31 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A92B83338D00DE5F31 /* Preview Assets.xcassets */; };
+		3AE2D3B42B83338E00DE5F31 /* SatsPriceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3B32B83338E00DE5F31 /* SatsPriceTests.swift */; };
+		3AE2D3BE2B83338E00DE5F31 /* SatsPriceUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3BD2B83338E00DE5F31 /* SatsPriceUITests.swift */; };
+		3AE2D3C02B83338E00DE5F31 /* SatsPriceUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3BF2B83338E00DE5F31 /* SatsPriceUITestsLaunchTests.swift */; };
+		3AE2D3D52B83E58500DE5F31 /* SatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3D42B83E58500DE5F31 /* SatsViewModel.swift */; };
+		3AE2D3DA2B83FE5F00DE5F31 /* SatsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3D92B83FE5F00DE5F31 /* SatsViewModelTests.swift */; };
+		3AE2D3DD2B84020200DE5F31 /* BigDecimal in Frameworks */ = {isa = PBXBuildFile; productRef = 3AE2D3DC2B84020200DE5F31 /* BigDecimal */; };
+		3AE2D3DF2B84597100DE5F31 /* SpotPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3DE2B84597100DE5F31 /* SpotPriceFetcher.swift */; };
+		3AE2D3E12B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E02B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift */; };
+		3AE2D3E32B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E22B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift */; };
+		3AE2D3E52B846A8600DE5F31 /* SpotPriceSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E42B846A8600DE5F31 /* SpotPriceSource.swift */; };
+		3AE2D3E72B85690200DE5F31 /* SpotPriceFetcherDelegator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E62B85690200DE5F31 /* SpotPriceFetcherDelegator.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3AE2D3B02B83338E00DE5F31 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3AE2D3912B83338D00DE5F31 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3AE2D3982B83338D00DE5F31;
+			remoteInfo = SatsPrice;
+		};
+		3AE2D3BA2B83338E00DE5F31 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3AE2D3912B83338D00DE5F31 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 3AE2D3982B83338D00DE5F31;
+			remoteInfo = SatsPrice;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		3AE2D3992B83338D00DE5F31 /* SatsPrice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SatsPrice.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsPriceApp.swift; sourceTree = "<group>"; };
+		3AE2D3A12B83338D00DE5F31 /* SatsPrice.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = SatsPrice.xcdatamodel; sourceTree = "<group>"; };
+		3AE2D3A32B83338D00DE5F31 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3AE2D3A52B83338D00DE5F31 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		3AE2D3A72B83338D00DE5F31 /* SatsPrice.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SatsPrice.entitlements; sourceTree = "<group>"; };
+		3AE2D3A92B83338D00DE5F31 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		3AE2D3AF2B83338E00DE5F31 /* SatsPriceTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SatsPriceTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AE2D3B32B83338E00DE5F31 /* SatsPriceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsPriceTests.swift; sourceTree = "<group>"; };
+		3AE2D3B92B83338E00DE5F31 /* SatsPriceUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SatsPriceUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3AE2D3BD2B83338E00DE5F31 /* SatsPriceUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsPriceUITests.swift; sourceTree = "<group>"; };
+		3AE2D3BF2B83338E00DE5F31 /* SatsPriceUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsPriceUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		3AE2D3D42B83E58500DE5F31 /* SatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsViewModel.swift; sourceTree = "<group>"; };
+		3AE2D3D92B83FE5F00DE5F31 /* SatsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsViewModelTests.swift; sourceTree = "<group>"; };
+		3AE2D3DE2B84597100DE5F31 /* SpotPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotPriceFetcher.swift; sourceTree = "<group>"; };
+		3AE2D3E02B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseSpotPriceFetcher.swift; sourceTree = "<group>"; };
+		3AE2D3E22B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinGeckoSpotPriceFetcher.swift; sourceTree = "<group>"; };
+		3AE2D3E42B846A8600DE5F31 /* SpotPriceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotPriceSource.swift; sourceTree = "<group>"; };
+		3AE2D3E62B85690200DE5F31 /* SpotPriceFetcherDelegator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotPriceFetcherDelegator.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3AE2D3962B83338D00DE5F31 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3AE2D3DD2B84020200DE5F31 /* BigDecimal in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3AE2D3AC2B83338E00DE5F31 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3AE2D3B62B83338E00DE5F31 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		3AE2D3902B83338D00DE5F31 = {
+			isa = PBXGroup;
+			children = (
+				3AE2D39B2B83338D00DE5F31 /* SatsPrice */,
+				3AE2D3B22B83338E00DE5F31 /* SatsPriceTests */,
+				3AE2D3BC2B83338E00DE5F31 /* SatsPriceUITests */,
+				3AE2D39A2B83338D00DE5F31 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3AE2D39A2B83338D00DE5F31 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				3AE2D3992B83338D00DE5F31 /* SatsPrice.app */,
+				3AE2D3AF2B83338E00DE5F31 /* SatsPriceTests.xctest */,
+				3AE2D3B92B83338E00DE5F31 /* SatsPriceUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		3AE2D39B2B83338D00DE5F31 /* SatsPrice */ = {
+			isa = PBXGroup;
+			children = (
+				3AE2D3E82B856B1800DE5F31 /* Network */,
+				3AE2D3A32B83338D00DE5F31 /* ContentView.swift */,
+				3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */,
+				3AE2D3D42B83E58500DE5F31 /* SatsViewModel.swift */,
+				3AE2D3E42B846A8600DE5F31 /* SpotPriceSource.swift */,
+				3AE2D3A52B83338D00DE5F31 /* Assets.xcassets */,
+				3AE2D3A72B83338D00DE5F31 /* SatsPrice.entitlements */,
+				3AE2D3A02B83338D00DE5F31 /* SatsPrice.xcdatamodeld */,
+				3AE2D3A82B83338D00DE5F31 /* Preview Content */,
+			);
+			path = SatsPrice;
+			sourceTree = "<group>";
+		};
+		3AE2D3A82B83338D00DE5F31 /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				3AE2D3A92B83338D00DE5F31 /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		3AE2D3B22B83338E00DE5F31 /* SatsPriceTests */ = {
+			isa = PBXGroup;
+			children = (
+				3AE2D3B32B83338E00DE5F31 /* SatsPriceTests.swift */,
+				3AE2D3D92B83FE5F00DE5F31 /* SatsViewModelTests.swift */,
+			);
+			path = SatsPriceTests;
+			sourceTree = "<group>";
+		};
+		3AE2D3BC2B83338E00DE5F31 /* SatsPriceUITests */ = {
+			isa = PBXGroup;
+			children = (
+				3AE2D3BD2B83338E00DE5F31 /* SatsPriceUITests.swift */,
+				3AE2D3BF2B83338E00DE5F31 /* SatsPriceUITestsLaunchTests.swift */,
+			);
+			path = SatsPriceUITests;
+			sourceTree = "<group>";
+		};
+		3AE2D3E82B856B1800DE5F31 /* Network */ = {
+			isa = PBXGroup;
+			children = (
+				3AE2D3E02B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift */,
+				3AE2D3E22B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift */,
+				3AE2D3DE2B84597100DE5F31 /* SpotPriceFetcher.swift */,
+				3AE2D3E62B85690200DE5F31 /* SpotPriceFetcherDelegator.swift */,
+			);
+			path = Network;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		3AE2D3982B83338D00DE5F31 /* SatsPrice */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3AE2D3C32B83338E00DE5F31 /* Build configuration list for PBXNativeTarget "SatsPrice" */;
+			buildPhases = (
+				3AE2D3952B83338D00DE5F31 /* Sources */,
+				3AE2D3962B83338D00DE5F31 /* Frameworks */,
+				3AE2D3972B83338D00DE5F31 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SatsPrice;
+			packageProductDependencies = (
+				3AE2D3DC2B84020200DE5F31 /* BigDecimal */,
+			);
+			productName = SatsPrice;
+			productReference = 3AE2D3992B83338D00DE5F31 /* SatsPrice.app */;
+			productType = "com.apple.product-type.application";
+		};
+		3AE2D3AE2B83338E00DE5F31 /* SatsPriceTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3AE2D3C62B83338E00DE5F31 /* Build configuration list for PBXNativeTarget "SatsPriceTests" */;
+			buildPhases = (
+				3AE2D3AB2B83338E00DE5F31 /* Sources */,
+				3AE2D3AC2B83338E00DE5F31 /* Frameworks */,
+				3AE2D3AD2B83338E00DE5F31 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3AE2D3B12B83338E00DE5F31 /* PBXTargetDependency */,
+			);
+			name = SatsPriceTests;
+			productName = SatsPriceTests;
+			productReference = 3AE2D3AF2B83338E00DE5F31 /* SatsPriceTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		3AE2D3B82B83338E00DE5F31 /* SatsPriceUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 3AE2D3C92B83338E00DE5F31 /* Build configuration list for PBXNativeTarget "SatsPriceUITests" */;
+			buildPhases = (
+				3AE2D3B52B83338E00DE5F31 /* Sources */,
+				3AE2D3B62B83338E00DE5F31 /* Frameworks */,
+				3AE2D3B72B83338E00DE5F31 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				3AE2D3BB2B83338E00DE5F31 /* PBXTargetDependency */,
+			);
+			name = SatsPriceUITests;
+			productName = SatsPriceUITests;
+			productReference = 3AE2D3B92B83338E00DE5F31 /* SatsPriceUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		3AE2D3912B83338D00DE5F31 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1520;
+				LastUpgradeCheck = 1520;
+				TargetAttributes = {
+					3AE2D3982B83338D00DE5F31 = {
+						CreatedOnToolsVersion = 15.2;
+					};
+					3AE2D3AE2B83338E00DE5F31 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = 3AE2D3982B83338D00DE5F31;
+					};
+					3AE2D3B82B83338E00DE5F31 = {
+						CreatedOnToolsVersion = 15.2;
+						TestTargetID = 3AE2D3982B83338D00DE5F31;
+					};
+				};
+			};
+			buildConfigurationList = 3AE2D3942B83338D00DE5F31 /* Build configuration list for PBXProject "SatsPrice" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 3AE2D3902B83338D00DE5F31;
+			packageReferences = (
+				3AE2D3DB2B84020200DE5F31 /* XCRemoteSwiftPackageReference "BigDecimal" */,
+			);
+			productRefGroup = 3AE2D39A2B83338D00DE5F31 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				3AE2D3982B83338D00DE5F31 /* SatsPrice */,
+				3AE2D3AE2B83338E00DE5F31 /* SatsPriceTests */,
+				3AE2D3B82B83338E00DE5F31 /* SatsPriceUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3AE2D3972B83338D00DE5F31 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3AE2D3AA2B83338D00DE5F31 /* Preview Assets.xcassets in Resources */,
+				3AE2D3A62B83338D00DE5F31 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3AE2D3AD2B83338E00DE5F31 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3AE2D3B72B83338E00DE5F31 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		3AE2D3952B83338D00DE5F31 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3AE2D3E52B846A8600DE5F31 /* SpotPriceSource.swift in Sources */,
+				3AE2D3E72B85690200DE5F31 /* SpotPriceFetcherDelegator.swift in Sources */,
+				3AE2D3E12B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift in Sources */,
+				3AE2D39D2B83338D00DE5F31 /* SatsPriceApp.swift in Sources */,
+				3AE2D3A22B83338D00DE5F31 /* SatsPrice.xcdatamodeld in Sources */,
+				3AE2D3A42B83338D00DE5F31 /* ContentView.swift in Sources */,
+				3AE2D3D52B83E58500DE5F31 /* SatsViewModel.swift in Sources */,
+				3AE2D3E32B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift in Sources */,
+				3AE2D3DF2B84597100DE5F31 /* SpotPriceFetcher.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3AE2D3AB2B83338E00DE5F31 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3AE2D3DA2B83FE5F00DE5F31 /* SatsViewModelTests.swift in Sources */,
+				3AE2D3B42B83338E00DE5F31 /* SatsPriceTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		3AE2D3B52B83338E00DE5F31 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3AE2D3BE2B83338E00DE5F31 /* SatsPriceUITests.swift in Sources */,
+				3AE2D3C02B83338E00DE5F31 /* SatsPriceUITestsLaunchTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		3AE2D3B12B83338E00DE5F31 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3AE2D3982B83338D00DE5F31 /* SatsPrice */;
+			targetProxy = 3AE2D3B02B83338E00DE5F31 /* PBXContainerItemProxy */;
+		};
+		3AE2D3BB2B83338E00DE5F31 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 3AE2D3982B83338D00DE5F31 /* SatsPrice */;
+			targetProxy = 3AE2D3BA2B83338E00DE5F31 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		3AE2D3C12B83338E00DE5F31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "xrsimulator xros watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		3AE2D3C22B83338E00DE5F31 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "xrsimulator xros watchsimulator watchos macosx iphonesimulator iphoneos driverkit appletvsimulator appletvos";
+				SUPPORTS_MACCATALYST = YES;
+				SWIFT_COMPILATION_MODE = wholemodule;
+			};
+			name = Release;
+		};
+		3AE2D3C42B83338E00DE5F31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SatsPrice/SatsPrice.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SatsPrice/Preview Content\"";
+				DEVELOPMENT_TEAM = S99A5B637C;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = SatsPrice;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.tyiu.SatsPrice;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		3AE2D3C52B83338E00DE5F31 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = SatsPrice/SatsPrice.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"SatsPrice/Preview Content\"";
+				DEVELOPMENT_TEAM = S99A5B637C;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = SatsPrice;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphoneos*]" = YES;
+				"INFOPLIST_KEY_UILaunchScreen_Generation[sdk=iphonesimulator*]" = YES;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphoneos*]" = UIStatusBarStyleDefault;
+				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
+				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.tyiu.SatsPrice;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		3AE2D3C72B83338E00DE5F31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.tyiu.SatsPriceTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SatsPrice.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SatsPrice";
+			};
+			name = Debug;
+		};
+		3AE2D3C82B83338E00DE5F31 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.tyiu.SatsPriceTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SatsPrice.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SatsPrice";
+			};
+			name = Release;
+		};
+		3AE2D3CA2B83338E00DE5F31 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.tyiu.SatsPriceUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SatsPrice;
+			};
+			name = Debug;
+		};
+		3AE2D3CB2B83338E00DE5F31 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = xyz.tyiu.SatsPriceUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = auto;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = SatsPrice;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		3AE2D3942B83338D00DE5F31 /* Build configuration list for PBXProject "SatsPrice" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3AE2D3C12B83338E00DE5F31 /* Debug */,
+				3AE2D3C22B83338E00DE5F31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3AE2D3C32B83338E00DE5F31 /* Build configuration list for PBXNativeTarget "SatsPrice" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3AE2D3C42B83338E00DE5F31 /* Debug */,
+				3AE2D3C52B83338E00DE5F31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3AE2D3C62B83338E00DE5F31 /* Build configuration list for PBXNativeTarget "SatsPriceTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3AE2D3C72B83338E00DE5F31 /* Debug */,
+				3AE2D3C82B83338E00DE5F31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		3AE2D3C92B83338E00DE5F31 /* Build configuration list for PBXNativeTarget "SatsPriceUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3AE2D3CA2B83338E00DE5F31 /* Debug */,
+				3AE2D3CB2B83338E00DE5F31 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3AE2D3DB2B84020200DE5F31 /* XCRemoteSwiftPackageReference "BigDecimal" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/mgriebling/BigDecimal.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.2.3;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3AE2D3DC2B84020200DE5F31 /* BigDecimal */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3AE2D3DB2B84020200DE5F31 /* XCRemoteSwiftPackageReference "BigDecimal" */;
+			productName = BigDecimal;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+/* Begin XCVersionGroup section */
+		3AE2D3A02B83338D00DE5F31 /* SatsPrice.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				3AE2D3A12B83338D00DE5F31 /* SatsPrice.xcdatamodel */,
+			);
+			currentVersion = 3AE2D3A12B83338D00DE5F31 /* SatsPrice.xcdatamodel */;
+			path = SatsPrice.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
+	};
+	rootObject = 3AE2D3912B83338D00DE5F31 /* Project object */;
+}
