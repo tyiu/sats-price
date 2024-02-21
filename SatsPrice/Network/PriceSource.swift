@@ -8,8 +8,21 @@
 import Foundation
 
 enum PriceSource: CaseIterable, CustomStringConvertible {
+    
+    static var allCases: [PriceSource] {
+#if DEBUG
+        [.coinbase, .coingecko, .fake]
+#else
+        [.coinbase, .coingecko]
+#endif
+    }
+
     case coinbase
     case coingecko
+
+#if DEBUG
+    case fake
+#endif
 
     var description: String {
         switch self {
@@ -17,6 +30,10 @@ enum PriceSource: CaseIterable, CustomStringConvertible {
             "Coinbase"
         case .coingecko:
             "CoinGecko"
+#if DEBUG
+        case .fake:
+            "Fake"
+#endif
         }
     }
 }

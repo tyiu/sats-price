@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		3A7B2AA32B86407A00ACC4A7 /* FakePriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7B2AA22B86407A00ACC4A7 /* FakePriceFetcher.swift */; };
 		3AE2D39D2B83338D00DE5F31 /* SatsPriceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */; };
 		3AE2D3A22B83338D00DE5F31 /* SatsPrice.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A02B83338D00DE5F31 /* SatsPrice.xcdatamodeld */; };
 		3AE2D3A42B83338D00DE5F31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A32B83338D00DE5F31 /* ContentView.swift */; };
@@ -43,6 +44,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		3A7B2AA22B86407A00ACC4A7 /* FakePriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakePriceFetcher.swift; sourceTree = "<group>"; };
 		3AE2D3992B83338D00DE5F31 /* SatsPrice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SatsPrice.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsPriceApp.swift; sourceTree = "<group>"; };
 		3AE2D3A12B83338D00DE5F31 /* SatsPrice.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = SatsPrice.xcdatamodel; sourceTree = "<group>"; };
@@ -115,7 +117,6 @@
 			children = (
 				3AE2D3E82B856B1800DE5F31 /* Network */,
 				3AE2D3A32B83338D00DE5F31 /* ContentView.swift */,
-				3AE2D3E42B846A8600DE5F31 /* PriceSource.swift */,
 				3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */,
 				3AE2D3D42B83E58500DE5F31 /* SatsViewModel.swift */,
 				3AE2D3A52B83338D00DE5F31 /* Assets.xcassets */,
@@ -157,8 +158,10 @@
 			children = (
 				3AE2D3E02B8459D600DE5F31 /* CoinbasePriceFetcher.swift */,
 				3AE2D3E22B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift */,
+				3A7B2AA22B86407A00ACC4A7 /* FakePriceFetcher.swift */,
 				3AE2D3DE2B84597100DE5F31 /* PriceFetcher.swift */,
 				3AE2D3E62B85690200DE5F31 /* PriceFetcherDelegator.swift */,
+				3AE2D3E42B846A8600DE5F31 /* PriceSource.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -301,6 +304,7 @@
 			files = (
 				3AE2D3E52B846A8600DE5F31 /* PriceSource.swift in Sources */,
 				3AE2D3E72B85690200DE5F31 /* PriceFetcherDelegator.swift in Sources */,
+				3A7B2AA32B86407A00ACC4A7 /* FakePriceFetcher.swift in Sources */,
 				3AE2D3E12B8459D600DE5F31 /* CoinbasePriceFetcher.swift in Sources */,
 				3AE2D39D2B83338D00DE5F31 /* SatsPriceApp.swift in Sources */,
 				3AE2D3A22B83338D00DE5F31 /* SatsPrice.xcdatamodeld in Sources */,

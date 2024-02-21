@@ -12,15 +12,19 @@ import Combine
 struct ContentView: View {
     @ObservedObject private var satsViewModel = SatsViewModel()
 
-    @State private var priceSource: PriceSource = .coinbase
+    @State private var priceSource: PriceSource
 
-    private let dateFormatter = DateFormatter()
+    private let dateFormatter: DateFormatter
 
-    private let priceFetcherDelegator = PriceFetcherDelegator()
+    private let priceFetcherDelegator: PriceFetcherDelegator
 
-    init() {
+    init(_ priceSource: PriceSource) {
+        dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .short
         dateFormatter.timeStyle = .short
+
+        self.priceSource = priceSource
+        priceFetcherDelegator = PriceFetcherDelegator(priceSource)
     }
 
     @MainActor
@@ -107,5 +111,5 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(.fake)
 }
