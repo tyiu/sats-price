@@ -111,5 +111,9 @@ struct ContentView: View {
 }
 
 #Preview {
+#if DEBUG
     ContentView(.fake)
+#else
+    ContentView(.coinbase)
+#endif
 }
