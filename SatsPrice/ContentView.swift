@@ -12,11 +12,11 @@ import Combine
 struct ContentView: View {
     @ObservedObject private var satsViewModel = SatsViewModel()
 
-    @State private var spotPriceSource: SpotPriceSource = .coinbase
+    @State private var priceSource: PriceSource = .coinbase
 
     private let dateFormatter = DateFormatter()
 
-    private let spotPriceFetcherDelegator = SpotPriceFetcherDelegator()
+    private let priceFetcherDelegator = PriceFetcherDelegator()
 
     init() {
         dateFormatter.dateStyle = .short
@@ -26,7 +26,7 @@ struct ContentView: View {
     @MainActor
     func updatePrice() async {
         do {
-            guard let price = try await spotPriceFetcherDelegator.btcToUsd() else {
+            guard let price = try await priceFetcherDelegator.btcToUsd() else {
                 satsViewModel.btcToUsdString = ""
                 return
             }
@@ -41,13 +41,13 @@ struct ContentView: View {
     var body: some View {
         Form {
             Section {
-                Picker("Price Source", selection: $spotPriceSource) {
-                    ForEach(SpotPriceSource.allCases, id: \.self) {
+                Picker("Price Source", selection: $priceSource) {
+                    ForEach(PriceSource.allCases, id: \.self) {
                         Text($0.description)
                     }
                 }
-                .onChange(of: spotPriceSource) { newSpotPriceSource in
-                    spotPriceFetcherDelegator.spotPriceSource = newSpotPriceSource
+                .onChange(of: priceSource) { newPriceSource in
+                    priceFetcherDelegator.priceSource = newPriceSource
                     Task {
                         await updatePrice()
                     }

@@ -1,5 +1,5 @@
 //
-//  SpotPriceSource.swift
+//  PriceSource.swift
 //  SatsPrice
 //
 //  Created by Terry Yiu on 2/20/24.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-enum SpotPriceSource: CaseIterable, CustomStringConvertible {
+enum PriceSource: CaseIterable, CustomStringConvertible {
     case coinbase
     case coingecko
 

@@ -18,11 +18,11 @@
 		3AE2D3D52B83E58500DE5F31 /* SatsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3D42B83E58500DE5F31 /* SatsViewModel.swift */; };
 		3AE2D3DA2B83FE5F00DE5F31 /* SatsViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3D92B83FE5F00DE5F31 /* SatsViewModelTests.swift */; };
 		3AE2D3DD2B84020200DE5F31 /* BigDecimal in Frameworks */ = {isa = PBXBuildFile; productRef = 3AE2D3DC2B84020200DE5F31 /* BigDecimal */; };
-		3AE2D3DF2B84597100DE5F31 /* SpotPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3DE2B84597100DE5F31 /* SpotPriceFetcher.swift */; };
-		3AE2D3E12B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E02B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift */; };
-		3AE2D3E32B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E22B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift */; };
-		3AE2D3E52B846A8600DE5F31 /* SpotPriceSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E42B846A8600DE5F31 /* SpotPriceSource.swift */; };
-		3AE2D3E72B85690200DE5F31 /* SpotPriceFetcherDelegator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E62B85690200DE5F31 /* SpotPriceFetcherDelegator.swift */; };
+		3AE2D3DF2B84597100DE5F31 /* PriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3DE2B84597100DE5F31 /* PriceFetcher.swift */; };
+		3AE2D3E12B8459D600DE5F31 /* CoinbasePriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E02B8459D600DE5F31 /* CoinbasePriceFetcher.swift */; };
+		3AE2D3E32B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E22B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift */; };
+		3AE2D3E52B846A8600DE5F31 /* PriceSource.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E42B846A8600DE5F31 /* PriceSource.swift */; };
+		3AE2D3E72B85690200DE5F31 /* PriceFetcherDelegator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3E62B85690200DE5F31 /* PriceFetcherDelegator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,11 +57,11 @@
 		3AE2D3BF2B83338E00DE5F31 /* SatsPriceUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsPriceUITestsLaunchTests.swift; sourceTree = "<group>"; };
 		3AE2D3D42B83E58500DE5F31 /* SatsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsViewModel.swift; sourceTree = "<group>"; };
 		3AE2D3D92B83FE5F00DE5F31 /* SatsViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsViewModelTests.swift; sourceTree = "<group>"; };
-		3AE2D3DE2B84597100DE5F31 /* SpotPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotPriceFetcher.swift; sourceTree = "<group>"; };
-		3AE2D3E02B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbaseSpotPriceFetcher.swift; sourceTree = "<group>"; };
-		3AE2D3E22B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinGeckoSpotPriceFetcher.swift; sourceTree = "<group>"; };
-		3AE2D3E42B846A8600DE5F31 /* SpotPriceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotPriceSource.swift; sourceTree = "<group>"; };
-		3AE2D3E62B85690200DE5F31 /* SpotPriceFetcherDelegator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotPriceFetcherDelegator.swift; sourceTree = "<group>"; };
+		3AE2D3DE2B84597100DE5F31 /* PriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFetcher.swift; sourceTree = "<group>"; };
+		3AE2D3E02B8459D600DE5F31 /* CoinbasePriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinbasePriceFetcher.swift; sourceTree = "<group>"; };
+		3AE2D3E22B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoinGeckoPriceFetcher.swift; sourceTree = "<group>"; };
+		3AE2D3E42B846A8600DE5F31 /* PriceSource.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceSource.swift; sourceTree = "<group>"; };
+		3AE2D3E62B85690200DE5F31 /* PriceFetcherDelegator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PriceFetcherDelegator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,9 +115,9 @@
 			children = (
 				3AE2D3E82B856B1800DE5F31 /* Network */,
 				3AE2D3A32B83338D00DE5F31 /* ContentView.swift */,
+				3AE2D3E42B846A8600DE5F31 /* PriceSource.swift */,
 				3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */,
 				3AE2D3D42B83E58500DE5F31 /* SatsViewModel.swift */,
-				3AE2D3E42B846A8600DE5F31 /* SpotPriceSource.swift */,
 				3AE2D3A52B83338D00DE5F31 /* Assets.xcassets */,
 				3AE2D3A72B83338D00DE5F31 /* SatsPrice.entitlements */,
 				3AE2D3A02B83338D00DE5F31 /* SatsPrice.xcdatamodeld */,
@@ -155,10 +155,10 @@
 		3AE2D3E82B856B1800DE5F31 /* Network */ = {
 			isa = PBXGroup;
 			children = (
-				3AE2D3E02B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift */,
-				3AE2D3E22B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift */,
-				3AE2D3DE2B84597100DE5F31 /* SpotPriceFetcher.swift */,
-				3AE2D3E62B85690200DE5F31 /* SpotPriceFetcherDelegator.swift */,
+				3AE2D3E02B8459D600DE5F31 /* CoinbasePriceFetcher.swift */,
+				3AE2D3E22B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift */,
+				3AE2D3DE2B84597100DE5F31 /* PriceFetcher.swift */,
+				3AE2D3E62B85690200DE5F31 /* PriceFetcherDelegator.swift */,
 			);
 			path = Network;
 			sourceTree = "<group>";
@@ -299,15 +299,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3AE2D3E52B846A8600DE5F31 /* SpotPriceSource.swift in Sources */,
-				3AE2D3E72B85690200DE5F31 /* SpotPriceFetcherDelegator.swift in Sources */,
-				3AE2D3E12B8459D600DE5F31 /* CoinbaseSpotPriceFetcher.swift in Sources */,
+				3AE2D3E52B846A8600DE5F31 /* PriceSource.swift in Sources */,
+				3AE2D3E72B85690200DE5F31 /* PriceFetcherDelegator.swift in Sources */,
+				3AE2D3E12B8459D600DE5F31 /* CoinbasePriceFetcher.swift in Sources */,
 				3AE2D39D2B83338D00DE5F31 /* SatsPriceApp.swift in Sources */,
 				3AE2D3A22B83338D00DE5F31 /* SatsPrice.xcdatamodeld in Sources */,
 				3AE2D3A42B83338D00DE5F31 /* ContentView.swift in Sources */,
 				3AE2D3D52B83E58500DE5F31 /* SatsViewModel.swift in Sources */,
-				3AE2D3E32B8461FE00DE5F31 /* CoinGeckoSpotPriceFetcher.swift in Sources */,
-				3AE2D3DF2B84597100DE5F31 /* SpotPriceFetcher.swift in Sources */,
+				3AE2D3E32B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift in Sources */,
+				3AE2D3DF2B84597100DE5F31 /* PriceFetcher.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
