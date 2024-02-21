@@ -7,6 +7,7 @@
 
 import SwiftUI
 import BigDecimal
+import Combine
 
 struct ContentView: View {
     @ObservedObject private var satsViewModel = SatsViewModel()
@@ -69,46 +70,32 @@ struct ContentView: View {
                 Text("Last updated: \(dateFormatter.string(from: satsViewModel.lastUpdated))")
             }
 
+            Section {
+                TextField("", text: $satsViewModel.satsString)
 #if os(iOS)
-            Section {
-                TextField("", text: $satsViewModel.satsString)
                     .keyboardType(.numberPad)
-            } header: {
-                Text("Sats")
-            }
-
-            Section {
-                TextField("", text: $satsViewModel.btcString)
-                    .keyboardType(.decimalPad)
-            } header: {
-                Text("BTC")
-            }
-
-            Section {
-                TextField("", text: $satsViewModel.usdString)
-                    .keyboardType(.decimalPad)
-            } header: {
-                Text("USD")
-            }
-#else
-            Section {
-                TextField("", text: $satsViewModel.satsString)
-            } header: {
-                Text("Sats")
-            }
-
-            Section {
-                TextField("", text: $satsViewModel.btcString)
-            } header: {
-                Text("BTC")
-            }
-
-            Section {
-                TextField("", text: $satsViewModel.usdString)
-            } header: {
-                Text("USD")
-            }
 #endif
+            } header: {
+                Text("Sats")
+            }
+
+            Section {
+                TextField("", text: $satsViewModel.btcString)
+#if os(iOS)
+                    .keyboardType(.decimalPad)
+#endif
+            } header: {
+                Text("BTC")
+            }
+
+            Section {
+                TextField("", text: $satsViewModel.usdString)
+#if os(iOS)
+                    .keyboardType(.decimalPad)
+#endif
+            } header: {
+                Text("USD")
+            }
         }
         .task {
             await updatePrice()
