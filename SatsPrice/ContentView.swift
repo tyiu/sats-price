@@ -113,7 +113,9 @@ struct ContentView: View {
         .task {
             await updatePrice()
         }
+#if os(macOS)
         .formStyle(.grouped)
+#endif
     }
 }
 
