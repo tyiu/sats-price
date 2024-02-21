@@ -1,67 +1,67 @@
 {
   "images" : [
     {
-      "filename" : "bitcoin-calculator-1024 1.png",
+      "filename" : "bitcoin-calculator-1024-no-alpha 1.png",
       "idiom" : "universal",
       "platform" : "ios",
       "size" : "1024x1024"
     },
     {
-      "filename" : "bitcoin-calculator-16.png",
+      "filename" : "bitcoin-calculator-16-no-alpha.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "16x16"
     },
     {
-      "filename" : "bitcoin-calculator-32 1.png",
+      "filename" : "bitcoin-calculator-32-no-alpha 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "16x16"
     },
     {
-      "filename" : "bitcoin-calculator-32.png",
+      "filename" : "bitcoin-calculator-32-no-alpha.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "32x32"
     },
     {
-      "filename" : "bitcoin-calculator-64.png",
+      "filename" : "bitcoin-calculator-64-no-alpha.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "32x32"
     },
     {
-      "filename" : "bitcoin-calculator-128.png",
+      "filename" : "bitcoin-calculator-128-no-alpha.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "128x128"
     },
     {
-      "filename" : "bitcoin-calculator-256 1.png",
+      "filename" : "bitcoin-calculator-256-no-alpha 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "128x128"
     },
     {
-      "filename" : "bitcoin-calculator-256.png",
+      "filename" : "bitcoin-calculator-256-no-alpha.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "256x256"
     },
     {
-      "filename" : "bitcoin-calculator-512 1.png",
+      "filename" : "bitcoin-calculator-512-no-alpha 1.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "256x256"
     },
     {
-      "filename" : "bitcoin-calculator-512.png",
+      "filename" : "bitcoin-calculator-512-no-alpha.png",
       "idiom" : "mac",
       "scale" : "1x",
       "size" : "512x512"
     },
     {
-      "filename" : "bitcoin-calculator-1024.png",
+      "filename" : "bitcoin-calculator-1024-no-alpha.png",
       "idiom" : "mac",
       "scale" : "2x",
       "size" : "512x512"
