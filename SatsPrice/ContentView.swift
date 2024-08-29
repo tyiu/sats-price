@@ -50,22 +50,21 @@ struct ContentView: View {
                         Text($0.description)
                     }
                 }
-                .onChange(of: priceSource) { newPriceSource in
-                    priceFetcherDelegator.priceSource = newPriceSource
-                    Task {
-                        await updatePrice()
-                    }
-                }
 
                 HStack {
                     TextField("", text: $satsViewModel.btcToUsdString)
-                        .disabled(true)
-                    Button(action: {
-                        Task {
-                            await updatePrice()
+                        .disabled(priceSource != .manual)
+#if os(iOS)
+                        .keyboardType(.decimalPad)
+#endif
+                    if priceSource != .manual {
+                        Button(action: {
+                            Task {
+                                await updatePrice()
+                            }
+                        }) {
+                            Image(systemName: "arrow.clockwise")
                         }
-                    }) {
-                        Image(systemName: "arrow.clockwise")
                     }
                 }
             } header: {
@@ -103,6 +102,12 @@ struct ContentView: View {
         }
         .task {
             await updatePrice()
+        }
+        .onChange(of: priceSource) { newPriceSource in
+            priceFetcherDelegator.priceSource = newPriceSource
+            Task {
+                await updatePrice()
+            }
         }
 #if os(macOS)
         .formStyle(.grouped)

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3A7B2AA32B86407A00ACC4A7 /* FakePriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A7B2AA22B86407A00ACC4A7 /* FakePriceFetcher.swift */; };
+		3A8E5DA72C810C9900E9E6BD /* ManualPriceFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3A8E5DA62C810C9900E9E6BD /* ManualPriceFetcher.swift */; };
 		3AE2D39D2B83338D00DE5F31 /* SatsPriceApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */; };
 		3AE2D3A22B83338D00DE5F31 /* SatsPrice.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A02B83338D00DE5F31 /* SatsPrice.xcdatamodeld */; };
 		3AE2D3A42B83338D00DE5F31 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3AE2D3A32B83338D00DE5F31 /* ContentView.swift */; };
@@ -45,6 +46,7 @@
 
 /* Begin PBXFileReference section */
 		3A7B2AA22B86407A00ACC4A7 /* FakePriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FakePriceFetcher.swift; sourceTree = "<group>"; };
+		3A8E5DA62C810C9900E9E6BD /* ManualPriceFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ManualPriceFetcher.swift; sourceTree = "<group>"; };
 		3AE2D3992B83338D00DE5F31 /* SatsPrice.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SatsPrice.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3AE2D39C2B83338D00DE5F31 /* SatsPriceApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatsPriceApp.swift; sourceTree = "<group>"; };
 		3AE2D3A12B83338D00DE5F31 /* SatsPrice.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = SatsPrice.xcdatamodel; sourceTree = "<group>"; };
@@ -159,6 +161,7 @@
 				3AE2D3E02B8459D600DE5F31 /* CoinbasePriceFetcher.swift */,
 				3AE2D3E22B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift */,
 				3A7B2AA22B86407A00ACC4A7 /* FakePriceFetcher.swift */,
+				3A8E5DA62C810C9900E9E6BD /* ManualPriceFetcher.swift */,
 				3AE2D3DE2B84597100DE5F31 /* PriceFetcher.swift */,
 				3AE2D3E62B85690200DE5F31 /* PriceFetcherDelegator.swift */,
 				3AE2D3E42B846A8600DE5F31 /* PriceSource.swift */,
@@ -309,6 +312,7 @@
 				3AE2D39D2B83338D00DE5F31 /* SatsPriceApp.swift in Sources */,
 				3AE2D3A22B83338D00DE5F31 /* SatsPrice.xcdatamodeld in Sources */,
 				3AE2D3A42B83338D00DE5F31 /* ContentView.swift in Sources */,
+				3A8E5DA72C810C9900E9E6BD /* ManualPriceFetcher.swift in Sources */,
 				3AE2D3D52B83E58500DE5F31 /* SatsViewModel.swift in Sources */,
 				3AE2D3E32B8461FE00DE5F31 /* CoinGeckoPriceFetcher.swift in Sources */,
 				3AE2D3DF2B84597100DE5F31 /* PriceFetcher.swift in Sources */,

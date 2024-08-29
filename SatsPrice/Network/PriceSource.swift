@@ -11,14 +11,15 @@ enum PriceSource: CaseIterable, CustomStringConvertible {
     
     static var allCases: [PriceSource] {
 #if DEBUG
-        [.coinbase, .coingecko, .fake]
+        [.coinbase, .coingecko, .manual, .fake]
 #else
-        [.coinbase, .coingecko]
+        [.coinbase, .coingecko, .manual]
 #endif
     }
 
     case coinbase
     case coingecko
+    case manual
 
 #if DEBUG
     case fake
@@ -30,6 +31,8 @@ enum PriceSource: CaseIterable, CustomStringConvertible {
             "Coinbase"
         case .coingecko:
             "CoinGecko"
+        case .manual:
+            "Manual"
 #if DEBUG
         case .fake:
             "Fake"

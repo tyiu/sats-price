@@ -11,6 +11,7 @@ import BigDecimal
 class PriceFetcherDelegator: PriceFetcher {
     private let coinbasePriceFetcher = CoinbasePriceFetcher()
     private let coinGeckoPriceFetcher = CoinGeckoPriceFetcher()
+    private let manualPriceFetcher = ManualPriceFetcher()
 #if DEBUG
     private let fakePriceFetcher = FakePriceFetcher()
 #endif
@@ -27,6 +28,8 @@ class PriceFetcherDelegator: PriceFetcher {
             coinbasePriceFetcher
         case .coingecko:
             coinGeckoPriceFetcher
+        case .manual:
+            manualPriceFetcher
 #if DEBUG
         case .fake:
             fakePriceFetcher
