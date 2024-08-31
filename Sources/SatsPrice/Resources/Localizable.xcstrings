@@ -1,0 +1,27 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "" : {
+
+    },
+    "1 BTC to USD" : {
+
+    },
+    "BTC" : {
+
+    },
+    "Last updated: %@" : {
+
+    },
+    "Price Source" : {
+
+    },
+    "Sats" : {
+
+    },
+    "USD" : {
+
+    }
+  },
+  "version" : "1.0"
+}
