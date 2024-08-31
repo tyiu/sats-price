@@ -66,8 +66,8 @@ public struct ContentView: View {
             } header: {
                 Text("1 BTC to USD")
             } footer: {
-                if priceSource != .manual {
-                    Text("Last updated: \(dateFormatter.string(from: satsViewModel.lastUpdated))")
+                if priceSource != .manual, let lastUpdated = satsViewModel.lastUpdated {
+                    Text("Last updated: \(dateFormatter.string(from: lastUpdated))")
                 }
             }
 
@@ -102,6 +102,7 @@ public struct ContentView: View {
             await updatePrice()
         }
         .onChange(of: priceSource) { newPriceSource in
+            satsViewModel.lastUpdated = nil
             priceFetcherDelegator.priceSource = newPriceSource
             Task {
                 await updatePrice()

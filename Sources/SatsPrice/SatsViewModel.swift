@@ -13,7 +13,7 @@ import Foundation
 import SwiftUI
 
 class SatsViewModel: ObservableObject {
-    @Published var lastUpdated: Date = Date.now
+    @Published var lastUpdated: Date?
 
     @Published var btcToUsdStringInternal: String = ""
     @Published var satsStringInternal: String = ""
