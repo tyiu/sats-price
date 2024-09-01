@@ -25,6 +25,10 @@ class SatsViewModel: ObservableObject {
             btcToUsdStringInternal
         }
         set {
+            guard btcToUsdStringInternal != newValue else {
+                return
+            }
+
             btcToUsdStringInternal = newValue
 
             if let btc, let btcToUsd {
@@ -40,6 +44,10 @@ class SatsViewModel: ObservableObject {
             satsStringInternal
         }
         set {
+            guard satsStringInternal != newValue else {
+                return
+            }
+
             satsStringInternal = newValue
 
             if let sats {
@@ -66,6 +74,10 @@ class SatsViewModel: ObservableObject {
             btcStringInternal
         }
         set {
+            guard btcStringInternal != newValue else {
+                return
+            }
+
             btcStringInternal = newValue
 
             if let btc {
@@ -89,6 +101,10 @@ class SatsViewModel: ObservableObject {
             usdStringInternal
         }
         set {
+            guard usdStringInternal != newValue else {
+                return
+            }
+
             usdStringInternal = newValue
 
             if let usd {
