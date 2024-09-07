@@ -134,10 +134,12 @@ class SatsViewModel: ObservableObject {
                     satsStringInternal = sats.formatString()
                 } else {
                     satsStringInternal = ""
+                    btcStringInternal = ""
                     currencyValueStringInternal = ""
                 }
             } else {
                 satsStringInternal = ""
+                btcStringInternal = ""
                 currencyValueStringInternal = ""
             }
         }
