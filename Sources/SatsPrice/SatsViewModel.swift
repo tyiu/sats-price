@@ -190,6 +190,13 @@ class SatsViewModel: ObservableObject {
         }
 #endif
     }
+
+    var exceedsMaximum: Bool {
+        if let btc, btc > Decimal(21000000) {
+            return true
+        }
+        return false
+    }
 }
 
 extension Decimal {

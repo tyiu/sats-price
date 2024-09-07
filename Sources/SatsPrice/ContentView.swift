@@ -88,6 +88,10 @@ public struct ContentView: View {
 #endif
             } header: {
                 Text("Sats")
+            } footer: {
+                if satsViewModel.exceedsMaximum {
+                    Text("2100000000000000 sats is the maximum.")
+                }
             }
 
             Section {
@@ -97,6 +101,10 @@ public struct ContentView: View {
 #endif
             } header: {
                 Text("BTC")
+            } footer: {
+                if satsViewModel.exceedsMaximum {
+                    Text("21000000 BTC is the maximum.")
+                }
             }
 
             Section {
