@@ -4,10 +4,23 @@
     "" : {
 
     },
-    "1 BTC to USD" : {
+    "%@ - %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ - %2$@"
+          }
+        }
+      }
+    },
+    "1 BTC to %@" : {
 
     },
     "BTC" : {
+
+    },
+    "Currency" : {
 
     },
     "Last updated: %@" : {
@@ -17,9 +30,6 @@
 
     },
     "Sats" : {
-
-    },
-    "USD" : {
 
     }
   },

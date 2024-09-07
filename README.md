@@ -1,6 +1,6 @@
 # SatsPrice
 
-This app fetches the price of Bitcoin relative to the United States Dollar from multiple sources, and converts inputted amounts between Sats, BTC, and USD.
+This app fetches the price of Bitcoin relative to common ISO currencies from multiple sources, and converts inputted amounts between Sats, BTC, and the selected ISO currency.
 
 This is a free [Skip](https://skip.tools) dual-platform app project.
 It builds a native app for both iOS and Android.

@@ -11,35 +11,35 @@
 import Foundation
 
 private struct CoinGeckoPriceResponse: Codable {
-    let bitcoin: CoinGeckoPrice
-}
-
-private struct CoinGeckoPrice: Codable {
 #if !SKIP
-    let usd: Decimal
+    let bitcoin: [String: Decimal]
 #else
-    let usd: String
+    let bitcoin: [String: String]
 #endif
 }
 
 class CoinGeckoPriceFetcher : PriceFetcher {
-    private static let urlString = "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&precision=18"
+    func urlString(toCurrency currency: Locale.Currency) -> String {
+        "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=\(currency.identifier.lowercased())&precision=18"
+    }
 
-    func btcToUsd() async throws -> Decimal? {
+    func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
         do {
-            guard let urlComponents = URLComponents(string: CoinGeckoPriceFetcher.urlString), let url = urlComponents.url else {
+            guard let urlComponents = URLComponents(string: urlString(toCurrency: currency)), let url = urlComponents.url else {
                 return nil
             }
 
             let (data, _) = try await URLSession.shared.data(from: url, delegate: nil)
 
             let priceResponse = try JSONDecoder().decode(CoinGeckoPriceResponse.self, from: data)
-            let price = priceResponse.bitcoin
+            guard let price = priceResponse.bitcoin[currency.identifier.lowercased()] else {
+                return nil
+            }
 
 #if !SKIP
-            return price.usd
+            return price
 #else
-            return Decimal(price.usd)
+            return Decimal(price)
 #endif
         } catch {
             return nil

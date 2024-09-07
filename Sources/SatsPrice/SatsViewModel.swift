@@ -15,26 +15,40 @@ import SwiftUI
 class SatsViewModel: ObservableObject {
     @Published var lastUpdated: Date?
 
-    @Published var btcToUsdStringInternal: String = ""
+    @Published var btcToCurrencyStringInternal: String = ""
     @Published var satsStringInternal: String = ""
     @Published var btcStringInternal: String = ""
-    @Published var usdStringInternal: String = ""
+    @Published var currencyValueStringInternal: String = ""
+    @Published var selectedCurrency: Locale.Currency = Locale.current.currency ?? Locale.Currency("USD")
 
-    var btcToUsdString: String {
+    var currencies: [Locale.Currency] {
+        let commonISOCurrencyCodes = Set(Locale.commonISOCurrencyCodes)
+        let currentCurrency = Locale.current.currency ?? Locale.Currency("USD")
+        if commonISOCurrencyCodes.contains(currentCurrency.identifier) {
+            return Locale.commonISOCurrencyCodes.map { Locale.Currency($0) }
+        } else {
+            var commonAndCurrentCurrencies = Locale.commonISOCurrencyCodes
+            commonAndCurrentCurrencies.append(currentCurrency.identifier)
+            commonAndCurrentCurrencies.sort()
+            return commonAndCurrentCurrencies.map { Locale.Currency($0) }
+        }
+    }
+
+    var btcToCurrencyString: String {
         get {
-            btcToUsdStringInternal
+            btcToCurrencyStringInternal
         }
         set {
-            guard btcToUsdStringInternal != newValue else {
+            guard btcToCurrencyStringInternal != newValue else {
                 return
             }
 
-            btcToUsdStringInternal = newValue
+            btcToCurrencyStringInternal = newValue
 
-            if let btc, let btcToUsd {
-                usdStringInternal = (btc * btcToUsd).formatString()
+            if let btc, let btcToCurrency {
+                currencyValueStringInternal = (btc * btcToCurrency).formatString()
             } else {
-                usdStringInternal = ""
+                currencyValueStringInternal = ""
             }
         }
     }
@@ -57,14 +71,14 @@ class SatsViewModel: ObservableObject {
                 let btc = sats.divide(Decimal(100000000), 20, java.math.RoundingMode.DOWN)
 #endif
                 btcStringInternal = btc.formatString()
-                if let btcToUsd {
-                    usdStringInternal = (btc * btcToUsd).formatString()
+                if let btcToCurrency {
+                    currencyValueStringInternal = (btc * btcToCurrency).formatString()
                 } else {
-                    usdStringInternal = ""
+                    currencyValueStringInternal = ""
                 }
             } else {
                 btcStringInternal = ""
-                usdStringInternal = ""
+                currencyValueStringInternal = ""
             }
         }
     }
@@ -84,35 +98,35 @@ class SatsViewModel: ObservableObject {
                 let sats = btc * Decimal(100000000)
                 satsStringInternal = sats.formatString()
 
-                if let btcToUsd {
-                    usdStringInternal = (btc * btcToUsd).formatString()
+                if let btcToCurrency {
+                    currencyValueStringInternal = (btc * btcToCurrency).formatString()
                 } else {
-                    usdStringInternal = ""
+                    currencyValueStringInternal = ""
                 }
             } else {
                 satsStringInternal = ""
-                usdStringInternal = ""
+                currencyValueStringInternal = ""
             }
         }
     }
 
-    var usdString: String {
+    var currencyValueString: String {
         get {
-            usdStringInternal
+            currencyValueStringInternal
         }
         set {
-            guard usdStringInternal != newValue else {
+            guard currencyValueStringInternal != newValue else {
                 return
             }
 
-            usdStringInternal = newValue
+            currencyValueStringInternal = newValue
 
-            if let usd {
-                if let btcToUsd {
+            if let currencyValue {
+                if let btcToCurrency {
 #if !SKIP
-                    let btc = usd / btcToUsd
+                    let btc = currencyValue / btcToCurrency
 #else
-                    let btc = usd.divide(btcToUsd, 20, java.math.RoundingMode.DOWN)
+                    let btc = currencyValue.divide(btcToCurrency, 20, java.math.RoundingMode.DOWN)
 #endif
                     btcStringInternal = btc.formatString()
 
@@ -120,21 +134,21 @@ class SatsViewModel: ObservableObject {
                     satsStringInternal = sats.formatString()
                 } else {
                     satsStringInternal = ""
-                    usdStringInternal = ""
+                    currencyValueStringInternal = ""
                 }
             } else {
                 satsStringInternal = ""
-                usdStringInternal = ""
+                currencyValueStringInternal = ""
             }
         }
     }
 
-    var btcToUsd: Decimal? {
+    var btcToCurrency: Decimal? {
 #if !SKIP
-        return Decimal(string: btcToUsdStringInternal)
+        return Decimal(string: btcToCurrencyStringInternal)
 #else
         do {
-            return Decimal(btcToUsdStringInternal)
+            return Decimal(btcToCurrencyStringInternal)
         } catch {
             return nil
         }
@@ -165,12 +179,12 @@ class SatsViewModel: ObservableObject {
 #endif
     }
 
-    var usd: Decimal? {
+    var currencyValue: Decimal? {
 #if !SKIP
-        return Decimal(string: usdStringInternal)
+        return Decimal(string: currencyValueStringInternal)
 #else
         do {
-            return Decimal(usdStringInternal)
+            return Decimal(currencyValueStringInternal)
         } catch {
             return nil
         }

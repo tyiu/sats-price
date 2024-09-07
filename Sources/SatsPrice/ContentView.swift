@@ -26,14 +26,14 @@ public struct ContentView: View {
     @MainActor
     func updatePrice() async {
         do {
-            guard let price = try await priceFetcherDelegator.btcToUsd() else {
-                satsViewModel.btcToUsdString = ""
+            guard let price = try await priceFetcherDelegator.convertBTC(toCurrency: satsViewModel.selectedCurrency) else {
+                satsViewModel.btcToCurrencyString = ""
                 return
             }
 
-            satsViewModel.btcToUsdString = "\(price)"
+            satsViewModel.btcToCurrencyString = "\(price)"
         } catch {
-            satsViewModel.btcToUsdString = ""
+            satsViewModel.btcToCurrencyString = ""
         }
         satsViewModel.lastUpdated = Date.now
     }
@@ -47,8 +47,18 @@ public struct ContentView: View {
                     }
                 }
 
+                Picker("Currency", selection: $satsViewModel.selectedCurrency) {
+                    ForEach(satsViewModel.currencies, id: \.self) {
+                        if let localizedCurrency = Locale.current.localizedString(forCurrencyCode: $0.identifier) {
+                            Text("\($0.identifier) - \(localizedCurrency)")
+                        } else {
+                            Text($0.identifier)
+                        }
+                    }
+                }
+
                 HStack {
-                    TextField("", text: $satsViewModel.btcToUsdString)
+                    TextField("", text: $satsViewModel.btcToCurrencyString)
                         .disabled(priceSource != .manual)
 #if os(iOS) || SKIP
                         .keyboardType(.decimalPad)
@@ -64,7 +74,7 @@ public struct ContentView: View {
                     }
                 }
             } header: {
-                Text("1 BTC to USD")
+                Text("1 BTC to \(satsViewModel.selectedCurrency.identifier)")
             } footer: {
                 if priceSource != .manual, let lastUpdated = satsViewModel.lastUpdated {
                     Text("Last updated: \(dateFormatter.string(from: lastUpdated))")
@@ -90,16 +100,22 @@ public struct ContentView: View {
             }
 
             Section {
-                TextField("", text: $satsViewModel.usdString)
+                TextField("", text: $satsViewModel.currencyValueString)
 #if os(iOS) || SKIP
                     .keyboardType(.decimalPad)
 #endif
             } header: {
-                Text("USD")
+                Text(satsViewModel.selectedCurrency.identifier)
             }
         }
         .task {
             await updatePrice()
+        }
+        .onChange(of: satsViewModel.selectedCurrency) { newCurrency in
+            satsViewModel.lastUpdated = nil
+            Task {
+                await updatePrice()
+            }
         }
         .onChange(of: priceSource) { newPriceSource in
             satsViewModel.lastUpdated = nil

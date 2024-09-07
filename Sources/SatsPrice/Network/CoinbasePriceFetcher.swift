@@ -21,13 +21,13 @@ private struct CoinbasePrice: Codable {
 }
 
 class CoinbasePriceFetcher : PriceFetcher {
-    private static let urlString = "https://api.coinbase.com/v2/prices/BTC-USD/spot"
-    private static let btc = "BTC"
-    private static let usd = "USD"
+    func urlString(toCurrency currency: Locale.Currency) -> String {
+        "https://api.coinbase.com/v2/prices/BTC-\(currency.identifier)/spot"
+    }
 
-    func btcToUsd() async throws -> Decimal? {
+    func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
         do {
-            guard let urlComponents = URLComponents(string: CoinbasePriceFetcher.urlString), let url = urlComponents.url else {
+            guard let urlComponents = URLComponents(string: urlString(toCurrency: currency)), let url = urlComponents.url else {
                 return nil
             }
 
@@ -36,7 +36,7 @@ class CoinbasePriceFetcher : PriceFetcher {
             let coinbasePriceResponse = try JSONDecoder().decode(CoinbasePriceResponse.self, from: data)
             let coinbasePrice = coinbasePriceResponse.data
 
-            guard coinbasePrice.base == CoinbasePriceFetcher.btc && coinbasePrice.currency == CoinbasePriceFetcher.usd else {
+            guard coinbasePrice.base == "BTC" && coinbasePrice.currency == currency.identifier else {
                 return nil
             }
 

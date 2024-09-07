@@ -14,7 +14,7 @@ import Foundation
 class ManualPriceFetcher: PriceFetcher {
     var price: Decimal = Decimal(1)
 
-    func btcToUsd() async throws -> Decimal? {
+    func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
         return price
     }
 }

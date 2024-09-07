@@ -11,5 +11,5 @@
 import Foundation
 
 protocol PriceFetcher {
-    func btcToUsd() async throws -> Decimal?
+    func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal?
 }

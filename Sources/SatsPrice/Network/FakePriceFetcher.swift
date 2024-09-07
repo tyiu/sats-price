@@ -13,7 +13,7 @@ import Foundation
 
 /// Fake price fetcher that returns a randomized price. Useful for development testing without requiring a network call.
 class FakePriceFetcher: PriceFetcher {
-    func btcToUsd() async throws -> Decimal? {
+    func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
         Decimal(Double.random(in: 10000...100000))
     }
 }
