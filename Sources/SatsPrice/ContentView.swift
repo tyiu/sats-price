@@ -39,102 +39,105 @@ public struct ContentView: View {
     }
 
     public var body: some View {
-        Form {
-            Section {
-                Picker("Price Source", selection: $priceSource) {
-                    ForEach(PriceSource.allCases, id: \.self) {
-                        Text($0.description)
-                    }
-                }
-
-                Picker("Currency", selection: $satsViewModel.selectedCurrency) {
-                    ForEach(satsViewModel.currencies, id: \.self) {
-                        if let localizedCurrency = Locale.current.localizedString(forCurrencyCode: $0.identifier) {
-                            Text("\($0.identifier) - \(localizedCurrency)")
-                        } else {
-                            Text($0.identifier)
+        NavigationStack {
+            Form {
+                Section {
+                    Picker("Price Source", selection: $priceSource) {
+                        ForEach(PriceSource.allCases, id: \.self) {
+                            Text($0.description)
                         }
                     }
+
+                    Picker("Currency", selection: $satsViewModel.selectedCurrency) {
+                        ForEach(satsViewModel.currencies, id: \.self) {
+                            if let localizedCurrency = Locale.current.localizedString(forCurrencyCode: $0.identifier) {
+                                Text("\($0.identifier) - \(localizedCurrency)")
+                            } else {
+                                Text($0.identifier)
+                            }
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+
+                    HStack {
+                        TextField("", text: $satsViewModel.btcToCurrencyString)
+                            .disabled(priceSource != .manual)
+#if os(iOS) || SKIP
+                            .keyboardType(.decimalPad)
+#endif
+                        if priceSource != .manual {
+                            Button(action: {
+                                Task {
+                                    await updatePrice()
+                                }
+                            }) {
+                                Image(systemName: "arrow.clockwise.circle")
+                            }
+                        }
+                    }
+                } header: {
+                    Text("1 BTC to \(satsViewModel.selectedCurrency.identifier)")
+                } footer: {
+                    if priceSource != .manual, let lastUpdated = satsViewModel.lastUpdated {
+                        Text("Last updated: \(dateFormatter.string(from: lastUpdated))")
+                    }
                 }
 
-                HStack {
-                    TextField("", text: $satsViewModel.btcToCurrencyString)
-                        .disabled(priceSource != .manual)
+                Section {
+                    TextField("", text: $satsViewModel.satsString)
+#if os(iOS) || SKIP
+                        .keyboardType(.numberPad)
+#endif
+                } header: {
+                    Text("Sats")
+                } footer: {
+                    if satsViewModel.exceedsMaximum {
+                        Text("2100000000000000 sats is the maximum.")
+                    }
+                }
+
+                Section {
+                    TextField("", text: $satsViewModel.btcString)
 #if os(iOS) || SKIP
                         .keyboardType(.decimalPad)
 #endif
-                    if priceSource != .manual {
-                        Button(action: {
-                            Task {
-                                await updatePrice()
-                            }
-                        }) {
-                            Image(systemName: "arrow.clockwise.circle")
-                        }
+                } header: {
+                    Text("BTC")
+                } footer: {
+                    if satsViewModel.exceedsMaximum {
+                        Text("21000000 BTC is the maximum.")
                     }
                 }
-            } header: {
-                Text("1 BTC to \(satsViewModel.selectedCurrency.identifier)")
-            } footer: {
-                if priceSource != .manual, let lastUpdated = satsViewModel.lastUpdated {
-                    Text("Last updated: \(dateFormatter.string(from: lastUpdated))")
+
+                Section {
+                    TextField("", text: $satsViewModel.currencyValueString)
+#if os(iOS) || SKIP
+                        .keyboardType(.decimalPad)
+#endif
+                } header: {
+                    Text(satsViewModel.selectedCurrency.identifier)
                 }
             }
-
-            Section {
-                TextField("", text: $satsViewModel.satsString)
-#if os(iOS) || SKIP
-                    .keyboardType(.numberPad)
-#endif
-            } header: {
-                Text("Sats")
-            } footer: {
-                if satsViewModel.exceedsMaximum {
-                    Text("2100000000000000 sats is the maximum.")
-                }
-            }
-
-            Section {
-                TextField("", text: $satsViewModel.btcString)
-#if os(iOS) || SKIP
-                    .keyboardType(.decimalPad)
-#endif
-            } header: {
-                Text("BTC")
-            } footer: {
-                if satsViewModel.exceedsMaximum {
-                    Text("21000000 BTC is the maximum.")
-                }
-            }
-
-            Section {
-                TextField("", text: $satsViewModel.currencyValueString)
-#if os(iOS) || SKIP
-                    .keyboardType(.decimalPad)
-#endif
-            } header: {
-                Text(satsViewModel.selectedCurrency.identifier)
-            }
-        }
-        .task {
-            await updatePrice()
-        }
-        .onChange(of: satsViewModel.selectedCurrency) { newCurrency in
-            satsViewModel.lastUpdated = nil
-            Task {
+            .task {
                 await updatePrice()
             }
-        }
-        .onChange(of: priceSource) { newPriceSource in
-            satsViewModel.lastUpdated = nil
-            priceFetcherDelegator.priceSource = newPriceSource
-            Task {
-                await updatePrice()
+            .onChange(of: satsViewModel.selectedCurrency) { newCurrency in
+                satsViewModel.lastUpdated = nil
+                Task {
+                    await updatePrice()
+                }
             }
-        }
+            .onChange(of: priceSource) { newPriceSource in
+                satsViewModel.lastUpdated = nil
+                priceFetcherDelegator.priceSource = newPriceSource
+                Task {
+                    await updatePrice()
+                }
+            }
 #if os(macOS)
-        .formStyle(.grouped)
+            .formStyle(.grouped)
 #endif
+        }
     }
 }
 
