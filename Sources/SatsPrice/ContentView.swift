@@ -57,7 +57,9 @@ public struct ContentView: View {
                             }
                         }
                     }
+#if os(iOS) || SKIP
                     .pickerStyle(.navigationLink)
+#endif
 
                     HStack {
                         TextField("", text: $satsViewModel.btcToCurrencyString)
