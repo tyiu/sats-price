@@ -62,7 +62,7 @@ public struct ContentView: View {
 #endif
 
                     HStack {
-                        TextField("", text: $satsViewModel.btcToCurrencyString)
+                        TextField("1 BTC to \(satsViewModel.selectedCurrency.identifier)", text: $satsViewModel.btcToCurrencyString)
                             .disabled(priceSource != .manual)
 #if os(iOS) || SKIP
                             .keyboardType(.decimalPad)
@@ -86,7 +86,7 @@ public struct ContentView: View {
                 }
 
                 Section {
-                    TextField("", text: $satsViewModel.satsString)
+                    TextField("Sats", text: $satsViewModel.satsString)
 #if os(iOS) || SKIP
                         .keyboardType(.numberPad)
 #endif
@@ -99,7 +99,7 @@ public struct ContentView: View {
                 }
 
                 Section {
-                    TextField("", text: $satsViewModel.btcString)
+                    TextField("BTC", text: $satsViewModel.btcString)
 #if os(iOS) || SKIP
                         .keyboardType(.decimalPad)
 #endif
@@ -112,7 +112,7 @@ public struct ContentView: View {
                 }
 
                 Section {
-                    TextField("", text: $satsViewModel.currencyValueString)
+                    TextField(satsViewModel.selectedCurrency.identifier, text: $satsViewModel.currencyValueString)
 #if os(iOS) || SKIP
                         .keyboardType(.decimalPad)
 #endif
