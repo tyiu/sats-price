@@ -200,6 +200,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = S99A5B637C;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = SatsPrice;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
@@ -213,6 +214,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DEVELOPMENT_TEAM = S99A5B637C;
+				ENABLE_APP_SANDBOX = YES;
 				ENABLE_PREVIEWS = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = SatsPrice;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
