@@ -15,11 +15,14 @@ import SwiftUI
 class SatsViewModel: ObservableObject {
     @Published var lastUpdated: Date?
 
-    @Published var btcToCurrencyStringInternal: String = ""
     @Published var satsStringInternal: String = ""
     @Published var btcStringInternal: String = ""
-    @Published var currencyValueStringInternal: String = ""
     @Published var selectedCurrency: Locale.Currency = Locale.current.currency ?? Locale.Currency("USD")
+    @Published var currencyValueStrings: [Locale.Currency: String] = [:]
+
+    var currencyPrices: [Locale.Currency: Decimal] = [:]
+
+    let currentCurrency: Locale.Currency = Locale.current.currency ?? Locale.Currency("USD")
 
     var currencies: [Locale.Currency] {
         let commonISOCurrencyCodes = Set(Locale.commonISOCurrencyCodes)
@@ -31,25 +34,6 @@ class SatsViewModel: ObservableObject {
             commonAndCurrentCurrencies.append(currentCurrency.identifier)
             commonAndCurrentCurrencies.sort()
             return commonAndCurrentCurrencies.map { Locale.Currency($0) }
-        }
-    }
-
-    var btcToCurrencyString: String {
-        get {
-            btcToCurrencyStringInternal
-        }
-        set {
-            guard btcToCurrencyStringInternal != newValue else {
-                return
-            }
-
-            btcToCurrencyStringInternal = newValue
-
-            if let btc, let btcToCurrency {
-                currencyValueStringInternal = (btc * btcToCurrency).formatString()
-            } else {
-                currencyValueStringInternal = ""
-            }
         }
     }
 
@@ -71,14 +55,11 @@ class SatsViewModel: ObservableObject {
                 let btc = sats.divide(Decimal(100000000), 20, java.math.RoundingMode.DOWN)
 #endif
                 btcStringInternal = btc.formatString()
-                if let btcToCurrency {
-                    currencyValueStringInternal = (btc * btcToCurrency).formatString()
-                } else {
-                    currencyValueStringInternal = ""
-                }
+
+                updateCurrencyValueStrings()
             } else {
                 btcStringInternal = ""
-                currencyValueStringInternal = ""
+                clearCurrencyValueStrings()
             }
         }
     }
@@ -98,63 +79,129 @@ class SatsViewModel: ObservableObject {
                 let sats = btc * Decimal(100000000)
                 satsStringInternal = sats.formatString()
 
-                if let btcToCurrency {
-                    currencyValueStringInternal = (btc * btcToCurrency).formatString()
-                } else {
-                    currencyValueStringInternal = ""
-                }
+                updateCurrencyValueStrings()
             } else {
                 satsStringInternal = ""
-                currencyValueStringInternal = ""
+                clearCurrencyValueStrings()
             }
         }
     }
 
-    var currencyValueString: String {
-        get {
-            currencyValueStringInternal
-        }
-        set {
-            guard currencyValueStringInternal != newValue else {
-                return
-            }
+    func updateCurrencyValueStrings(excludedCurrency: Locale.Currency? = nil) {
+        if let btc {
+            let currencies = Set([currentCurrency] + currencyValueStrings.keys)
+                .filter { $0 != excludedCurrency }
 
-            currencyValueStringInternal = newValue
-
-            if let currencyValue {
-                if let btcToCurrency {
-#if !SKIP
-                    let btc = currencyValue / btcToCurrency
-#else
-                    let btc = currencyValue.divide(btcToCurrency, 20, java.math.RoundingMode.DOWN)
-#endif
-                    btcStringInternal = btc.formatString()
-
-                    let sats = btc * Decimal(100000000)
-                    satsStringInternal = sats.formatString()
+            for currency in currencies {
+                if let btcToCurrency = btcToCurrency(for: currency) {
+                    currencyValueStrings[currency] = (btc * btcToCurrency).formatString()
                 } else {
-                    satsStringInternal = ""
-                    btcStringInternal = ""
-                    currencyValueStringInternal = ""
+                    currencyValueStrings[currency] = ""
                 }
-            } else {
-                satsStringInternal = ""
-                btcStringInternal = ""
-                currencyValueStringInternal = ""
             }
+        } else {
+            clearCurrencyValueStrings()
         }
     }
 
-    var btcToCurrency: Decimal? {
+    func clearCurrencyValueStrings() {
+        for currency in currencyValueStrings.keys {
+            currencyValueStrings[currency] = ""
+        }
+    }
+
+    func currencyValueString(for currency: Locale.Currency) -> Binding<String> {
+        Binding<String>(
+            get: {
+                self.currencyValueStrings[currency, default: ""]
+            },
+            set: { newValue in
+                guard self.currencyValueStrings[currency] != newValue else {
+                    return
+                }
+
+                self.currencyValueStrings[currency] = newValue
+
+                if let currencyValue = self.currencyValue(for: currency) {
+                    if let btcToCurrency = self.currencyPrices[currency] {
+    #if !SKIP
+                        let btc = currencyValue / btcToCurrency
+    #else
+                        let btc = currencyValue.divide(btcToCurrency, 20, java.math.RoundingMode.DOWN)
+    #endif
+                        self.btcStringInternal = btc.formatString()
+
+                        let sats = btc * Decimal(100000000)
+                        self.satsStringInternal = sats.formatString()
+
+                        self.updateCurrencyValueStrings(excludedCurrency: currency)
+                    } else {
+                        self.satsStringInternal = ""
+                        self.btcStringInternal = ""
+                        self.clearCurrencyValueStrings()
+                    }
+                } else {
+                    self.satsStringInternal = ""
+                    self.btcStringInternal = ""
+                    self.clearCurrencyValueStrings()
+                }
+            }
+        )
+    }
+
+    func currencyValue(for currency: Locale.Currency) -> Decimal? {
+        guard let currencyValueString = currencyValueStrings[currency] else {
+            return nil
+        }
+
 #if !SKIP
-        return Decimal(string: btcToCurrencyStringInternal)
+        return Decimal(string: currencyValueString)
 #else
         do {
-            return Decimal(btcToCurrencyStringInternal)
+            return Decimal(currencyValueString)
         } catch {
             return nil
         }
 #endif
+    }
+
+    func btcToCurrency(for currency: Locale.Currency) -> Decimal? {
+        currencyPrices[currency]
+    }
+
+    func btcToCurrencyString(for currency: Locale.Currency) -> Binding<String> {
+        Binding<String>(
+            get: {
+                self.currencyPrices[currency]?.formatString() ?? ""
+            },
+            set: { newValue in
+#if !SKIP
+                if let newPrice = Decimal(string: newValue), self.currencyPrices[currency] != newPrice {
+                    self.currencyPrices[currency] = Decimal(string: newValue)
+
+                    if let btc = self.btc {
+                        self.currencyValueStrings[currency] = (btc * newPrice).formatString()
+                    } else {
+                        self.currencyValueStrings[currency] = ""
+                    }
+                }
+#else
+                do {
+                    if let newPrice = Decimal(newValue), self.currencyPrices[currency] != newPrice {
+                        self.currencyPrices[currency] = Decimal(newValue)
+
+                        if let btc = self.btc {
+                            self.currencyValueStrings[currency] = (btc * newPrice).formatString()
+                        } else {
+                            self.currencyValueStrings[currency] = ""
+                        }
+                    }
+                } catch {
+                    self.currencyPrices.removeValue(forKey: currency)
+                }
+#endif
+            }
+        )
     }
 
     var sats: Decimal? {
@@ -175,18 +222,6 @@ class SatsViewModel: ObservableObject {
 #else
         do {
             return Decimal(btcStringInternal)
-        } catch {
-            return nil
-        }
-#endif
-    }
-
-    var currencyValue: Decimal? {
-#if !SKIP
-        return Decimal(string: currencyValueStringInternal)
-#else
-        do {
-            return Decimal(currencyValueStringInternal)
         } catch {
             return nil
         }

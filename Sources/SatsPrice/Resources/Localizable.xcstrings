@@ -14,6 +14,9 @@
         }
       }
     },
+    "%@ has already been added" : {
+
+    },
     "1 BTC to %@" : {
 
     },
@@ -21,6 +24,12 @@
 
     },
     "2100000000000000 sats is the maximum." : {
+
+    },
+    "Add %@" : {
+
+    },
+    "Add Currency" : {
 
     },
     "BTC" : {

@@ -75,7 +75,7 @@ class CoinGeckoPriceFetcher : PriceFetcher {
 
             var results: [Locale.Currency : Decimal] = [:]
             for currency in currencies {
-                if let price = priceResponse.bitcoin[currency.identifier] {
+                if let price = priceResponse.bitcoin[currency.identifier.lowercased()] {
 #if !SKIP
                     results[currency] = price
 #else

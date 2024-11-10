@@ -10,6 +10,8 @@ public struct ContentView: View {
 
     @State private var priceSource: PriceSource
 
+    @State private var expandAddCurrencySection: Bool = false
+
     private let dateFormatter: DateFormatter
 
     private let priceFetcherDelegator: PriceFetcherDelegator
@@ -26,16 +28,61 @@ public struct ContentView: View {
     @MainActor
     func updatePrice() async {
         do {
-            guard let price = try await priceFetcherDelegator.convertBTC(toCurrency: satsViewModel.selectedCurrency) else {
-                satsViewModel.btcToCurrencyString = ""
-                return
-            }
+            let currencies = Set([satsViewModel.currentCurrency] + satsViewModel.currencyValueStrings.keys)
+            let prices = try await priceFetcherDelegator.convertBTC(toCurrencies: Array(currencies))
 
-            satsViewModel.btcToCurrencyString = "\(price)"
+            satsViewModel.currencyPrices = prices
+            satsViewModel.updateCurrencyValueStrings()
         } catch {
-            satsViewModel.btcToCurrencyString = ""
+            satsViewModel.clearCurrencyValueStrings()
         }
         satsViewModel.lastUpdated = Date.now
+    }
+
+    public var addCurrencyView: some View {
+        DisclosureGroup("Add Currency", isExpanded: $expandAddCurrencySection) {
+            Picker("Currency", selection: $satsViewModel.selectedCurrency) {
+                ForEach(satsViewModel.currencies, id: \.self) { currency in
+                    Group {
+                        if let localizedCurrency = Locale.current.localizedString(forCurrencyCode: currency.identifier) {
+                            Text("\(currency.identifier) - \(localizedCurrency)")
+                        } else {
+                            Text(currency.identifier)
+                        }
+                    }
+                    .tag(currency.identifier)
+                }
+            }
+#if os(iOS) || SKIP
+            .pickerStyle(.navigationLink)
+#endif
+
+            let selectedCurrency = satsViewModel.selectedCurrency
+            if selectedCurrency == satsViewModel.currentCurrency || satsViewModel.currencyValueStrings.keys.contains(selectedCurrency) {
+                Text("\(selectedCurrency.identifier) has already been added")
+                    .foregroundStyle(.secondary)
+            } else {
+                Button("Add \(selectedCurrency.identifier)") {
+                    satsViewModel.currencyValueStrings[selectedCurrency] = ""
+                    expandAddCurrencySection = false
+
+                    Task {
+                        await updatePrice()
+                    }
+                }
+            }
+        }
+    }
+
+    public func selectedCurrencyBinding(_ currency: Locale.Currency) -> Binding<String> {
+        Binding(
+            get: {
+                satsViewModel.currencyValueStrings[currency, default: ""]
+            },
+            set: { priceString in
+                satsViewModel.currencyValueStrings[currency] = priceString
+            }
+        )
     }
 
     public var body: some View {
@@ -48,21 +95,8 @@ public struct ContentView: View {
                         }
                     }
 
-                    Picker("Currency", selection: $satsViewModel.selectedCurrency) {
-                        ForEach(satsViewModel.currencies, id: \.self) {
-                            if let localizedCurrency = Locale.current.localizedString(forCurrencyCode: $0.identifier) {
-                                Text("\($0.identifier) - \(localizedCurrency)")
-                            } else {
-                                Text($0.identifier)
-                            }
-                        }
-                    }
-#if os(iOS) || SKIP
-                    .pickerStyle(.navigationLink)
-#endif
-
                     HStack {
-                        TextField("1 BTC to \(satsViewModel.selectedCurrency.identifier)", text: $satsViewModel.btcToCurrencyString)
+                        TextField("1 BTC to \(satsViewModel.currentCurrency.identifier)", text: satsViewModel.btcToCurrencyString(for: satsViewModel.currentCurrency))
                             .disabled(priceSource != .manual)
 #if os(iOS) || SKIP
                             .keyboardType(.decimalPad)
@@ -78,7 +112,7 @@ public struct ContentView: View {
                         }
                     }
                 } header: {
-                    Text("1 BTC to \(satsViewModel.selectedCurrency.identifier)")
+                    Text("1 BTC to \(satsViewModel.currentCurrency.identifier)")
                 } footer: {
                     if priceSource != .manual, let lastUpdated = satsViewModel.lastUpdated {
                         Text("Last updated: \(dateFormatter.string(from: lastUpdated))")
@@ -112,22 +146,32 @@ public struct ContentView: View {
                 }
 
                 Section {
-                    TextField(satsViewModel.selectedCurrency.identifier, text: $satsViewModel.currencyValueString)
+                    TextField(satsViewModel.currentCurrency.identifier, text: satsViewModel.currencyValueString(for: satsViewModel.currentCurrency))
 #if os(iOS) || SKIP
                         .keyboardType(.decimalPad)
 #endif
                 } header: {
-                    Text(satsViewModel.selectedCurrency.identifier)
+                    Text(satsViewModel.currentCurrency.identifier)
+                }
+
+                if priceSource != .manual {
+                    ForEach(satsViewModel.currencyValueStrings.sorted { $0.key.identifier < $1.key.identifier }.filter { $0.key != satsViewModel.currentCurrency }, id: \.key.identifier) { currencyAndPrice in
+                        Section {
+                            TextField(currencyAndPrice.key.identifier, text: satsViewModel.currencyValueString(for: currencyAndPrice.key))
+#if os(iOS) || SKIP
+                                .keyboardType(.decimalPad)
+#endif
+                        } header: {
+                            Text(currencyAndPrice.key.identifier)
+                        }
+                        .tag(currencyAndPrice.key.identifier)
+                    }
+
+                    addCurrencyView
                 }
             }
             .task {
                 await updatePrice()
-            }
-            .onChange(of: satsViewModel.selectedCurrency) { newCurrency in
-                satsViewModel.lastUpdated = nil
-                Task {
-                    await updatePrice()
-                }
             }
             .onChange(of: priceSource) { newPriceSource in
                 satsViewModel.lastUpdated = nil
