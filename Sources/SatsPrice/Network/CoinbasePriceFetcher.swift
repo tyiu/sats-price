@@ -20,10 +20,21 @@ private struct CoinbasePrice: Codable {
     let currency: String
 }
 
+private struct CoinbaseExchangeRatesResponse: Codable {
+    let data: CoinbaseExchangeRatesResponseData
+}
+
+private struct CoinbaseExchangeRatesResponseData: Codable {
+    let currency: String
+    let rates: [String: String]
+}
+
 class CoinbasePriceFetcher : PriceFetcher {
     func urlString(toCurrency currency: Locale.Currency) -> String {
         "https://api.coinbase.com/v2/prices/BTC-\(currency.identifier)/spot"
     }
+
+    private static let urlStringForAllCurrencies: String = "https://api.coinbase.com/v2/exchange-rates?currency=BTC"
 
     func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
         do {
@@ -47,6 +58,50 @@ class CoinbasePriceFetcher : PriceFetcher {
             #endif
         } catch {
             return nil
+        }
+    }
+
+    func convertBTC(toCurrencies currencies: [Locale.Currency]) async throws -> [Locale.Currency : Decimal] {
+        do {
+            guard !currencies.isEmpty else {
+                return [:]
+            }
+
+            if currencies.count == 1, let currency = currencies.first {
+                guard let price = try await convertBTC(toCurrency: currency) else {
+                    return [:]
+                }
+
+                return [currency: price]
+            }
+
+            guard let urlComponents = URLComponents(string: CoinbasePriceFetcher.urlStringForAllCurrencies), let url = urlComponents.url else {
+                return [:]
+            }
+
+            let (data, _) = try await URLSession.shared.data(from: url, delegate: nil)
+
+            let coinbaseExchangeRatesResponse = try JSONDecoder().decode(CoinbaseExchangeRatesResponse.self, from: data)
+            let rates = coinbaseExchangeRatesResponse.data.rates
+
+            guard coinbaseExchangeRatesResponse.data.currency == "BTC" else {
+                return [:]
+            }
+
+            var results: [Locale.Currency : Decimal] = [:]
+            for currency in currencies {
+                if let price = rates[currency.identifier] {
+#if !SKIP
+                    results[currency] = Decimal(string: price)
+#else
+                    results[currency] = Decimal(price)
+#endif
+                }
+            }
+
+            return results
+        } catch {
+            return [:]
         }
     }
 }

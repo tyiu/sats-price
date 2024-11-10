@@ -14,6 +14,19 @@ import Foundation
 /// Fake price fetcher that returns a randomized price. Useful for development testing without requiring a network call.
 class FakePriceFetcher: PriceFetcher {
     func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
+        randomPrice()
+    }
+
+    func convertBTC(toCurrencies currencies: [Locale.Currency]) async throws -> [Locale.Currency : Decimal] {
+        guard !currencies.isEmpty else {
+            return [:]
+        }
+
+        let prices = currencies.map { _ in randomPrice() }
+        return Dictionary(uniqueKeysWithValues: zip(currencies, prices))
+    }
+
+    private func randomPrice() -> Decimal {
         Decimal(Double.random(in: 10000...100000))
     }
 }

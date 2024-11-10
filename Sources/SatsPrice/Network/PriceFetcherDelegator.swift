@@ -42,4 +42,8 @@ class PriceFetcherDelegator: PriceFetcher {
     func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
         return try await delegate.convertBTC(toCurrency: currency)
     }
+
+    func convertBTC(toCurrencies currencies: [Locale.Currency]) async throws -> [Locale.Currency : Decimal] {
+        return try await delegate.convertBTC(toCurrencies: currencies)
+    }
 }

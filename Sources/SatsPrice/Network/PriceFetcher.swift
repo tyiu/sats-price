@@ -12,4 +12,5 @@ import Foundation
 
 protocol PriceFetcher {
     func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal?
+    func convertBTC(toCurrencies currencies: [Locale.Currency]) async throws -> [Locale.Currency: Decimal]
 }

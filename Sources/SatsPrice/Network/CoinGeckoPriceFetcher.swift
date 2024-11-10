@@ -23,6 +23,11 @@ class CoinGeckoPriceFetcher : PriceFetcher {
         "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=\(currency.identifier.lowercased())&precision=18"
     }
 
+    func urlString(toCurrencies currencies: [Locale.Currency]) -> String {
+        let currenciesString = currencies.map { $0.identifier.lowercased() }.joined(separator: ",")
+        return "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=\(currenciesString)&precision=18"
+    }
+
     func convertBTC(toCurrency currency: Locale.Currency) async throws -> Decimal? {
         do {
             guard let urlComponents = URLComponents(string: urlString(toCurrency: currency)), let url = urlComponents.url else {
@@ -43,6 +48,45 @@ class CoinGeckoPriceFetcher : PriceFetcher {
 #endif
         } catch {
             return nil
+        }
+    }
+
+    func convertBTC(toCurrencies currencies: [Locale.Currency]) async throws -> [Locale.Currency : Decimal] {
+        do {
+            guard !currencies.isEmpty else {
+                return [:]
+            }
+
+            if currencies.count == 1, let currency = currencies.first {
+                guard let price = try await convertBTC(toCurrency: currency) else {
+                    return [:]
+                }
+
+                return [currency: price]
+            }
+
+            guard let urlComponents = URLComponents(string: urlString(toCurrencies: currencies)), let url = urlComponents.url else {
+                return [:]
+            }
+
+            let (data, _) = try await URLSession.shared.data(from: url, delegate: nil)
+
+            let priceResponse = try JSONDecoder().decode(CoinGeckoPriceResponse.self, from: data)
+
+            var results: [Locale.Currency : Decimal] = [:]
+            for currency in currencies {
+                if let price = priceResponse.bitcoin[currency.identifier] {
+#if !SKIP
+                    results[currency] = price
+#else
+                    results[currency] = Decimal(price)
+#endif
+                }
+            }
+
+            return results
+        } catch {
+            return [:]
         }
     }
 }
