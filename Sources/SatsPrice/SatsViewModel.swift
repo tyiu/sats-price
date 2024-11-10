@@ -15,9 +15,13 @@ import SwiftUI
 class SatsViewModel: ObservableObject {
     @Published var lastUpdated: Date?
 
+    @Published var priceSourceInternal: PriceSource = .coinbase
+    let priceFetcherDelegator = PriceFetcherDelegator(.coinbase)
+
     @Published var satsStringInternal: String = ""
     @Published var btcStringInternal: String = ""
     @Published var selectedCurrency: Locale.Currency = Locale.current.currency ?? Locale.Currency("USD")
+    @Published var selectedCurrencies = Set<Locale.Currency>()
     @Published var currencyValueStrings: [Locale.Currency: String] = [:]
 
     var currencyPrices: [Locale.Currency: Decimal] = [:]
@@ -26,7 +30,6 @@ class SatsViewModel: ObservableObject {
 
     var currencies: [Locale.Currency] {
         let commonISOCurrencyCodes = Set(Locale.commonISOCurrencyCodes)
-        let currentCurrency = Locale.current.currency ?? Locale.Currency("USD")
         if commonISOCurrencyCodes.contains(currentCurrency.identifier) {
             return Locale.commonISOCurrencyCodes.map { Locale.Currency($0) }
         } else {
@@ -35,6 +38,30 @@ class SatsViewModel: ObservableObject {
             commonAndCurrentCurrencies.sort()
             return commonAndCurrentCurrencies.map { Locale.Currency($0) }
         }
+    }
+
+    var priceSource: PriceSource {
+        get {
+            priceSourceInternal
+        }
+        set {
+            priceSourceInternal = newValue
+            priceFetcherDelegator.priceSource = newValue
+        }
+    }
+
+    @MainActor
+    func updatePrice() async {
+        do {
+            let currencies = Set([currentCurrency] + selectedCurrencies)
+            let prices = try await priceFetcherDelegator.convertBTC(toCurrencies: Array(currencies))
+
+            currencyPrices = prices
+            updateCurrencyValueStrings()
+        } catch {
+            clearCurrencyValueStrings()
+        }
+        lastUpdated = Date.now
     }
 
     var satsString: String {
@@ -89,7 +116,7 @@ class SatsViewModel: ObservableObject {
 
     func updateCurrencyValueStrings(excludedCurrency: Locale.Currency? = nil) {
         if let btc {
-            let currencies = Set([currentCurrency] + currencyValueStrings.keys)
+            let currencies = Set([currentCurrency] + selectedCurrencies)
                 .filter { $0 != excludedCurrency }
 
             for currency in currencies {

@@ -14,28 +14,22 @@
         }
       }
     },
-    "%@ has already been added" : {
-
-    },
     "1 BTC to %@" : {
 
     },
     "21000000 BTC is the maximum." : {
 
     },
-    "2100000000000000 sats is the maximum." : {
-
-    },
-    "Add %@" : {
-
-    },
-    "Add Currency" : {
-
-    },
     "BTC" : {
 
     },
-    "Currency" : {
+    "Change Currencies" : {
+
+    },
+    "Currencies" : {
+
+    },
+    "Current Currency" : {
 
     },
     "Last updated: %@" : {
@@ -45,6 +39,9 @@
 
     },
     "Sats" : {
+
+    },
+    "Selected Currencies" : {
 
     }
   },
