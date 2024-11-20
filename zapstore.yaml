@@ -1,0 +1,7 @@
+satsprice:
+  android:
+    name: SatsPrice
+    description: SatsPrice fetches the price of Bitcoin relative to common ISO currencies from multiple sources, and converts inputted amounts between Sats, BTC, and the selected ISO currency.
+    repository: https://github.com/tyiu/sats-price
+    artifacts:
+      - SatsPrice-v%v.apk
