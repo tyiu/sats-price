@@ -108,9 +108,7 @@ public struct ContentView: View {
                             .keyboardType(.decimalPad)
 #endif
                     }
-                }
 
-                Section {
                     if satsViewModel.priceSource != .manual {
                         ForEach(satsViewModel.selectedCurrencies.sorted { $0.identifier < $1.identifier }.filter { $0 != satsViewModel.currentCurrency }, id: \.identifier) { currency in
                             HStack {
