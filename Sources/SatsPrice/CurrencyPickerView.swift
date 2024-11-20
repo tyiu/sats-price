@@ -31,7 +31,7 @@ struct CurrencyPickerView: View {
                     ForEach(satsViewModel.selectedCurrencies.filter { $0 != currentCurrency }.sorted { $0.identifier < $1.identifier }, id: \.identifier) { currency in
                         Button(
                             action: {
-                                satsViewModel.selectedCurrencies.remove(currency)
+                                satsViewModel.removeSelectedCurrency(currency)
                             },
                             label: {
                                 HStack {
@@ -57,7 +57,7 @@ struct CurrencyPickerView: View {
                 ForEach(satsViewModel.currencies.filter { $0 != currentCurrency && !satsViewModel.selectedCurrencies.contains($0) }, id: \.identifier) { currency in
                     Button(
                         action: {
-                            satsViewModel.selectedCurrencies.insert(currency)
+                            satsViewModel.addSelectedCurrency(currency)
                         },
                         label: {
                             if let localizedCurrency = Locale.current.localizedString(forCurrencyCode: currency.identifier) {
@@ -80,5 +80,6 @@ struct CurrencyPickerView: View {
 }
 
 #Preview {
-    CurrencyPickerView(satsViewModel: SatsViewModel())
+    let satsPriceModel = try! SatsPriceModel(url: nil)
+    CurrencyPickerView(satsViewModel: SatsViewModel(model: satsPriceModel))
 }

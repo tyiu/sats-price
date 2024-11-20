@@ -6,11 +6,17 @@ import Combine
 import SwiftUI
 
 public struct ContentView: View {
-    @ObservedObject private var satsViewModel = SatsViewModel()
+    let model: SatsPriceModel
+
+    @StateObject private var satsViewModel: SatsViewModel
 
     private let dateFormatter: DateFormatter
 
-    init() {
+    init(model: SatsPriceModel) {
+        self.model = model
+
+        _satsViewModel = StateObject<SatsViewModel>(wrappedValue: SatsViewModel(model: model))
+
         dateFormatter = DateFormatter()
         dateFormatter.dateStyle = .short
         dateFormatter.timeStyle = .short
@@ -124,6 +130,7 @@ public struct ContentView: View {
                 }
             }
             .task {
+                await satsViewModel.pullSelectedCurrenciesFromDB()
                 await satsViewModel.updatePrice()
             }
             .onChange(of: satsViewModel.priceSource) { newPriceSource in
@@ -140,5 +147,6 @@ public struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    let satsPriceModel = try! SatsPriceModel(url: nil)
+    ContentView(model: satsPriceModel)
 }

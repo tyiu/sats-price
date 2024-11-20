@@ -13,6 +13,8 @@ import Foundation
 import SwiftUI
 
 class SatsViewModel: ObservableObject {
+    let model: SatsPriceModel
+
     @Published var lastUpdated: Date?
 
     @Published var priceSourceInternal: PriceSource = .coinbase
@@ -20,13 +22,16 @@ class SatsViewModel: ObservableObject {
 
     @Published var satsStringInternal: String = ""
     @Published var btcStringInternal: String = ""
-    @Published var selectedCurrency: Locale.Currency = Locale.current.currency ?? Locale.Currency("USD")
     @Published var selectedCurrencies = Set<Locale.Currency>()
     @Published var currencyValueStrings: [Locale.Currency: String] = [:]
 
     var currencyPrices: [Locale.Currency: Decimal] = [:]
 
     let currentCurrency: Locale.Currency = Locale.current.currency ?? Locale.Currency("USD")
+
+    init(model: SatsPriceModel) {
+        self.model = model
+    }
 
     var currencies: [Locale.Currency] {
         let commonISOCurrencyCodes = Set(Locale.commonISOCurrencyCodes)
@@ -37,6 +42,34 @@ class SatsViewModel: ObservableObject {
             commonAndCurrentCurrencies.append(currentCurrency.identifier)
             commonAndCurrentCurrencies.sort()
             return commonAndCurrentCurrencies.map { Locale.Currency($0) }
+        }
+    }
+
+    @MainActor
+    func pullSelectedCurrenciesFromDB() async {
+        do {
+            let selectedCurrencies = Set(try await model.selectedCurrencies().compactMap { Locale.Currency($0.currencyCode) })
+            let currenciesToAdd = selectedCurrencies.subtracting(self.selectedCurrencies)
+            let currenciesToRemove = self.selectedCurrencies.subtracting(selectedCurrencies)
+
+            self.selectedCurrencies.subtract(currenciesToRemove)
+            self.selectedCurrencies.formUnion(currenciesToAdd)
+        } catch {
+            logger.error("Unable to pull selected currencies from DB. Error: \(error)")
+        }
+    }
+
+    func addSelectedCurrency(_ currency: Locale.Currency) {
+        selectedCurrencies.insert(currency)
+        Task {
+            try await model.insert(SelectedCurrency(currencyCode: currency.identifier))
+        }
+    }
+
+    func removeSelectedCurrency(_ currency: Locale.Currency) {
+        selectedCurrencies.remove(currency)
+        Task {
+            try await model.deleteSelectedCurrency(currencyCode: currency.identifier)
         }
     }
 
