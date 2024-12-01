@@ -51,11 +51,11 @@ class CoinbasePriceFetcher : PriceFetcher {
                 return nil
             }
 
-            #if !SKIP
+#if !SKIP
             return Decimal(string: coinbasePrice.amount)
-            #else
+#else
             return Decimal(coinbasePrice.amount)
-            #endif
+#endif
         } catch {
             return nil
         }

@@ -184,11 +184,11 @@ class SatsViewModel: ObservableObject {
 
                 if let currencyValue = self.currencyValue(for: currency) {
                     if let btcToCurrency = self.currencyPrices[currency] {
-    #if !SKIP
+#if !SKIP
                         let btc = currencyValue / btcToCurrency
-    #else
+#else
                         let btc = currencyValue.divide(btcToCurrency, 20, java.math.RoundingMode.DOWN)
-    #endif
+#endif
                         self.btcStringInternal = btc.formatString()
 
                         let sats = btc * Decimal(100000000)
