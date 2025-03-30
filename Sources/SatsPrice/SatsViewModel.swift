@@ -13,6 +13,10 @@ import Foundation
 import SwiftUI
 
 class SatsViewModel: ObservableObject {
+    static let MAXIMUM_BTC = Decimal(21000000)
+
+    private static let SATS_IN_BTC = Decimal(100000000)
+
     let model: SatsPriceModel
 
     @Published var lastUpdated: Date?
@@ -25,7 +29,8 @@ class SatsViewModel: ObservableObject {
     @Published var selectedCurrencies = Set<Locale.Currency>()
     @Published var currencyValueStrings: [Locale.Currency: String] = [:]
 
-    var currencyPrices: [Locale.Currency: Decimal] = [:]
+    @Published var currencyPrices: [Locale.Currency: Decimal] = [:]
+    @Published var currencyPriceStrings: [Locale.Currency: String] = [:]
 
     let currentCurrency: Locale.Currency = Locale.current.currency ?? Locale.Currency("USD")
 
@@ -90,6 +95,7 @@ class SatsViewModel: ObservableObject {
             let prices = try await priceFetcherDelegator.convertBTC(toCurrencies: Array(currencies))
 
             currencyPrices = prices
+            updateCurrencyPriceStrings()
             updateCurrencyValueStrings()
         } catch {
             clearCurrencyValueStrings()
@@ -97,24 +103,49 @@ class SatsViewModel: ObservableObject {
         lastUpdated = Date.now
     }
 
+    func updateCurrencyPriceStrings() {
+        currencyPriceStrings = Dictionary(
+            uniqueKeysWithValues: currencyPrices.map { ($0.key, $0.value.formatString(currency: $0.key)) }
+        )
+    }
+
+    private func priceWithoutGroupingSeparator(_ priceString: String) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        let decimalSeparator = numberFormatter.decimalSeparator
+
+        return priceString.filter {
+            $0.isDigit || String($0) == decimalSeparator
+        }
+    }
+
     var satsString: String {
         get {
             satsStringInternal
         }
         set {
-            guard satsStringInternal != newValue else {
+            let oldPriceWithoutGroupingSeparator = priceWithoutGroupingSeparator(satsStringInternal)
+            let newPriceWithoutGroupingSeparator = priceWithoutGroupingSeparator(newValue)
+
+            guard oldPriceWithoutGroupingSeparator != newPriceWithoutGroupingSeparator else {
                 return
             }
 
-            satsStringInternal = newValue
+            satsStringInternal = newPriceWithoutGroupingSeparator
 
             if let sats {
 #if !SKIP
-                let btc = sats / Decimal(100000000)
+                // Formatting the internal string after modifying it only if the platform is Apple.
+                // Apple does not seem to call get after set until after focus is moved to a different component.
+                // Android, on the other hand, does call get immediately after set,
+                // which causes text entry issues if the user keeps on entering input.
+                satsStringInternal = sats.formatSatsString()
+
+                let btc = sats / SatsViewModel.SATS_IN_BTC
 #else
-                let btc = sats.divide(Decimal(100000000), 20, java.math.RoundingMode.DOWN)
+                let btc = sats.divide(SatsViewModel.SATS_IN_BTC, 20, java.math.RoundingMode.DOWN)
 #endif
-                btcStringInternal = btc.formatString()
+                btcStringInternal = btc.formatBTCString()
 
                 updateCurrencyValueStrings()
             } else {
@@ -129,15 +160,26 @@ class SatsViewModel: ObservableObject {
             btcStringInternal
         }
         set {
-            guard btcStringInternal != newValue else {
+            let oldPriceWithoutGroupingSeparator = priceWithoutGroupingSeparator(btcStringInternal)
+            let newPriceWithoutGroupingSeparator = priceWithoutGroupingSeparator(newValue)
+
+            guard oldPriceWithoutGroupingSeparator != newPriceWithoutGroupingSeparator else {
                 return
             }
 
-            btcStringInternal = newValue
+            btcStringInternal = newPriceWithoutGroupingSeparator
 
             if let btc {
-                let sats = btc * Decimal(100000000)
-                satsStringInternal = sats.formatString()
+#if !SKIP
+                // Formatting the internal string after modifying it only if the platform is Apple.
+                // Apple does not seem to call get after set until after focus is moved to a different component.
+                // Android, on the other hand, does call get immediately after set,
+                // which causes text entry issues if the user keeps on entering input.
+                btcStringInternal = btc.formatBTCString()
+#endif
+
+                let sats = btc * SatsViewModel.SATS_IN_BTC
+                satsStringInternal = sats.formatSatsString()
 
                 updateCurrencyValueStrings()
             } else {
@@ -154,7 +196,7 @@ class SatsViewModel: ObservableObject {
 
             for currency in currencies {
                 if let btcToCurrency = btcToCurrency(for: currency) {
-                    currencyValueStrings[currency] = (btc * btcToCurrency).formatString()
+                    currencyValueStrings[currency] = (btc * btcToCurrency).formatString(currency: currency)
                 } else {
                     currencyValueStrings[currency] = ""
                 }
@@ -176,11 +218,14 @@ class SatsViewModel: ObservableObject {
                 self.currencyValueStrings[currency, default: ""]
             },
             set: { newValue in
-                guard self.currencyValueStrings[currency] != newValue else {
+                let oldPriceWithoutGroupingSeparator = self.priceWithoutGroupingSeparator(self.currencyValueStrings[currency] ?? "")
+                let newPriceWithoutGroupingSeparator = self.priceWithoutGroupingSeparator(newValue)
+
+                guard oldPriceWithoutGroupingSeparator != newPriceWithoutGroupingSeparator else {
                     return
                 }
 
-                self.currencyValueStrings[currency] = newValue
+                self.currencyValueStrings[currency] = newPriceWithoutGroupingSeparator
 
                 if let currencyValue = self.currencyValue(for: currency) {
                     if let btcToCurrency = self.currencyPrices[currency] {
@@ -189,12 +234,20 @@ class SatsViewModel: ObservableObject {
 #else
                         let btc = currencyValue.divide(btcToCurrency, 20, java.math.RoundingMode.DOWN)
 #endif
-                        self.btcStringInternal = btc.formatString()
+                        self.btcStringInternal = btc.formatBTCString()
 
-                        let sats = btc * Decimal(100000000)
-                        self.satsStringInternal = sats.formatString()
+                        let sats = btc * SatsViewModel.SATS_IN_BTC
+                        self.satsStringInternal = sats.formatSatsString()
 
+#if !SKIP
+                        // Formatting the internal string after modifying it only if the platform is Apple.
+                        // Apple does not seem to call get after set until after focus is moved to a different component.
+                        // Android, on the other hand, does call get immediately after set,
+                        // which causes text entry issues if the user keeps on entering input.
+                        self.updateCurrencyValueStrings(excludedCurrency: nil)
+#else
                         self.updateCurrencyValueStrings(excludedCurrency: currency)
+#endif
                     } else {
                         self.satsStringInternal = ""
                         self.btcStringInternal = ""
@@ -215,7 +268,7 @@ class SatsViewModel: ObservableObject {
         }
 
 #if !SKIP
-        return Decimal(string: currencyValueString)
+        return Decimal(string: priceWithoutGroupingSeparator(currencyValueString))
 #else
         do {
             return Decimal(currencyValueString)
@@ -232,23 +285,38 @@ class SatsViewModel: ObservableObject {
     func btcToCurrencyString(for currency: Locale.Currency) -> Binding<String> {
         Binding<String>(
             get: {
-                self.currencyPrices[currency]?.formatString() ?? ""
+                self.currencyPriceStrings[currency, default: ""]
             },
             set: { newValue in
+                let oldPriceWithoutGroupingSeparator = self.priceWithoutGroupingSeparator(self.currencyPriceStrings[currency, default: ""])
+                let newPriceWithoutGroupingSeparator = self.priceWithoutGroupingSeparator(newValue)
+
+                guard oldPriceWithoutGroupingSeparator != newPriceWithoutGroupingSeparator else {
+                    return
+                }
+
+                self.currencyPriceStrings[currency] = newPriceWithoutGroupingSeparator
+
 #if !SKIP
-                if let newPrice = Decimal(string: newValue), self.currencyPrices[currency] != newPrice {
-                    self.currencyPrices[currency] = Decimal(string: newValue)
+                if let newPrice = Decimal(string: newPriceWithoutGroupingSeparator), self.currencyPrices[currency] != newPrice {
+                    self.currencyPrices[currency] = newPrice
+
+                    // Formatting the internal string after modifying it only if the platform is Apple.
+                    // Apple does not seem to call get after set until after focus is moved to a different
+                    // component. Android, on the other hand, does call get immediately after set,
+                    // which causes text entry issues if the user keeps on entering input.
+                    self.currencyPriceStrings[currency] = newPrice.formatString(currency: currency)
 
                     if let btc = self.btc {
-                        self.currencyValueStrings[currency] = (btc * newPrice).formatString()
+                        self.currencyValueStrings[currency] = (btc * newPrice).formatString(currency: currency)
                     } else {
                         self.currencyValueStrings[currency] = ""
                     }
                 }
 #else
                 do {
-                    if let newPrice = Decimal(newValue), self.currencyPrices[currency] != newPrice {
-                        self.currencyPrices[currency] = Decimal(newValue)
+                    if let newPrice = Decimal(newPriceWithoutGroupingSeparator), self.currencyPrices[currency] != newPrice {
+                        self.currencyPrices[currency] = newPrice
 
                         if let btc = self.btc {
                             self.currencyValueStrings[currency] = (btc * newPrice).formatString()
@@ -265,11 +333,12 @@ class SatsViewModel: ObservableObject {
     }
 
     var sats: Decimal? {
+        let priceWithoutGroupingSeparator = priceWithoutGroupingSeparator(satsStringInternal)
 #if !SKIP
-        return Decimal(string: satsStringInternal)
+        return Decimal(string: priceWithoutGroupingSeparator)
 #else
         do {
-            return Decimal(satsStringInternal)
+            return Decimal(priceWithoutGroupingSeparator)
         } catch {
             return nil
         }
@@ -277,11 +346,12 @@ class SatsViewModel: ObservableObject {
     }
 
     var btc: Decimal? {
+        let priceWithoutGroupingSeparator = priceWithoutGroupingSeparator(btcStringInternal)
 #if !SKIP
-        return Decimal(string: btcStringInternal)
+        return Decimal(string: priceWithoutGroupingSeparator)
 #else
         do {
-            return Decimal(btcStringInternal)
+            return Decimal(priceWithoutGroupingSeparator)
         } catch {
             return nil
         }
@@ -289,7 +359,7 @@ class SatsViewModel: ObservableObject {
     }
 
     var exceedsMaximum: Bool {
-        if let btc, btc > Decimal(21000000) {
+        if let btc, btc > SatsViewModel.MAXIMUM_BTC {
             return true
         }
         return false
@@ -303,5 +373,53 @@ extension Decimal {
 #else
         return stripTrailingZeros().toPlainString()
 #endif
+    }
+
+    func formatString(minimumFractionDigits: Int, maximumFractionDigits: Int, usesGroupingSeparator: Bool) -> String {
+        let numberFormatter = NumberFormatter()
+        numberFormatter.numberStyle = .decimal
+        numberFormatter.minimumFractionDigits = minimumFractionDigits
+        numberFormatter.maximumFractionDigits = maximumFractionDigits
+        numberFormatter.usesGroupingSeparator = usesGroupingSeparator
+#if !SKIP
+        return numberFormatter.string(from: NSDecimalNumber(decimal: self)) ?? String(describing: self)
+#else
+        return numberFormatter.string(from: android.icu.math.BigDecimal(self as java.math.BigDecimal) as NSNumber) ?? stripTrailingZeros().toPlainString()
+#endif
+    }
+
+    func formatSatsString() -> String {
+        formatString(minimumFractionDigits: 0, maximumFractionDigits: 0, usesGroupingSeparator: true)
+    }
+
+    func formatBTCString() -> String {
+        formatString(minimumFractionDigits: 0, maximumFractionDigits: 8, usesGroupingSeparator: true)
+    }
+
+    func formatString(currency: Locale.Currency) -> String {
+#if !SKIP
+        let currencyFormatter = NumberFormatter()
+        currencyFormatter.numberStyle = .currency
+        currencyFormatter.currencyCode = currency.identifier
+
+        return formatString(
+            minimumFractionDigits: currencyFormatter.minimumFractionDigits,
+            maximumFractionDigits: currencyFormatter.maximumFractionDigits,
+            usesGroupingSeparator: currencyFormatter.usesGroupingSeparator
+        )
+#else
+        let javaCurrency = java.util.Currency.getInstance(currency.identifier)
+        return formatString(
+            minimumFractionDigits: javaCurrency.getDefaultFractionDigits(),
+            maximumFractionDigits: javaCurrency.getDefaultFractionDigits(),
+            usesGroupingSeparator: true
+        )
+#endif
+    }
+}
+
+private extension Character {
+    var isDigit: Bool {
+        self >= "0" && self <= "9"
     }
 }

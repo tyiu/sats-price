@@ -14,10 +14,10 @@
         }
       }
     },
-    "1 BTC to %@" : {
+    "%@ BTC is the maximum." : {
 
     },
-    "21000000 BTC is the maximum." : {
+    "1 BTC to %@" : {
 
     },
     "BTC" : {

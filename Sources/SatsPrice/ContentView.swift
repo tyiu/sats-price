@@ -33,17 +33,6 @@ public struct ContentView: View {
         )
     }
 
-    public func selectedCurrencyBinding(_ currency: Locale.Currency) -> Binding<String> {
-        Binding(
-            get: {
-                satsViewModel.currencyValueStrings[currency, default: ""]
-            },
-            set: { priceString in
-                satsViewModel.currencyValueStrings[currency] = priceString
-            }
-        )
-    }
-
     public var body: some View {
         NavigationStack {
             Form {
@@ -96,7 +85,7 @@ public struct ContentView: View {
                     }
                 } footer: {
                     if satsViewModel.exceedsMaximum {
-                        Text("21000000 BTC is the maximum.")
+                        Text("\(SatsViewModel.MAXIMUM_BTC.formatBTCString()) BTC is the maximum.")
                     }
                 }
 
