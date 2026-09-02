@@ -1,0 +1,18 @@
+<resources>
+    <string name="price_source">Price Source</string>
+    <string name="btc_to_currency">1 BTC to %1$s</string>
+    <string name="rate_label">Rate</string>
+    <string name="refresh_content_description">Refresh</string>
+    <string name="retry">Retry</string>
+    <string name="bitcoin_section_title">Bitcoin</string>
+    <string name="sats_label">Sats</string>
+    <string name="btc_label">BTC</string>
+    <string name="exceeds_max_supply">Exceeds the 21,000,000 BTC maximum supply</string>
+    <string name="currencies_section_title">Currencies</string>
+    <string name="add_currency">Add currency</string>
+    <string name="currencies_selected_count">%1$d selected</string>
+    <string name="remove_currency_content_description">Remove %1$s</string>
+    <string name="currency_option_label">%1$s - %2$s</string>
+    <string name="currency_option_label_local">%1$s - %2$s (Local)</string>
+    <string name="done">Done</string>
+</resources>

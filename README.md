@@ -29,52 +29,54 @@ height="70">](https://github.com/tyiu/sats-price/releases)
 
 iOS 16.0+ • macOS 13.0+ • Android 10.0+
 
-</div>
+## Kotlin Multiplatform
 
-## Building
+This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
 
-This is a free [Skip](https://skip.tools) dual-platform app project.
-It builds a native app for both iOS and Android.
+* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform, you
+  need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
 
-This project is both a stand-alone Swift Package Manager module,
-as well as an Xcode project that builds and transpiles the project
-into a Kotlin Gradle project for Android using the Skip plugin.
+* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications. It contains
+  several subfolders:
+    - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
+    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name. For
+      example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
+      the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls. Similarly, if you want
+      to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
+      folder is the appropriate location.
 
-Building the module requires that Skip be installed using
-[Homebrew](https://brew.sh) with `brew install skiptools/skip/skip`.
+### Running the apps
 
-This will also install the necessary transpiler prerequisites:
-Kotlin, Gradle, and the Android build tools.
+Use the run configurations provided by the run widget in your IDE's toolbar. You can also use these commands and
+options:
 
-Installation prerequisites can be confirmed by running `skip checkup`.
+- Android app: `./gradlew :androidApp:assembleDebug`
+- Desktop app:
+    - Hot reload: `./gradlew :desktopApp:hotRun --auto`
+    - Standard run: `./gradlew :desktopApp:run`
+- Web app:
+    - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
+    - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
+- iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
 
-## Testing
+### Running tests
 
-The module can be tested using the standard `swift test` command
-or by running the test target for the macOS destination in Xcode,
-which will run the Swift tests as well as the transpiled
-Kotlin JUnit tests in the Robolectric Android simulation environment.
+Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
-Parity testing can be performed with `skip test`,
-which will output a table of the test results for both platforms.
-
-## Running
-
-Xcode and Android Studio must be downloaded and installed in order to
-run the app in the iOS simulator / Android emulator.
-An Android emulator must already be running, which can be launched from 
-Android Studio's Device Manager.
-
-To run both the Swift and Kotlin apps simultaneously, 
-launch the SatsPriceApp target from Xcode.
-A build phases runs the "Launch Android APK" script that
-will deploy the transpiled app a running Android emulator or connected device.
-Logging output for the iOS app can be viewed in the Xcode console, and in
-Android Studio's logcat tab for the transpiled Kotlin app.
+- Android tests: `./gradlew :shared:testAndroidHostTest`
+- Desktop tests: `./gradlew :shared:jvmTest`
+- Web tests:
+    - Wasm target: `./gradlew :shared:wasmJsTest`
+    - JS target: `./gradlew :shared:jsTest`
+- iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
 ## Attribution
 
 This project depends on [Skip](https://skip.tools) to build as a multi-platform app.
+
+This project uses [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
+[Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform), and
+[Kotlin/Wasm](https://kotl.in/wasm/).
 
 The [Bitcoin Calculator](https://www.flaticon.com/free-icons/bitcoin-calculator) icon was created by Icon home and licensed as free for personal and commercial use with attribution.
 
@@ -84,3 +86,5 @@ The following free APIs are used:
   - [Get Spot Price](https://docs.cdp.coinbase.com/coinbase-app/docs/api-prices#get-spot-price)
 - CoinGecko
   - [Coin Price by IDs](https://docs.coingecko.com/reference/simple-price)
+
+</div>
