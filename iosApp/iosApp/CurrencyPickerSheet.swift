@@ -10,7 +10,7 @@ struct CurrencyPickerSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List(currencies, id: \.code) { info in
                 Button {
                     onToggle(info.code)
@@ -27,13 +27,21 @@ struct CurrencyPickerSheet: View {
                 }
             }
             .navigationTitle(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title))
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button(IosLocalizationKt.localizedString(resource: MR.strings.shared.done)) { dismiss() }
                 }
             }
         }
+        #if os(macOS)
+        // macOS sizes a .sheet() to its content's ideal size rather than the parent window's
+        // size (unlike iOS, which presents modally full-size); without an explicit frame here,
+        // the List has no size to lay out rows in and renders empty.
+        .frame(minWidth: 420, minHeight: 480)
+        #endif
     }
 
     private func currencyLabel(for info: CurrencyInfo) -> String {

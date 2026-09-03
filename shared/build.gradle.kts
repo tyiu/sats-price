@@ -13,9 +13,10 @@ plugins {
 kotlin {
     listOf(
         iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
+        iosSimulatorArm64(),
+        macosArm64()
+    ).forEach { appleTarget ->
+        appleTarget.binaries.framework {
             baseName = "Shared"
             isStatic = true
             export(libs.moko.resources)
@@ -87,7 +88,7 @@ kotlin {
             implementation(libs.kotlinx.coroutinesTest)
             implementation(libs.ktor.client.mock)
         }
-        iosMain.dependencies {
+        appleMain.dependencies {
             implementation(libs.ktor.client.darwin)
         }
         jvmMain.dependencies {

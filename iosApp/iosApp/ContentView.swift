@@ -6,7 +6,7 @@ struct ContentView: View {
     @State private var showCurrencyPicker = false
 
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Group {
                 if let state = viewModel.state {
                     form(for: state)
@@ -121,13 +121,18 @@ struct ContentView: View {
                         onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) }
                     )
                 }
+                #if os(iOS)
                 .onDelete { indexSet in
                     for index in indexSet {
                         viewModel.onFiatCurrencyToggled(state.fiatRows[index].code)
                     }
                 }
+                #endif
             }
         }
+        #if os(macOS)
+        .formStyle(.grouped)
+        #endif
         .sheet(isPresented: $showCurrencyPicker) {
             CurrencyPickerSheet(
                 currencies: state.availableCurrencies,
@@ -142,7 +147,7 @@ struct ContentView: View {
     private func amountRow(
         label: String,
         value: String,
-        keyboardType: UIKeyboardType,
+        keyboardType: NumericFieldKeyboard,
         sanitize: @escaping (String) -> String,
         onChange: @escaping (String) -> Void
     ) -> some View {
@@ -150,7 +155,7 @@ struct ContentView: View {
             Text(label)
             Spacer()
             NumericField(
-                placeholder: label,
+                placeholder: "",
                 value: value,
                 keyboardType: keyboardType,
                 sanitize: sanitize,
@@ -170,7 +175,7 @@ struct ContentView: View {
 private struct NumericField: View {
     let placeholder: String
     let value: String
-    let keyboardType: UIKeyboardType
+    let keyboardType: NumericFieldKeyboard
     let sanitize: (String) -> String
     let onChange: (String) -> Void
     var alignment: TextAlignment = .leading
@@ -179,10 +184,15 @@ private struct NumericField: View {
 
     var body: some View {
         TextField(placeholder, text: $text)
-            .keyboardType(keyboardType)
+            #if os(iOS)
+            .keyboardType(keyboardType.uiKeyboardType)
+            #endif
             .multilineTextAlignment(alignment)
+            #if os(macOS)
+            .frame(maxWidth: 140)
+            #endif
             .onAppear { text = value }
-            .onChange(of: text) { _, newValue in
+            .onChange(of: text) { newValue in
                 let sanitized = sanitize(newValue)
                 if sanitized != newValue {
                     text = sanitized
@@ -191,7 +201,7 @@ private struct NumericField: View {
                     onChange(sanitized)
                 }
             }
-            .onChange(of: value) { _, newValue in
+            .onChange(of: value) { newValue in
                 if newValue != text {
                     text = newValue
                 }
@@ -216,3 +226,21 @@ private func sanitizeDecimalInput(_ raw: String) -> String {
 private func sanitizeIntegerInput(_ raw: String) -> String {
     raw.filter { $0.isNumber }
 }
+
+/// `UIKeyboardType` doesn't exist on macOS (no on-screen keyboard), so this stands in for it
+/// across both platforms; only iOS actually applies it, via `uiKeyboardType` below.
+private enum NumericFieldKeyboard {
+    case decimalPad
+    case numberPad
+}
+
+#if os(iOS)
+private extension NumericFieldKeyboard {
+    var uiKeyboardType: UIKeyboardType {
+        switch self {
+        case .decimalPad: return .decimalPad
+        case .numberPad: return .numberPad
+        }
+    }
+}
+#endif
