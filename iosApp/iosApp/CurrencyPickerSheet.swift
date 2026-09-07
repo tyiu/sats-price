@@ -2,8 +2,9 @@ import Shared
 import SwiftUI
 
 struct CurrencyPickerSheet: View {
-    let currencies: [CurrencyInfo]
-    let selectedCodes: [String]
+    let currentCurrency: CurrencyInfo
+    let selectedOtherCurrencies: [CurrencyInfo]
+    let unselectedCurrencies: [CurrencyInfo]
     let localeCurrencyCode: String?
     let onToggle: (String) -> Void
 
@@ -11,18 +12,22 @@ struct CurrencyPickerSheet: View {
 
     var body: some View {
         NavigationStack {
-            List(currencies, id: \.code) { info in
-                Button {
-                    onToggle(info.code)
-                } label: {
-                    HStack {
-                        Text(currencyLabel(for: info))
-                            .foregroundColor(.primary)
-                        Spacer()
-                        if selectedCodes.contains(info.code) {
-                            Image(systemName: "checkmark")
-                                .foregroundColor(.accentColor)
+            List {
+                Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.current_currency_section_title)) {
+                    currencyRow(for: currentCurrency, isSelected: true, onTap: nil)
+                }
+
+                if !selectedOtherCurrencies.isEmpty {
+                    Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.selected_currencies_section_title)) {
+                        ForEach(selectedOtherCurrencies, id: \.code) { info in
+                            currencyRow(for: info, isSelected: true, onTap: { onToggle(info.code) })
                         }
+                    }
+                }
+
+                Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
+                    ForEach(unselectedCurrencies, id: \.code) { info in
+                        currencyRow(for: info, isSelected: false, onTap: { onToggle(info.code) })
                     }
                 }
             }
@@ -42,6 +47,24 @@ struct CurrencyPickerSheet: View {
         // the List has no size to lay out rows in and renders empty.
         .frame(minWidth: 420, minHeight: 480)
         #endif
+    }
+
+    @ViewBuilder
+    private func currencyRow(for info: CurrencyInfo, isSelected: Bool, onTap: (() -> Void)?) -> some View {
+        let content = HStack {
+            Text(currencyLabel(for: info))
+                .foregroundColor(.primary)
+            Spacer()
+            if isSelected {
+                Image(systemName: "checkmark")
+                    .foregroundColor(.accentColor)
+            }
+        }
+        if let onTap {
+            Button(action: onTap) { content }
+        } else {
+            content
+        }
     }
 
     private func currencyLabel(for info: CurrencyInfo) -> String {

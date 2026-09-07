@@ -35,6 +35,10 @@ final class ConverterViewModel: ObservableObject {
         bridge.onFiatCurrencyToggled(code: code)
     }
 
+    func onFiatCurrenciesReordered(_ newOrder: [String]) {
+        bridge.onFiatCurrenciesReordered(newOrder: newOrder)
+    }
+
     func onSourceSelected(_ name: String) {
         bridge.onSourceSelected(name: name)
     }

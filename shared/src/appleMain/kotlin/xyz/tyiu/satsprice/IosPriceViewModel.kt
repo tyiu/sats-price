@@ -6,9 +6,12 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import xyz.tyiu.satsprice.ui.ConverterUiState
 import xyz.tyiu.satsprice.ui.PriceViewModel
+import xyz.tyiu.satsprice.ui.currentCurrency
 import xyz.tyiu.satsprice.ui.defaultCurrencyRate
 import xyz.tyiu.satsprice.ui.exceedsMaxSupply
+import xyz.tyiu.satsprice.ui.selectedOtherCurrencies
 import xyz.tyiu.satsprice.ui.statusLine
+import xyz.tyiu.satsprice.ui.unselectedCurrencies
 
 data class FiatRow(val code: String, val amount: String, val rateDisplay: String)
 
@@ -17,7 +20,9 @@ data class IosConverterState(
     val satsAmount: String,
     val exceedsMaxSupply: Boolean,
     val fiatRows: List<FiatRow>,
-    val availableCurrencies: List<CurrencyInfo>,
+    val currentCurrency: CurrencyInfo,
+    val selectedOtherCurrencies: List<CurrencyInfo>,
+    val unselectedCurrencies: List<CurrencyInfo>,
     val selectedCurrencyCodes: List<String>,
     val localeCurrencyCode: String?,
     val defaultCurrencyCode: String,
@@ -53,6 +58,7 @@ class IosPriceViewModel {
     fun onSatsAmountChanged(value: String) = viewModel.onSatsAmountChanged(value)
     fun onFiatAmountChanged(code: String, value: String) = viewModel.onFiatAmountChanged(code, value)
     fun onFiatCurrencyToggled(code: String) = viewModel.onFiatCurrencyToggled(code)
+    fun onFiatCurrenciesReordered(newOrder: List<String>) = viewModel.onFiatCurrenciesReordered(newOrder)
     fun onSourceSelected(name: String) = viewModel.onSourceSelected(name)
     fun onManualRateChanged(value: String) = viewModel.onManualRateChanged(value)
 }
@@ -64,7 +70,9 @@ private fun ConverterUiState.toIosState(): IosConverterState = IosConverterState
     fiatRows = selectedFiatCurrencies.map { code ->
         FiatRow(code, fiatAmounts[code].orEmpty(), rateDisplays[code].orEmpty())
     },
-    availableCurrencies = availableFiatCurrencies,
+    currentCurrency = currentCurrency(),
+    selectedOtherCurrencies = selectedOtherCurrencies(),
+    unselectedCurrencies = unselectedCurrencies(),
     selectedCurrencyCodes = selectedFiatCurrencies,
     localeCurrencyCode = localeCurrencyCode,
     defaultCurrencyCode = defaultCurrencyCode,

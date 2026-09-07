@@ -9,10 +9,15 @@
     <string name="btc_label">BTC</string>
     <string name="exceeds_max_supply">Exceeds the 21,000,000 BTC maximum supply</string>
     <string name="currencies_section_title">Currencies</string>
+    <string name="current_currency_section_title">Current Currency</string>
+    <string name="selected_currencies_section_title">Selected currencies</string>
     <string name="add_currency">Add currency</string>
     <string name="currencies_selected_count">%1$d selected</string>
     <string name="remove_currency_content_description">Remove %1$s</string>
+    <string name="move_currency_up_content_description">Move %1$s up</string>
+    <string name="move_currency_down_content_description">Move %1$s down</string>
+    <string name="currency_options_content_description">Options for %1$s</string>
     <string name="currency_option_label">%1$s - %2$s</string>
-    <string name="currency_option_label_local">%1$s - %2$s (Local)</string>
+    <string name="currency_option_label_local">%1$s - %2$s</string>
     <string name="done">Done</string>
 </resources>

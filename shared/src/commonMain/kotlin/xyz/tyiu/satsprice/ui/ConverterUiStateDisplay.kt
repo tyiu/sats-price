@@ -2,6 +2,7 @@ package xyz.tyiu.satsprice.ui
 
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
+import xyz.tyiu.satsprice.CurrencyInfo
 import xyz.tyiu.satsprice.domain.CurrencyConverter
 import xyz.tyiu.satsprice.domain.toBigDecimalOrNull
 import kotlin.time.Instant
@@ -22,6 +23,19 @@ fun ConverterUiState.exceedsMaxSupply(): Boolean {
 /** The current "1 BTC = ?" rate in [ConverterUiState.defaultCurrencyCode], as a plain number. */
 fun ConverterUiState.defaultCurrencyRate(): String =
     rateDisplays[defaultCurrencyCode]?.takeIf { it.isNotEmpty() } ?: ""
+
+/** The pinned, non-removable "Current Currency" shown in the currency picker's own section. */
+fun ConverterUiState.currentCurrency(): CurrencyInfo =
+    availableFiatCurrencies.find { it.code == defaultCurrencyCode } ?: CurrencyInfo(defaultCurrencyCode, defaultCurrencyCode)
+
+/** Selected currencies other than [ConverterUiState.defaultCurrencyCode], in the user's chosen order. */
+fun ConverterUiState.selectedOtherCurrencies(): List<CurrencyInfo> =
+    selectedFiatCurrencies.filter { it != defaultCurrencyCode }
+        .mapNotNull { code -> availableFiatCurrencies.find { it.code == code } }
+
+/** Currencies not yet added, offered in the currency picker's "Currencies" section. */
+fun ConverterUiState.unselectedCurrencies(): List<CurrencyInfo> =
+    availableFiatCurrencies.filterNot { it.code in selectedFiatCurrencies }
 
 private fun Instant.toDateTimeString(): String {
     val local = toLocalDateTime(TimeZone.currentSystemDefault())

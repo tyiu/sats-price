@@ -113,8 +113,12 @@ class PriceViewModel(
                             matching + rest
                         }
                     val availableCodes = available.map { it.code }.toSet()
-                    val selection = state.selectedFiatCurrencies.filter { it in availableCodes }
-                        .ifEmpty { listOfNotNull(available.firstOrNull()?.code) }
+                    // defaultCurrencyCode is the pinned, non-removable "Current Currency" and must
+                    // always be present, even if it briefly lacks a rate; everything else is
+                    // dropped once its rate disappears. Filtering (rather than re-deriving) keeps
+                    // whatever order the user picked via onFiatCurrenciesReordered.
+                    val filtered = state.selectedFiatCurrencies.filter { it == defaultCurrencyCode || it in availableCodes }
+                    val selection = if (defaultCurrencyCode in filtered) filtered else listOf(defaultCurrencyCode) + filtered
                     recomputeFromKnownField(
                         state.copy(
                             isLoading = false,
@@ -141,13 +145,32 @@ class PriceViewModel(
     fun onFiatAmountChanged(code: String, value: String) =
         updateAmount(EditedField.Fiat(code), sanitizeDecimalInput(value))
 
+    /** [defaultCurrencyCode] is the pinned "Current Currency" and can't be removed. */
     fun onFiatCurrencyToggled(code: String) {
+        if (code == defaultCurrencyCode) return
         _uiState.update { state ->
             val newSelection = if (code in state.selectedFiatCurrencies) {
                 state.selectedFiatCurrencies - code
             } else {
                 state.selectedFiatCurrencies + code
             }
+            val newState = state.copy(selectedFiatCurrencies = newSelection)
+            rates?.let { recomputeFromKnownField(newState, it) } ?: newState
+        }
+    }
+
+    /**
+     * Reorders the selected currencies to [newOrder]. Any code in [newOrder] that isn't
+     * currently selected is ignored, and any currently-selected code missing from [newOrder]
+     * keeps its relative position at the end — callers only need to describe the reordering of
+     * codes they know about (e.g. a Swift `List.onMove`'s resulting order).
+     */
+    fun onFiatCurrenciesReordered(newOrder: List<String>) {
+        _uiState.update { state ->
+            val known = newOrder.filter { it in state.selectedFiatCurrencies }
+            val missing = state.selectedFiatCurrencies.filterNot { it in known }
+            val newSelection = known + missing
+            if (newSelection == state.selectedFiatCurrencies) return@update state
             val newState = state.copy(selectedFiatCurrencies = newSelection)
             rates?.let { recomputeFromKnownField(newState, it) } ?: newState
         }

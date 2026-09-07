@@ -15,6 +15,15 @@ struct ContentView: View {
                 }
             }
             .navigationTitle("SatsPrice")
+            #if os(iOS)
+            // macOS Lists support drag-to-reorder directly; iOS only shows reorder handles
+            // once edit mode is active, which this toggles.
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    EditButton()
+                }
+            }
+            #endif
         }
     }
 
@@ -102,7 +111,7 @@ struct ContentView: View {
 
             Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
                 Button(
-                    state.selectedCurrencyCodes.isEmpty
+                    state.selectedCurrencyCodes.count <= 1
                         ? IosLocalizationKt.localizedString(resource: MR.strings.shared.add_currency)
                         : IosLocalizationKt.localizedFormattedString(
                             resource: MR.strings.shared.currencies_selected_count,
@@ -112,14 +121,30 @@ struct ContentView: View {
                     showCurrencyPicker = true
                 }
 
-                ForEach(state.fiatRows, id: \.code) { row in
+                ForEach(Array(state.fiatRows.enumerated()), id: \.element.code) { index, row in
                     amountRow(
                         label: row.code,
                         value: row.amount,
                         keyboardType: .decimalPad,
                         sanitize: sanitizeDecimalInput,
-                        onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) }
+                        onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) },
+                        onMoveUp: index > 0 ? {
+                            var codes = state.fiatRows.map(\.code)
+                            codes.move(fromOffsets: [index], toOffset: index - 1)
+                            viewModel.onFiatCurrenciesReordered(codes)
+                        } : nil,
+                        onMoveDown: index < state.fiatRows.count - 1 ? {
+                            var codes = state.fiatRows.map(\.code)
+                            codes.move(fromOffsets: [index], toOffset: index + 2)
+                            viewModel.onFiatCurrenciesReordered(codes)
+                        } : nil
                     )
+                    .deleteDisabled(row.code == state.defaultCurrencyCode)
+                }
+                .onMove { indices, newOffset in
+                    var codes = state.fiatRows.map(\.code)
+                    codes.move(fromOffsets: indices, toOffset: newOffset)
+                    viewModel.onFiatCurrenciesReordered(codes)
                 }
                 #if os(iOS)
                 .onDelete { indexSet in
@@ -135,8 +160,9 @@ struct ContentView: View {
         #endif
         .sheet(isPresented: $showCurrencyPicker) {
             CurrencyPickerSheet(
-                currencies: state.availableCurrencies,
-                selectedCodes: state.selectedCurrencyCodes,
+                currentCurrency: state.currentCurrency,
+                selectedOtherCurrencies: state.selectedOtherCurrencies,
+                unselectedCurrencies: state.unselectedCurrencies,
                 localeCurrencyCode: state.localeCurrencyCode,
                 onToggle: { viewModel.onFiatCurrencyToggled($0) }
             )
@@ -149,9 +175,31 @@ struct ContentView: View {
         value: String,
         keyboardType: NumericFieldKeyboard,
         sanitize: @escaping (String) -> String,
-        onChange: @escaping (String) -> Void
+        onChange: @escaping (String) -> Void,
+        onMoveUp: (() -> Void)? = nil,
+        onMoveDown: (() -> Void)? = nil
     ) -> some View {
         HStack {
+            #if os(macOS)
+            // macOS's Form isn't List-backed, so .onMove's drag-to-reorder has no effect here;
+            // these buttons are macOS's equivalent of iOS's Edit-mode drag handles.
+            if onMoveUp != nil || onMoveDown != nil {
+                VStack(spacing: 2) {
+                    Button(action: { onMoveUp?() }) {
+                        Image(systemName: "chevron.up")
+                            .frame(width: 16, height: 10)
+                    }
+                    .disabled(onMoveUp == nil)
+                    Button(action: { onMoveDown?() }) {
+                        Image(systemName: "chevron.down")
+                            .frame(width: 16, height: 10)
+                    }
+                    .disabled(onMoveDown == nil)
+                }
+                .font(.system(size: 10))
+                .buttonStyle(.borderless)
+            }
+            #endif
             Text(label)
             Spacer()
             NumericField(
