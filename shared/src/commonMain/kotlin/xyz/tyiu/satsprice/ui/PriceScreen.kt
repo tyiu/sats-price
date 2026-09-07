@@ -48,6 +48,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.icerock.moko.resources.compose.stringResource
@@ -56,6 +57,12 @@ import xyz.tyiu.satsprice.shared.MR
 
 private val SectionColors
     @Composable get() = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer)
+
+private val SectionHeaderStyle
+    @Composable get() = MaterialTheme.typography.labelLarge.copy(
+        color = MaterialTheme.colorScheme.primary,
+        letterSpacing = 1.2.sp,
+    )
 
 @Composable
 fun PriceScreen(
@@ -364,8 +371,9 @@ private fun CurrencyPickerScreen(
 
                 Column {
                     Text(
-                        stringResource(MR.strings.current_currency_section_title),
-                        style = MaterialTheme.typography.titleMedium,
+                        stringResource(MR.strings.current_currency_section_title).uppercase(),
+                        style = SectionHeaderStyle,
+                        modifier = Modifier.padding(bottom = 4.dp),
                     )
                     CurrencyRow(
                         info = state.currentCurrency(),
@@ -378,8 +386,9 @@ private fun CurrencyPickerScreen(
                 if (selectedOthers.isNotEmpty()) {
                     Column {
                         Text(
-                            stringResource(MR.strings.selected_currencies_section_title),
-                            style = MaterialTheme.typography.titleMedium,
+                            stringResource(MR.strings.selected_currencies_section_title).uppercase(),
+                            style = SectionHeaderStyle,
+                            modifier = Modifier.padding(bottom = 4.dp),
                         )
                         selectedOthers.forEach { info ->
                             key(info.code) {
@@ -395,7 +404,11 @@ private fun CurrencyPickerScreen(
                 }
 
                 Column {
-                    Text(stringResource(MR.strings.currencies_section_title), style = MaterialTheme.typography.titleMedium)
+                    Text(
+                        stringResource(MR.strings.currencies_section_title).uppercase(),
+                        style = SectionHeaderStyle,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
                     state.unselectedCurrencies().forEach { info ->
                         key(info.code) {
                             CurrencyRow(
