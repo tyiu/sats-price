@@ -102,3 +102,8 @@ iOSInjectionProject/
 # gradle properties
 local.properties
 
+# moko-resources regenerates these webpack/karma config fragments on every build (verified
+# byte-for-byte reproducible), so they're build output, not source.
+karma.config.d/
+webpack.config.d/
+
