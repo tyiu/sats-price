@@ -246,6 +246,14 @@ fun PriceScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                OutlinedTextField(
+                                    value = state.fiatAmounts[code].orEmpty(),
+                                    onValueChange = { viewModel.onFiatAmountChanged(code, it) },
+                                    label = { Text(code) },
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                                    singleLine = true,
+                                    modifier = Modifier.weight(1f),
+                                )
                                 CurrencyRowMenu(
                                     code = code,
                                     canMoveUp = index > 0,
@@ -262,14 +270,6 @@ fun PriceScreen(
                                         )
                                     },
                                     onRemove = { viewModel.onFiatCurrencyToggled(code) },
-                                )
-                                OutlinedTextField(
-                                    value = state.fiatAmounts[code].orEmpty(),
-                                    onValueChange = { viewModel.onFiatAmountChanged(code, it) },
-                                    label = { Text(code) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                    singleLine = true,
-                                    modifier = Modifier.weight(1f),
                                 )
                             }
                         }
