@@ -6,6 +6,7 @@
     <string name="currencies_section_title">Currencies</string>
     <string name="currencies_selected_count">%1$d selected</string>
     <string name="current_currency_section_title">Current Currency</string>
+    <string name="currency_not_priced">Not priced by %1$s</string>
     <string name="currency_option_label">%1$s - %2$s</string>
     <string name="currency_option_label_local">%1$s - %2$s</string>
     <string name="currency_options_content_description">Options for %1$s</string>

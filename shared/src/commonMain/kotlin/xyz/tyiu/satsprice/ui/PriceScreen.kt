@@ -290,12 +290,20 @@ fun PriceScreen(
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
+                                val isPriced = state.isPriced(code)
                                 OutlinedTextField(
-                                    value = state.fiatAmounts[code].orEmpty(),
+                                    value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
                                     onValueChange = { viewModel.onFiatAmountChanged(code, it) },
                                     label = { Text(code) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     singleLine = true,
+                                    enabled = isPriced,
+                                    isError = !isPriced,
+                                    supportingText = if (isPriced) {
+                                        null
+                                    } else {
+                                        { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
+                                    },
                                     modifier = Modifier.weight(1f),
                                 )
                                 CurrencyRowMenu(
@@ -422,6 +430,8 @@ private fun CurrencyPickerScreen(
                     CurrencyRow(
                         info = state.currentCurrency(),
                         isSelected = true,
+                        isPriced = state.isPriced(state.currentCurrency().code),
+                        sourceName = state.sourceName,
                         localeCurrencyCode = state.localeCurrencyCode,
                         onClick = null,
                     )
@@ -439,6 +449,8 @@ private fun CurrencyPickerScreen(
                                 CurrencyRow(
                                     info = info,
                                     isSelected = true,
+                                    isPriced = state.isPriced(info.code),
+                                    sourceName = state.sourceName,
                                     localeCurrencyCode = state.localeCurrencyCode,
                                     onClick = { onToggle(info.code) },
                                 )
@@ -458,6 +470,8 @@ private fun CurrencyPickerScreen(
                             CurrencyRow(
                                 info = info,
                                 isSelected = false,
+                                isPriced = state.isPriced(info.code),
+                                sourceName = state.sourceName,
                                 localeCurrencyCode = state.localeCurrencyCode,
                                 onClick = { onToggle(info.code) },
                             )
@@ -473,6 +487,8 @@ private fun CurrencyPickerScreen(
 private fun CurrencyRow(
     info: CurrencyInfo,
     isSelected: Boolean,
+    isPriced: Boolean,
+    sourceName: String,
     localeCurrencyCode: String?,
     onClick: (() -> Unit)?,
 ) {
@@ -489,7 +505,16 @@ private fun CurrencyRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(label)
+        Column {
+            Text(label)
+            if (!isPriced) {
+                Text(
+                    stringResource(MR.strings.currency_not_priced, sourceName),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
         if (isSelected) {
             Icon(
                 Icons.Default.Check,

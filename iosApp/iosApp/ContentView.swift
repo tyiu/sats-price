@@ -129,6 +129,8 @@ struct ContentView: View {
                         keyboardType: .decimalPad,
                         sanitize: sanitizeDecimalInput,
                         onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) },
+                        isPriced: state.pricedCurrencyCodes.contains(row.code),
+                        sourceName: state.sourceName,
                         onMoveUp: index > 0 ? {
                             var codes = state.fiatRows.map(\.code)
                             codes.move(fromOffsets: [index], toOffset: index - 1)
@@ -164,6 +166,8 @@ struct ContentView: View {
                 currentCurrency: state.currentCurrency,
                 selectedOtherCurrencies: state.selectedOtherCurrencies,
                 unselectedCurrencies: state.unselectedCurrencies,
+                pricedCurrencyCodes: state.pricedCurrencyCodes,
+                sourceName: state.sourceName,
                 localeCurrencyCode: state.localeCurrencyCode,
                 onToggle: { viewModel.onFiatCurrencyToggled($0) }
             )
@@ -202,6 +206,8 @@ struct ContentView: View {
         keyboardType: NumericFieldKeyboard,
         sanitize: @escaping (String) -> String,
         onChange: @escaping (String) -> Void,
+        isPriced: Bool = true,
+        sourceName: String = "",
         onMoveUp: (() -> Void)? = nil,
         onMoveDown: (() -> Void)? = nil
     ) -> some View {
@@ -226,16 +232,27 @@ struct ContentView: View {
                 .buttonStyle(.borderless)
             }
             #endif
-            Text(label)
+            VStack(alignment: .leading) {
+                Text(label)
+                if !isPriced {
+                    Text(IosLocalizationKt.localizedFormattedString(
+                        resource: MR.strings.shared.currency_not_priced,
+                        args: [sourceName]
+                    ))
+                    .font(.caption2)
+                    .foregroundColor(.red)
+                }
+            }
             Spacer()
             NumericField(
                 placeholder: "",
-                value: value,
+                value: isPriced ? value : "",
                 keyboardType: keyboardType,
                 sanitize: sanitize,
                 onChange: onChange,
                 alignment: .trailing
             )
+            .disabled(!isPriced)
         }
     }
 }

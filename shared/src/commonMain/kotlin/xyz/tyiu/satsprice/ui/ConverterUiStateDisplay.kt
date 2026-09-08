@@ -37,6 +37,9 @@ fun ConverterUiState.selectedOtherCurrencies(): List<CurrencyInfo> =
 fun ConverterUiState.unselectedCurrencies(): List<CurrencyInfo> =
     availableFiatCurrencies.filterNot { it.code in selectedFiatCurrencies }
 
+/** Whether the active price source quotes a rate for [code] — every currency is listed regardless. */
+fun ConverterUiState.isPriced(code: String): Boolean = code in pricedCurrencyCodes
+
 private fun Instant.toDateTimeString(): String {
     val local = toLocalDateTime(TimeZone.currentSystemDefault())
     return local.toString().substringBefore('.').replace('T', ' ')

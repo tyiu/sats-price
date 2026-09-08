@@ -44,6 +44,7 @@ data class ConverterUiState(
     val fiatAmounts: Map<String, String> = emptyMap(),
     val rateDisplays: Map<String, String> = emptyMap(),
     val availableFiatCurrencies: List<CurrencyInfo> = emptyList(),
+    val pricedCurrencyCodes: Set<String> = emptySet(),
     val localeCurrencyCode: String? = null,
     val defaultCurrencyCode: String = "USD",
     val sourceName: String = "",
@@ -85,6 +86,13 @@ class PriceViewModel(
     private val _uiState = MutableStateFlow(
         ConverterUiState(
             selectedFiatCurrencies = listOf(defaultCurrencyCode),
+            // Every system currency is offered regardless of whether the active source prices
+            // it — CurrencyRow/OutlinedTextField indicate unpriced ones instead of hiding them,
+            // so switching sources doesn't silently drop currencies from the user's selection.
+            availableFiatCurrencies = systemCurrencyList.let { list ->
+                val (matching, rest) = list.partition { it.code == defaultCurrencyCode }
+                matching + rest
+            },
             localeCurrencyCode = localCurrencyCode,
             defaultCurrencyCode = defaultCurrencyCode,
             sourceName = coinbaseSource.displayName,
@@ -143,34 +151,12 @@ class PriceViewModel(
                 val newRates = currentSource.getRates("BTC")
                 rates = newRates
                 exchangeRateStore.saveRates(currentSource.id, newRates)
-                var selectionToPersist: List<String>? = null
                 _uiState.update { state ->
-                    val available = systemCurrencyList
-                        .filter { newRates.rates.containsKey(it.code) }
-                        .let { list ->
-                            val (matching, rest) = list.partition { it.code == defaultCurrencyCode }
-                            matching + rest
-                        }
-                    val availableCodes = available.map { it.code }.toSet()
-                    // defaultCurrencyCode is the pinned, non-removable "Current Currency" and must
-                    // always be present, even if it briefly lacks a rate; everything else is
-                    // dropped once its rate disappears. Filtering (rather than re-deriving) keeps
-                    // whatever order the user picked via onFiatCurrenciesReordered.
-                    val filtered = state.selectedFiatCurrencies.filter { it == defaultCurrencyCode || it in availableCodes }
-                    val selection = if (defaultCurrencyCode in filtered) filtered else listOf(defaultCurrencyCode) + filtered
-                    selectionToPersist = selection
                     recomputeFromKnownField(
-                        state.copy(
-                            isLoading = false,
-                            errorMessage = null,
-                            availableFiatCurrencies = available,
-                            selectedFiatCurrencies = selection,
-                            lastUpdated = newRates.fetchedAt,
-                        ),
+                        state.copy(isLoading = false, errorMessage = null, lastUpdated = newRates.fetchedAt),
                         newRates,
                     )
                 }
-                selectionToPersist?.let { persistSelectionIfChanged(it) }
             } catch (e: Exception) {
                 // Not localized: this shared ViewModel has no platform Context to resolve a moko-resources
                 // string on Android, and no locale-aware synchronous resolution path that works everywhere.
@@ -313,10 +299,11 @@ class PriceViewModel(
         val rateDisplays = (state.selectedFiatCurrencies + state.defaultCurrencyCode).distinct().associateWith { code ->
             rates.rates[code]?.let { formatAmountFixed(it, decimalDigitsFor(code)) } ?: ""
         }
+        val withRateInfo = state.copy(pricedCurrencyCodes = rates.rates.keys, rateDisplays = rateDisplays)
 
-        if (btcValue == null) return state.copy(rateDisplays = rateDisplays)
+        if (btcValue == null) return withRateInfo
 
-        return state.copy(
+        return withRateInfo.copy(
             btcAmount = if (btc != null) state.btcAmount else formatAmount(btcValue, 8),
             satsAmount = if (sats != null) state.satsAmount else formatAmount(CurrencyConverter.btcToSats(btcValue), 0),
             fiatAmounts = state.selectedFiatCurrencies.associateWith { code ->
@@ -328,7 +315,6 @@ class PriceViewModel(
                         ?: state.fiatAmounts[code].orEmpty()
                 }
             },
-            rateDisplays = rateDisplays,
         )
     }
 }

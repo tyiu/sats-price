@@ -5,6 +5,8 @@ struct CurrencyPickerSheet: View {
     let currentCurrency: CurrencyInfo
     let selectedOtherCurrencies: [CurrencyInfo]
     let unselectedCurrencies: [CurrencyInfo]
+    let pricedCurrencyCodes: [String]
+    let sourceName: String
     let localeCurrencyCode: String?
     let onToggle: (String) -> Void
 
@@ -51,9 +53,20 @@ struct CurrencyPickerSheet: View {
 
     @ViewBuilder
     private func currencyRow(for info: CurrencyInfo, isSelected: Bool, onTap: (() -> Void)?) -> some View {
+        let isPriced = pricedCurrencyCodes.contains(info.code)
         let content = HStack {
-            Text(currencyLabel(for: info))
-                .foregroundColor(.primary)
+            VStack(alignment: .leading) {
+                Text(currencyLabel(for: info))
+                    .foregroundColor(.primary)
+                if !isPriced {
+                    Text(IosLocalizationKt.localizedFormattedString(
+                        resource: MR.strings.shared.currency_not_priced,
+                        args: [sourceName]
+                    ))
+                    .font(.caption)
+                    .foregroundColor(.red)
+                }
+            }
             Spacer()
             if isSelected {
                 Image(systemName: "checkmark")
