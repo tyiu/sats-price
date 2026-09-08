@@ -46,13 +46,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.LinkAnnotation
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextLinkStyles
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.icerock.moko.resources.compose.stringResource
 import xyz.tyiu.satsprice.CurrencyInfo
+import xyz.tyiu.satsprice.domain.CurrencyConverter
+import xyz.tyiu.satsprice.domain.formatAmount
 import xyz.tyiu.satsprice.shared.MR
 
 private val SectionColors
@@ -207,8 +216,43 @@ fun PriceScreen(
                     )
 
                     if (exceedsMaxSupply) {
+                        val warning = stringResource(MR.strings.exceeds_max_supply)
+                        // Matches the literal text of MR.strings.exceeds_max_supply so it can be
+                        // turned into a link; falls back to plain text if that ever drifts apart.
+                        val maxSupplyText = "21,000,000 BTC"
+                        val linkStart = warning.indexOf(maxSupplyText)
+                        val annotatedWarning = if (linkStart < 0) {
+                            AnnotatedString(warning)
+                        } else {
+                            // Set explicitly (and identically) for every interaction state, since
+                            // LinkAnnotation otherwise renders in the theme's link/accent color
+                            // rather than inheriting the surrounding warning text's color.
+                            val linkStyle = SpanStyle(
+                                color = MaterialTheme.colorScheme.error,
+                                textDecoration = TextDecoration.Underline,
+                            )
+                            buildAnnotatedString {
+                                append(warning.substring(0, linkStart))
+                                withLink(
+                                    LinkAnnotation.Clickable(
+                                        tag = "max_supply",
+                                        styles = TextLinkStyles(
+                                            style = linkStyle,
+                                            focusedStyle = linkStyle,
+                                            hoveredStyle = linkStyle,
+                                            pressedStyle = linkStyle,
+                                        ),
+                                    ) {
+                                        viewModel.onBtcAmountChanged(formatAmount(CurrencyConverter.MAX_BTC_SUPPLY, 0))
+                                    },
+                                ) {
+                                    append(maxSupplyText)
+                                }
+                                append(warning.substring(linkStart + maxSupplyText.length))
+                            }
+                        }
                         Text(
-                            text = stringResource(MR.strings.exceeds_max_supply),
+                            text = annotatedWarning,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodySmall,
                             modifier = Modifier.padding(horizontal = 16.dp),

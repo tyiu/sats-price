@@ -1,3 +1,4 @@
+import Foundation
 import Shared
 import SwiftUI
 
@@ -103,7 +104,7 @@ struct ContentView: View {
                     onChange: { viewModel.onBtcAmountChanged($0) }
                 )
                 if state.exceedsMaxSupply {
-                    Text(IosLocalizationKt.localizedString(resource: MR.strings.shared.exceeds_max_supply))
+                    exceedsMaxSupplyText
                         .font(.caption)
                         .foregroundColor(.red)
                 }
@@ -167,6 +168,31 @@ struct ContentView: View {
                 onToggle: { viewModel.onFiatCurrencyToggled($0) }
             )
         }
+        .environment(\.openURL, OpenURLAction { url in
+            guard url == Self.maxSupplyLinkURL else { return .systemAction }
+            viewModel.onBtcAmountChanged(Self.maxSupplyBtcAmount)
+            return .handled
+        })
+    }
+
+    // Matches the literal text of MR.strings.exceeds_max_supply so it can be turned into a link;
+    // falls back to plain text if that ever drifts apart. `maxSupplyBtcAmount` is the sanitized
+    // digit-only form CurrencyConverter.MAX_BTC_SUPPLY formats to, mirroring the shared Compose UI.
+    private static let maxSupplyLinkText = "21,000,000 BTC"
+    private static let maxSupplyBtcAmount = "21000000"
+    private static let maxSupplyLinkURL = URL(string: "satsprice://set-max-supply")!
+
+    private var exceedsMaxSupplyText: Text {
+        let warning = IosLocalizationKt.localizedString(resource: MR.strings.shared.exceeds_max_supply)
+        var attributed = AttributedString(warning)
+        if let range = attributed.range(of: Self.maxSupplyLinkText) {
+            attributed[range].link = Self.maxSupplyLinkURL
+            attributed[range].underlineStyle = .single
+            // SwiftUI renders `.link` runs in the accent color regardless of the Text's own
+            // .foregroundColor modifier, so it has to be set directly on the link's range.
+            attributed[range].foregroundColor = .red
+        }
+        return Text(attributed)
     }
 
     @ViewBuilder
