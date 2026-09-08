@@ -4,8 +4,11 @@ package xyz.tyiu.satsprice
 
 private fun jsSupportedCurrencyCodes(): JsArray<JsString> = js("Intl.supportedValuesOf('currency')")
 
-private fun jsCurrencyDisplayName(code: String): String =
-    js("new Intl.DisplayNames(['en'], { type: 'currency' }).of(code)")
+// A chained `new Foo(x).bar()` inside js() can misparse (`new` binding to the whole chain rather
+// than just the constructor call), so the constructor result is bound to a variable first.
+private fun jsCurrencyDisplayName(code: String): String = js(
+    "(function() { var names = new Intl.DisplayNames(['en'], { type: 'currency' }); return names.of(code); })()",
+)
 
 actual fun systemCurrencies(): List<CurrencyInfo> =
     jsSupportedCurrencyCodes()
@@ -24,8 +27,9 @@ actual fun systemCurrencies(): List<CurrencyInfo> =
  */
 actual fun localeCurrencyCode(): String? = null
 
-private fun jsCurrencyFractionDigits(code: String): Int =
-    js("new Intl.NumberFormat('en', { style: 'currency', currency: code }).resolvedOptions().maximumFractionDigits")
+private fun jsCurrencyFractionDigits(code: String): Int = js(
+    """(function() { var fmt = new Intl.NumberFormat('en', { style: 'currency', currency: code }); return fmt.resolvedOptions().maximumFractionDigits; })()""",
+)
 
 actual fun currencyDecimalDigits(code: String): Int = try {
     jsCurrencyFractionDigits(code)
