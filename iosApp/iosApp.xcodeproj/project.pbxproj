@@ -11,7 +11,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		D262C3356B38E7E13FFE64E4 /* Exceptions for "iosApp" folder in "iosApp" target */ = {
+		D262C3356B38E7E13FFE64E4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
@@ -23,13 +23,21 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		24D66E9CCFCEB2D844328B79 /* Configuration */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
 			path = Configuration;
 			sourceTree = "<group>";
 		};
 		55D8B06C58654F251C5B3381 /* iosApp */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				D262C3356B38E7E13FFE64E4 /* Exceptions for "iosApp" folder in "iosApp" target */,
+				D262C3356B38E7E13FFE64E4 /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -137,6 +145,24 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		1DADA2DD199949A498015FFD /* Sanitize Moko Resource Bundle Names */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Sanitize Moko Resource Bundle Names";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "if [ \"$PLATFORM_NAME\" != \"macosx\" ]; then\n  exit 0\nfi\n# moko-resources names its resource bundle after the Kotlin klib unique_name (group:module),\n# e.g. SatsPrice:shared.bundle, and drops it directly under Contents/. Colons break\n# codesign, and a loose bundle outside Contents/Resources isn't recognized as a proper\n# nested bundle either, so the final app-level CodeSign phase fails with \"code object is\n# not signed at all\" unless we rename and relocate it. NSBundle resolves this bundle by\n# directory identity, not by name/path, so moko-resources/localization lookups still work.\nfind \"$CODESIGNING_FOLDER_PATH\" -type d -name \"*:*.bundle\" | while IFS= read -r bundle; do\n  safe_name=$(basename \"$bundle\" | tr ':' '_')\n  mkdir -p \"$CODESIGNING_FOLDER_PATH/Contents/Resources\"\n  dest=\"$CODESIGNING_FOLDER_PATH/Contents/Resources/$safe_name\"\n  rm -rf \"$dest\"\n  mv \"$bundle\" \"$dest\"\ndone\n";
+		};
 		20CB400CC39EEB23909EAA0F /* Compile Kotlin Framework */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -173,24 +199,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"$SRCROOT/../gradlew\" -p \"$SRCROOT/../\" :shared:copyFrameworkResourcesToApp \\\n    -Pmoko.resources.PLATFORM_NAME=\"$PLATFORM_NAME\" \\\n    -Pmoko.resources.CONFIGURATION=\"$CONFIGURATION\" \\\n    -Pmoko.resources.ARCHS=\"$ARCHS\" \\\n    -Pmoko.resources.BUILT_PRODUCTS_DIR=\"$BUILT_PRODUCTS_DIR\" \\\n    -Pmoko.resources.CONTENTS_FOLDER_PATH=\"$CONTENTS_FOLDER_PATH\" \n";
-		};
-		1DADA2DD199949A498015FFD /* Sanitize Moko Resource Bundle Names */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Sanitize Moko Resource Bundle Names";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "if [ \"$PLATFORM_NAME\" != \"macosx\" ]; then\n  exit 0\nfi\n# moko-resources names its resource bundle after the Kotlin klib unique_name (group:module),\n# e.g. SatsPrice:shared.bundle, and drops it directly under Contents/. Colons break\n# codesign, and a loose bundle outside Contents/Resources isn't recognized as a proper\n# nested bundle either, so the final app-level CodeSign phase fails with \"code object is\n# not signed at all\" unless we rename and relocate it. NSBundle resolves this bundle by\n# directory identity, not by name/path, so moko-resources/localization lookups still work.\nfind \"$CODESIGNING_FOLDER_PATH\" -type d -name \"*:*.bundle\" | while IFS= read -r bundle; do\n  safe_name=$(basename \"$bundle\" | tr ':' '_')\n  mkdir -p \"$CODESIGNING_FOLDER_PATH/Contents/Resources\"\n  dest=\"$CODESIGNING_FOLDER_PATH/Contents/Resources/$safe_name\"\n  rm -rf \"$dest\"\n  mv \"$bundle\" \"$dest\"\ndone\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
