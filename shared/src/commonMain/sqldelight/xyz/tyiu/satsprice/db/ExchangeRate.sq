@@ -1,0 +1,18 @@
+CREATE TABLE exchangeRateEntity (
+    sourceId TEXT NOT NULL,
+    base TEXT NOT NULL,
+    currencyCode TEXT NOT NULL,
+    rate TEXT NOT NULL,
+    fetchedAt INTEGER NOT NULL,
+    PRIMARY KEY (sourceId, currencyCode)
+);
+
+selectForSource:
+SELECT * FROM exchangeRateEntity WHERE sourceId = ?;
+
+deleteForSource:
+DELETE FROM exchangeRateEntity WHERE sourceId = ?;
+
+insertRate:
+INSERT OR REPLACE INTO exchangeRateEntity (sourceId, base, currencyCode, rate, fetchedAt)
+VALUES (?, ?, ?, ?, ?);

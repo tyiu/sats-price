@@ -1,0 +1,14 @@
+CREATE TABLE selectedCurrencyEntity (
+    code TEXT NOT NULL PRIMARY KEY,
+    position INTEGER NOT NULL
+);
+
+selectAllOrdered:
+SELECT * FROM selectedCurrencyEntity ORDER BY position ASC;
+
+deleteAll:
+DELETE FROM selectedCurrencyEntity;
+
+insertSelected:
+INSERT INTO selectedCurrencyEntity (code, position)
+VALUES (?, ?);

@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.kotlinSerialization)
     alias(libs.plugins.mokoResources)
+    alias(libs.plugins.sqldelight)
 }
 
 kotlin {
@@ -64,6 +65,7 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.compose.uiTooling)
             implementation(libs.ktor.client.okhttp)
+            implementation(libs.sqldelight.androidDriver)
         }
         commonMain.dependencies {
             implementation(libs.compose.runtime)
@@ -82,6 +84,7 @@ kotlin {
             implementation(libs.ktor.client.contentNegotiation)
             implementation(libs.ktor.serialization.kotlinxJson)
             implementation(libs.bignum)
+            implementation(libs.sqldelight.runtime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -90,9 +93,14 @@ kotlin {
         }
         appleMain.dependencies {
             implementation(libs.ktor.client.darwin)
+            implementation(libs.sqldelight.nativeDriver)
         }
         jvmMain.dependencies {
             implementation(libs.ktor.client.cio)
+            implementation(libs.sqldelight.sqliteDriver)
+        }
+        webMain.dependencies {
+            implementation(libs.kotlinx.browser)
         }
         jsMain.dependencies {
             implementation(libs.wrappers.browser)
@@ -110,4 +118,12 @@ dependencies {
 
 multiplatformResources {
     resourcesPackage.set("xyz.tyiu.satsprice.shared")
+}
+
+sqldelight {
+    databases {
+        register("AppDatabase") {
+            packageName.set("xyz.tyiu.satsprice.db")
+        }
+    }
 }

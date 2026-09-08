@@ -1,0 +1,11 @@
+CREATE TABLE selectedSourceEntity (
+    id INTEGER NOT NULL PRIMARY KEY,
+    sourceId TEXT NOT NULL
+);
+
+select:
+SELECT * FROM selectedSourceEntity WHERE id = 0;
+
+upsert:
+INSERT OR REPLACE INTO selectedSourceEntity (id, sourceId)
+VALUES (0, ?);

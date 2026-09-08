@@ -19,6 +19,12 @@ import xyz.tyiu.satsprice.data.ExchangeRateSource
 import xyz.tyiu.satsprice.data.ExchangeRates
 import xyz.tyiu.satsprice.data.ManualExchangeRateSource
 import xyz.tyiu.satsprice.data.createHttpClient
+import xyz.tyiu.satsprice.data.db.ExchangeRateStore
+import xyz.tyiu.satsprice.data.db.SelectedCurrenciesStore
+import xyz.tyiu.satsprice.data.db.SelectedSourceStore
+import xyz.tyiu.satsprice.data.db.createExchangeRateStore
+import xyz.tyiu.satsprice.data.db.createSelectedCurrenciesStore
+import xyz.tyiu.satsprice.data.db.createSelectedSourceStore
 import xyz.tyiu.satsprice.domain.CurrencyConverter
 import xyz.tyiu.satsprice.domain.formatAmount
 import xyz.tyiu.satsprice.domain.formatAmountFixed
@@ -59,6 +65,9 @@ class PriceViewModel(
     private val manualSource: ManualExchangeRateSource = ManualExchangeRateSource(),
     private val coinbaseSource: ExchangeRateSource = CoinbaseExchangeRateSource(httpClient),
     private val coinGeckoSource: ExchangeRateSource = CoinGeckoExchangeRateSource(httpClient),
+    private val exchangeRateStore: ExchangeRateStore = createExchangeRateStore(),
+    private val selectedCurrenciesStore: SelectedCurrenciesStore = createSelectedCurrenciesStore(),
+    private val selectedSourceStore: SelectedSourceStore = createSelectedSourceStore(),
 ) : ViewModel() {
 
     private val sources: List<ExchangeRateSource> = listOf(coinbaseSource, coinGeckoSource, manualSource)
@@ -84,15 +93,43 @@ class PriceViewModel(
     val uiState: StateFlow<ConverterUiState> = _uiState.asStateFlow()
 
     private var rates: ExchangeRates? = null
+    private var lastPersistedSelection: List<String>? = null
 
     init {
         manualSource.currencyCode = defaultCurrencyCode
         viewModelScope.launch {
+            selectedCurrenciesStore.loadSelectedCurrencies().takeIf { it.isNotEmpty() }?.let { persisted ->
+                lastPersistedSelection = persisted
+                val selection = if (defaultCurrencyCode in persisted) persisted else listOf(defaultCurrencyCode) + persisted
+                _uiState.update { it.copy(selectedFiatCurrencies = selection) }
+            }
+            selectedSourceStore.loadSelectedSourceId()
+                ?.let { id -> sources.firstOrNull { it.id == id } }
+                ?.let { persisted ->
+                    currentSource = persisted
+                    _uiState.update {
+                        it.copy(sourceName = persisted.displayName, isManualSource = persisted === manualSource)
+                    }
+                }
+            seedFromCache(currentSource)
             while (isActive) {
                 refresh()
                 delay(AUTO_REFRESH_INTERVAL_MILLIS)
             }
         }
+    }
+
+    /** Shows the last known rates for [source] immediately, before its network fetch completes. */
+    private suspend fun seedFromCache(source: ExchangeRateSource) {
+        val cached = exchangeRateStore.loadLastKnownRates(source.id) ?: return
+        rates = cached
+        _uiState.update { state -> recomputeFromKnownField(state.copy(lastUpdated = cached.fetchedAt), cached) }
+    }
+
+    private fun persistSelectionIfChanged(selection: List<String>) {
+        if (selection == lastPersistedSelection) return
+        lastPersistedSelection = selection
+        viewModelScope.launch { selectedCurrenciesStore.saveSelectedCurrencies(selection) }
     }
 
     fun refresh() {
@@ -105,6 +142,8 @@ class PriceViewModel(
             try {
                 val newRates = currentSource.getRates("BTC")
                 rates = newRates
+                exchangeRateStore.saveRates(currentSource.id, newRates)
+                var selectionToPersist: List<String>? = null
                 _uiState.update { state ->
                     val available = systemCurrencyList
                         .filter { newRates.rates.containsKey(it.code) }
@@ -119,6 +158,7 @@ class PriceViewModel(
                     // whatever order the user picked via onFiatCurrenciesReordered.
                     val filtered = state.selectedFiatCurrencies.filter { it == defaultCurrencyCode || it in availableCodes }
                     val selection = if (defaultCurrencyCode in filtered) filtered else listOf(defaultCurrencyCode) + filtered
+                    selectionToPersist = selection
                     recomputeFromKnownField(
                         state.copy(
                             isLoading = false,
@@ -130,6 +170,7 @@ class PriceViewModel(
                         newRates,
                     )
                 }
+                selectionToPersist?.let { persistSelectionIfChanged(it) }
             } catch (e: Exception) {
                 // Not localized: this shared ViewModel has no platform Context to resolve a moko-resources
                 // string on Android, and no locale-aware synchronous resolution path that works everywhere.
@@ -157,6 +198,7 @@ class PriceViewModel(
             val newState = state.copy(selectedFiatCurrencies = newSelection)
             rates?.let { recomputeFromKnownField(newState, it) } ?: newState
         }
+        persistSelectionIfChanged(_uiState.value.selectedFiatCurrencies)
     }
 
     /**
@@ -174,6 +216,7 @@ class PriceViewModel(
             val newState = state.copy(selectedFiatCurrencies = newSelection)
             rates?.let { recomputeFromKnownField(newState, it) } ?: newState
         }
+        persistSelectionIfChanged(_uiState.value.selectedFiatCurrencies)
     }
 
     fun onSourceSelected(displayName: String) {
@@ -187,7 +230,11 @@ class PriceViewModel(
                 rateDisplays = emptyMap(),
             )
         }
-        refresh()
+        viewModelScope.launch {
+            selectedSourceStore.saveSelectedSourceId(selected.id)
+            seedFromCache(selected)
+            refresh()
+        }
     }
 
     fun onManualRateChanged(value: String) {
