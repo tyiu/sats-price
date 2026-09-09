@@ -195,14 +195,16 @@ fun PriceScreen(
                                 Spacer(modifier = Modifier.weight(1f))
                             }
                         }
-                        if (state.isLoading) {
-                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                        } else {
-                            IconButton(onClick = { viewModel.refresh() }) {
-                                Icon(
-                                    Icons.Default.Refresh,
-                                    contentDescription = stringResource(MR.strings.refresh_content_description),
-                                )
+                        if (!state.isManualSource) {
+                            if (state.isLoading) {
+                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                            } else {
+                                IconButton(onClick = { viewModel.refresh() }) {
+                                    Icon(
+                                        Icons.Default.Refresh,
+                                        contentDescription = stringResource(MR.strings.refresh_content_description),
+                                    )
+                                }
                             }
                         }
                     }

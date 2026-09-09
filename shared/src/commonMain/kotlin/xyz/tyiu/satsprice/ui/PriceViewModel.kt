@@ -207,6 +207,7 @@ class PriceViewModel(
 
     fun onSourceSelected(displayName: String) {
         val selected = sources.firstOrNull { it.displayName == displayName } ?: return
+        val previousRates = rates
         currentSource = selected
         rates = null
         _uiState.update {
@@ -216,12 +217,39 @@ class PriceViewModel(
                 rateDisplays = emptyMap(),
             )
         }
+
+        if (selected === manualSource && manualSource.rate == null) {
+            // Switching to Manual for the first time: seed it with whatever rate is already
+            // known for the default currency — the source just switched away from, or else
+            // whatever other source was last fetched — rather than starting blank.
+            viewModelScope.launch {
+                selectedSourceStore.saveSelectedSourceId(selected.id)
+                val seedRate = previousRates?.rates?.get(defaultCurrencyCode) ?: fallbackManualRate()
+                if (seedRate != null) {
+                    manualSource.rate = seedRate
+                    _uiState.update {
+                        it.copy(manualRateInput = formatAmount(seedRate, decimalDigitsFor(defaultCurrencyCode)))
+                    }
+                } else {
+                    _uiState.update { it.copy(pricedCurrencyCodes = emptySet()) }
+                }
+                refresh()
+            }
+            return
+        }
+
         viewModelScope.launch {
             selectedSourceStore.saveSelectedSourceId(selected.id)
             seedFromCache(selected)
             refresh()
         }
     }
+
+    /** The default currency's last known rate from any non-Manual source's cache, if any. */
+    private suspend fun fallbackManualRate(): BigDecimal? =
+        sources.filterNot { it === manualSource }.firstNotNullOfOrNull { source ->
+            exchangeRateStore.loadLastKnownRates(source.id)?.rates?.get(defaultCurrencyCode)
+        }
 
     fun onManualRateChanged(value: String) {
         val sanitized = sanitizeDecimalInput(value)

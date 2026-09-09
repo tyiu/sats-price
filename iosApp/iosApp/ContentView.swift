@@ -65,15 +65,17 @@ struct ContentView: View {
                     } else {
                         Spacer()
                     }
-                    if state.isLoading {
-                        ProgressView()
-                    } else {
-                        Button {
-                            viewModel.refresh()
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
+                    if !state.isManualSource {
+                        if state.isLoading {
+                            ProgressView()
+                        } else {
+                            Button {
+                                viewModel.refresh()
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                            }
+                            .buttonStyle(.borderless)
                         }
-                        .buttonStyle(.borderless)
                     }
                 }
             }
