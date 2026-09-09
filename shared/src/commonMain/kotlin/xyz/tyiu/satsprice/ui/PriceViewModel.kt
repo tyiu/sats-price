@@ -142,7 +142,12 @@ class PriceViewModel(
 
     fun refresh() {
         if (currentSource === manualSource && manualSource.rate == null) {
-            _uiState.update { it.copy(isLoading = false, errorMessage = null) }
+            // No rate typed in (yet): nothing to price fiat currencies with, so clear any stale
+            // rate this might otherwise still compute fiat amounts from.
+            rates = null
+            _uiState.update {
+                it.copy(isLoading = false, errorMessage = null, pricedCurrencyCodes = emptySet())
+            }
             return
         }
         viewModelScope.launch {
@@ -230,8 +235,6 @@ class PriceViewModel(
                     _uiState.update {
                         it.copy(manualRateInput = formatAmount(seedRate, decimalDigitsFor(defaultCurrencyCode)))
                     }
-                } else {
-                    _uiState.update { it.copy(pricedCurrencyCodes = emptySet()) }
                 }
                 refresh()
             }
@@ -254,10 +257,11 @@ class PriceViewModel(
     fun onManualRateChanged(value: String) {
         val sanitized = sanitizeDecimalInput(value)
         _uiState.update { it.copy(manualRateInput = sanitized) }
-        sanitized.toBigDecimalOrNull()?.let { parsed ->
-            manualSource.rate = parsed
-            refresh()
-        }
+        // Also cleared (rather than left as the last valid rate) when sanitized fails to parse —
+        // e.g. the field is emptied, or is mid-edit on an incomplete number — so refresh() then
+        // wipes any fiat amounts computed from it, rather than leaving stale ones on screen.
+        manualSource.rate = sanitized.toBigDecimalOrNull()
+        refresh()
     }
 
     private fun updateAmount(field: EditedField, rawValue: String) {

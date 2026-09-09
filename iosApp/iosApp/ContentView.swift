@@ -36,7 +36,11 @@ struct ContentView: View {
                     resource: MR.strings.shared.btc_to_currency,
                     args: [state.defaultCurrencyCode]
                 )),
-                footer: Text(state.statusLine)
+                footer: Group {
+                    if !state.statusLine.isEmpty {
+                        Text(state.statusLine)
+                    }
+                }
             ) {
                 Picker(
                     IosLocalizationKt.localizedString(resource: MR.strings.shared.price_source),

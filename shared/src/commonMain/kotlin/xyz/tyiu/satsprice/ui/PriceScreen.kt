@@ -138,10 +138,13 @@ fun PriceScreen(
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
                 Text("SatsPrice", style = MaterialTheme.typography.headlineMedium)
-                Text(
-                    text = state.statusLine(),
-                    style = MaterialTheme.typography.bodySmall,
-                )
+                val statusLine = state.statusLine()
+                if (statusLine.isNotEmpty()) {
+                    Text(
+                        text = statusLine,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
             }
 
             Card(modifier = Modifier.fillMaxWidth(), colors = SectionColors) {
