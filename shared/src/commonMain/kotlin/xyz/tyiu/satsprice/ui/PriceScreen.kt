@@ -350,8 +350,8 @@ fun PriceScreen(
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     singleLine = true,
                                     enabled = isPriced,
-                                    isError = !isPriced,
-                                    supportingText = if (isPriced) {
+                                    isError = !isPriced && !state.isManualSource,
+                                    supportingText = if (isPriced || state.isManualSource) {
                                         null
                                     } else {
                                         { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }

@@ -143,6 +143,7 @@ struct ContentView: View {
                         onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) },
                         isPriced: state.pricedCurrencyCodes.contains(row.code),
                         sourceName: state.sourceName,
+                        isManualSource: state.isManualSource,
                         onMoveUp: index > 0 ? {
                             var codes = displayedRows.map(\.code)
                             codes.move(fromOffsets: [index], toOffset: index - 1)
@@ -226,6 +227,7 @@ struct ContentView: View {
         onChange: @escaping (String) -> Void,
         isPriced: Bool = true,
         sourceName: String = "",
+        isManualSource: Bool = false,
         onMoveUp: (() -> Void)? = nil,
         onMoveDown: (() -> Void)? = nil
     ) -> some View {
@@ -252,7 +254,7 @@ struct ContentView: View {
             #endif
             VStack(alignment: .leading) {
                 Text(label)
-                if !isPriced {
+                if !isPriced && !isManualSource {
                     Text(IosLocalizationKt.localizedFormattedString(
                         resource: MR.strings.shared.currency_not_priced,
                         args: [sourceName]
