@@ -4,6 +4,7 @@ import com.ionspin.kotlin.bignum.decimal.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class NumberFormatTest {
 
@@ -75,5 +76,34 @@ class NumberFormatTest {
     @Test
     fun formatAmountFixed_dropsDecimalPointWhenZeroDecimals() {
         assertEquals("100", formatAmountFixed(BigDecimal.fromLong(100), 0))
+    }
+
+    // groupDigits' separator characters are locale-dependent (see localizedGroupedInteger /
+    // localizedDecimalSeparator), so asserting a specific separator belongs in a JVM-only test
+    // that can pin Locale.getDefault() — see NumberFormatJvmTest.
+
+    @Test
+    fun groupDigits_passesThroughInputWithNoIntegerPartUnchanged() {
+        // No integer part to group, so these bail out before consulting the locale at all.
+        assertEquals("", groupDigits(""))
+        assertEquals("-", groupDigits("-"))
+        assertEquals(".5", groupDigits(".5"))
+    }
+
+    @Test
+    fun groupDigits_usesLocaleDecimalSeparatorForATrailingDot() {
+        // "1." has an integer part, so unlike the cases above, this one *does* consult the
+        // locale — the trailing "." becomes whatever that locale's decimal separator is.
+        assertEquals("1" + localizedDecimalSeparator(), groupDigits("1."))
+    }
+
+    @Test
+    fun groupDigits_groupsLargeIntegersRegardlessOfLocale() {
+        val grouped = groupDigits("1000000")
+
+        // The separator character is locale-dependent, but the digits and the fact that
+        // grouping happened at all aren't.
+        assertEquals("1000000", grouped.filter { it.isDigit() })
+        assertTrue(grouped.length > "1000000".length)
     }
 }

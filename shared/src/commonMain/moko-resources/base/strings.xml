@@ -11,7 +11,7 @@
     <string name="currency_option_label_local">%1$s - %2$s</string>
     <string name="currency_options_content_description">Options for %1$s</string>
     <string name="done">Done</string>
-    <string name="exceeds_max_supply">Exceeds the 21,000,000 BTC maximum supply</string>
+    <string name="exceeds_max_supply">Exceeds the %1$s maximum supply</string>
     <string name="move_currency_down_content_description">Move %1$s down</string>
     <string name="move_currency_up_content_description">Move %1$s up</string>
     <string name="price_source">Price Source</string>

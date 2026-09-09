@@ -60,7 +60,7 @@ struct ContentView: View {
                             onChange: { viewModel.onManualRateChanged($0) }
                         )
                     } else if !state.defaultCurrencyRate.isEmpty {
-                        Text(state.defaultCurrencyRate)
+                        Text(NumberFormatKt.groupDigits(value: state.defaultCurrencyRate))
                         Spacer()
                     } else {
                         Spacer()
@@ -179,17 +179,23 @@ struct ContentView: View {
         })
     }
 
-    // Matches the literal text of MR.strings.exceeds_max_supply so it can be turned into a link;
-    // falls back to plain text if that ever drifts apart. `maxSupplyBtcAmount` is the sanitized
-    // digit-only form CurrencyConverter.MAX_BTC_SUPPLY formats to, mirroring the shared Compose UI.
-    private static let maxSupplyLinkText = "21,000,000 BTC"
+    // `maxSupplyBtcAmount` is the sanitized digit-only form CurrencyConverter.MAX_BTC_SUPPLY
+    // formats to, mirroring the shared Compose UI. `maxSupplyText` is locale-grouped (e.g.
+    // "21,000,000 BTC" in en-US, "21.000.000 BTC" in de-DE) since it's substituted into the
+    // localized sentence below, then searched for verbatim to turn it into a link — the two
+    // always match exactly.
     private static let maxSupplyBtcAmount = "21000000"
+    private static var maxSupplyText: String { "\(NumberFormatKt.groupDigits(value: maxSupplyBtcAmount)) BTC" }
     private static let maxSupplyLinkURL = URL(string: "satsprice://set-max-supply")!
 
     private var exceedsMaxSupplyText: Text {
-        let warning = IosLocalizationKt.localizedString(resource: MR.strings.shared.exceeds_max_supply)
+        let linkText = Self.maxSupplyText
+        let warning = IosLocalizationKt.localizedFormattedString(
+            resource: MR.strings.shared.exceeds_max_supply,
+            args: [linkText]
+        )
         var attributed = AttributedString(warning)
-        if let range = attributed.range(of: Self.maxSupplyLinkText) {
+        if let range = attributed.range(of: linkText) {
             attributed[range].link = Self.maxSupplyLinkURL
             attributed[range].underlineStyle = .single
             // SwiftUI renders `.link` runs in the accent color regardless of the Text's own
@@ -282,32 +288,46 @@ private struct NumericField: View {
             #if os(macOS)
             .frame(maxWidth: 140)
             #endif
-            .onAppear { text = value }
+            .onAppear { text = NumberFormatKt.groupDigits(value: value) }
             .onChange(of: text) { newValue in
+                // sanitize() already drops whatever grouping separator groupDigits() inserts
+                // (neither a digit nor the locale's decimal separator), so it doubles as
+                // ungrouping the field's raw text.
                 let sanitized = sanitize(newValue)
-                if sanitized != newValue {
-                    text = sanitized
+                let grouped = NumberFormatKt.groupDigits(value: sanitized)
+                if grouped != newValue {
+                    text = grouped
                 }
                 if sanitized != value {
                     onChange(sanitized)
                 }
             }
             .onChange(of: value) { newValue in
-                if newValue != text {
-                    text = newValue
+                let grouped = NumberFormatKt.groupDigits(value: newValue)
+                if grouped != text {
+                    text = grouped
                 }
             }
     }
 }
 
+/// Unlike the shared Kotlin `sanitizeDecimalInput` (which never sees grouping separators, since
+/// Compose's VisualTransformation never feeds its grouped display back into the real value),
+/// `NumericField`'s single `text` buffer *is* the grouped display, re-fed through this on every
+/// edit. So a raw "." can't get a universal pass as a stand-in decimal point here the way it does
+/// in Kotlin — in a locale where "," is the decimal separator, groupDigits() uses "." for
+/// grouping, and treating it as a second decimal point would corrupt the value. Only the exact
+/// locale decimal separator (which is "." itself in e.g. en-US) counts; anything else non-numeric
+/// is grouping noise to drop.
 private func sanitizeDecimalInput(_ raw: String) -> String {
+    let decimalSeparator = NumberFormat_appleKt.localizedDecimalSeparator()
     var result = ""
     var seenDot = false
     for char in raw {
         if char.isNumber {
             result.append(char)
-        } else if char == "." && !seenDot {
-            result.append(char)
+        } else if !seenDot && String(char) == decimalSeparator {
+            result.append(".")
             seenDot = true
         }
     }

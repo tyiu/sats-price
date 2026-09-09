@@ -52,6 +52,9 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLinkStyles
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
@@ -62,6 +65,8 @@ import dev.icerock.moko.resources.compose.stringResource
 import xyz.tyiu.satsprice.CurrencyInfo
 import xyz.tyiu.satsprice.domain.CurrencyConverter
 import xyz.tyiu.satsprice.domain.formatAmount
+import xyz.tyiu.satsprice.domain.groupDigits
+import xyz.tyiu.satsprice.domain.localizedDecimalSeparator
 import xyz.tyiu.satsprice.shared.MR
 
 private val SectionColors
@@ -72,6 +77,33 @@ private val SectionHeaderStyle
         color = MaterialTheme.colorScheme.primary,
         letterSpacing = 1.2.sp,
     )
+
+/** Displays a plain-digit amount field's value with locale-appropriate digit grouping, without touching it. */
+private object DigitGroupingTransformation : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val grouped = groupDigits(text.text)
+        val decimalSeparator = localizedDecimalSeparator()
+        // Everything grouping inserts is neither a digit, the sign, nor the (possibly localized,
+        // e.g. "," in de-DE) decimal point — so anything else is an inserted grouping separator
+        // to skip, whatever character the locale actually uses for it.
+        fun isGroupingSeparator(char: Char) = !char.isDigit() && char != '-' && char.toString() != decimalSeparator
+
+        val offsetMapping = object : OffsetMapping {
+            override fun originalToTransformed(offset: Int): Int {
+                var originalSeen = 0
+                for ((index, char) in grouped.withIndex()) {
+                    if (originalSeen == offset) return index
+                    if (!isGroupingSeparator(char)) originalSeen++
+                }
+                return grouped.length
+            }
+
+            override fun transformedToOriginal(offset: Int): Int =
+                grouped.take(offset.coerceIn(0, grouped.length)).count { !isGroupingSeparator(it) }
+        }
+        return TransformedText(AnnotatedString(grouped), offsetMapping)
+    }
+}
 
 @Composable
 fun PriceScreen(
@@ -145,13 +177,14 @@ fun PriceScreen(
                                 label = { Text(stringResource(MR.strings.rate_label)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true,
+                                visualTransformation = DigitGroupingTransformation,
                                 modifier = Modifier.weight(1f),
                             )
                         } else {
                             val rate = state.defaultCurrencyRate()
                             if (rate.isNotEmpty()) {
                                 Text(
-                                    text = rate,
+                                    text = groupDigits(rate),
                                     style = MaterialTheme.typography.headlineSmall,
                                     modifier = Modifier.weight(1f),
                                 )
@@ -202,6 +235,7 @@ fun PriceScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         isError = exceedsMaxSupply,
+                        visualTransformation = DigitGroupingTransformation,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
@@ -212,14 +246,16 @@ fun PriceScreen(
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         isError = exceedsMaxSupply,
+                        visualTransformation = DigitGroupingTransformation,
                         modifier = Modifier.fillMaxWidth(),
                     )
 
                     if (exceedsMaxSupply) {
-                        val warning = stringResource(MR.strings.exceeds_max_supply)
-                        // Matches the literal text of MR.strings.exceeds_max_supply so it can be
-                        // turned into a link; falls back to plain text if that ever drifts apart.
-                        val maxSupplyText = "21,000,000 BTC"
+                        // Locale-grouped (e.g. "21,000,000 BTC" in en-US, "21.000.000 BTC" in
+                        // de-DE) since it's substituted into the string, then searched for
+                        // verbatim below to turn it into a link — the two always match exactly.
+                        val maxSupplyText = groupDigits(formatAmount(CurrencyConverter.MAX_BTC_SUPPLY, 0)) + " BTC"
+                        val warning = stringResource(MR.strings.exceeds_max_supply, maxSupplyText)
                         val linkStart = warning.indexOf(maxSupplyText)
                         val annotatedWarning = if (linkStart < 0) {
                             AnnotatedString(warning)
@@ -304,6 +340,7 @@ fun PriceScreen(
                                     } else {
                                         { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
                                     },
+                                    visualTransformation = DigitGroupingTransformation,
                                     modifier = Modifier.weight(1f),
                                 )
                                 CurrencyRowMenu(
