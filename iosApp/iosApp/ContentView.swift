@@ -37,6 +37,20 @@ struct ContentView: View {
             : state.fiatRows
     }
 
+    #if os(macOS)
+    /// [codes] with [moving] relocated to sit right before [target] — how macOS's manual
+    /// drag-and-drop (see `.dropDestination` above) computes its new currency order, since
+    /// there's no List to hand the reordering off to natively.
+    private func reorderedCodes(_ codes: [String], moving: String, toBeBefore target: String) -> [String] {
+        guard moving != target, let fromIndex = codes.firstIndex(of: moving) else { return codes }
+        var reordered = codes
+        reordered.remove(at: fromIndex)
+        let insertIndex = reordered.firstIndex(of: target) ?? reordered.count
+        reordered.insert(moving, at: insertIndex)
+        return reordered
+    }
+    #endif
+
     @ViewBuilder
     private func form(for state: IosConverterState) -> some View {
         Form {
@@ -141,7 +155,7 @@ struct ContentView: View {
 
                 let displayedRows = displayedRows(for: state)
 
-                ForEach(Array(displayedRows.enumerated()), id: \.element.code) { index, row in
+                ForEach(displayedRows, id: \.code) { row in
                     amountRow(
                         label: currencyFieldLabel(for: row.code),
                         value: row.amount,
@@ -150,19 +164,35 @@ struct ContentView: View {
                         onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) },
                         isPriced: state.pricedCurrencyCodes.contains(row.code),
                         sourceName: state.sourceName,
-                        isManualSource: state.isManualSource,
-                        onMoveUp: index > 0 ? {
-                            var codes = displayedRows.map(\.code)
-                            codes.move(fromOffsets: [index], toOffset: index - 1)
-                            viewModel.onFiatCurrenciesReordered(codes)
-                        } : nil,
-                        onMoveDown: index < displayedRows.count - 1 ? {
-                            var codes = displayedRows.map(\.code)
-                            codes.move(fromOffsets: [index], toOffset: index + 2)
-                            viewModel.onFiatCurrenciesReordered(codes)
-                        } : nil
+                        isManualSource: state.isManualSource
                     )
                     .deleteDisabled(row.code == state.defaultCurrencyCode)
+                    #if os(macOS)
+                    // Form isn't List-backed on macOS, so drag-and-drop reordering has to be
+                    // wired up manually rather than coming for free from .onMove below.
+                    .draggable(row.code)
+                    .dropDestination(for: String.self) { draggedCodes, _ in
+                        guard let draggedCode = draggedCodes.first else { return false }
+                        viewModel.onFiatCurrenciesReordered(
+                            reorderedCodes(displayedRows.map(\.code), moving: draggedCode, toBeBefore: row.code)
+                        )
+                        return true
+                    }
+                    .contextMenu {
+                        if row.code != state.defaultCurrencyCode {
+                            Button(role: .destructive) {
+                                viewModel.onFiatCurrencyToggled(row.code)
+                            } label: {
+                                Label(
+                                    IosLocalizationKt.localizedString(
+                                        resource: MR.strings.shared.remove_currency_content_description
+                                    ),
+                                    systemImage: "trash"
+                                )
+                            }
+                        }
+                    }
+                    #endif
                 }
                 .onMove(perform: displayedRows.count > 1 ? { indices, newOffset in
                     var codes = displayedRows.map(\.code)
@@ -234,31 +264,9 @@ struct ContentView: View {
         onChange: @escaping (String) -> Void,
         isPriced: Bool = true,
         sourceName: String = "",
-        isManualSource: Bool = false,
-        onMoveUp: (() -> Void)? = nil,
-        onMoveDown: (() -> Void)? = nil
+        isManualSource: Bool = false
     ) -> some View {
         HStack {
-            #if os(macOS)
-            // macOS's Form isn't List-backed, so .onMove's drag-to-reorder has no effect here;
-            // these buttons are macOS's equivalent of iOS's Edit-mode drag handles.
-            if onMoveUp != nil || onMoveDown != nil {
-                VStack(spacing: 2) {
-                    Button(action: { onMoveUp?() }) {
-                        Image(systemName: "chevron.up")
-                            .frame(width: 16, height: 10)
-                    }
-                    .disabled(onMoveUp == nil)
-                    Button(action: { onMoveDown?() }) {
-                        Image(systemName: "chevron.down")
-                            .frame(width: 16, height: 10)
-                    }
-                    .disabled(onMoveDown == nil)
-                }
-                .font(.system(size: 10))
-                .buttonStyle(.borderless)
-            }
-            #endif
             VStack(alignment: .leading) {
                 Text(label)
                 if !isPriced && !isManualSource {
