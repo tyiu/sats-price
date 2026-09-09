@@ -124,7 +124,7 @@ struct ContentView: View {
 
                 ForEach(Array(state.fiatRows.enumerated()), id: \.element.code) { index, row in
                     amountRow(
-                        label: row.code,
+                        label: currencyFieldLabel(for: row.code),
                         value: row.amount,
                         keyboardType: .decimalPad,
                         sanitize: sanitizeDecimalInput,
@@ -309,6 +309,13 @@ private struct NumericField: View {
                 }
             }
     }
+}
+
+private func currencyFieldLabel(for code: String) -> String {
+    if let flag = CurrencyFlagKt.currencyFlagEmoji(code: code) {
+        return "\(flag) \(code)"
+    }
+    return code
 }
 
 /// Unlike the shared Kotlin `sanitizeDecimalInput` (which never sees grouping separators, since

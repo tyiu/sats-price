@@ -81,16 +81,21 @@ struct CurrencyPickerSheet: View {
     }
 
     private func currencyLabel(for info: CurrencyInfo) -> String {
+        let text: String
         if info.code == localeCurrencyCode {
-            return IosLocalizationKt.localizedFormattedString(
+            text = IosLocalizationKt.localizedFormattedString(
                 resource: MR.strings.shared.currency_option_label_local,
                 args: [info.code, info.displayName]
             )
         } else {
-            return IosLocalizationKt.localizedFormattedString(
+            text = IosLocalizationKt.localizedFormattedString(
                 resource: MR.strings.shared.currency_option_label,
                 args: [info.code, info.displayName]
             )
         }
+        if let flag = CurrencyFlagKt.currencyFlagEmoji(code: info.code) {
+            return "\(flag) \(text)"
+        }
+        return text
     }
 }

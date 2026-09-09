@@ -65,6 +65,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.icerock.moko.resources.compose.stringResource
 import xyz.tyiu.satsprice.CurrencyInfo
+import xyz.tyiu.satsprice.currencyFlagEmoji
 import xyz.tyiu.satsprice.domain.CurrencyConverter
 import xyz.tyiu.satsprice.domain.formatAmount
 import xyz.tyiu.satsprice.domain.groupDigits
@@ -329,10 +330,11 @@ fun PriceScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                             ) {
                                 val isPriced = state.isPriced(code)
+                                val fieldLabel = currencyFlagEmoji(code)?.let { flag -> "$flag $code" } ?: code
                                 OutlinedTextField(
                                     value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
                                     onValueChange = { viewModel.onFiatAmountChanged(code, it) },
-                                    label = { Text(code) },
+                                    label = { Text(fieldLabel) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                     singleLine = true,
                                     enabled = isPriced,
@@ -561,11 +563,12 @@ private fun CurrencyRow(
     localeCurrencyCode: String?,
     onClick: (() -> Unit)?,
 ) {
-    val label = if (info.code == localeCurrencyCode) {
+    val text = if (info.code == localeCurrencyCode) {
         stringResource(MR.strings.currency_option_label_local, info.code, info.displayName)
     } else {
         stringResource(MR.strings.currency_option_label, info.code, info.displayName)
     }
+    val label = currencyFlagEmoji(info.code)?.let { flag -> "$flag $text" } ?: text
     Row(
         modifier = Modifier
             .fillMaxWidth()
