@@ -23,6 +23,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
+import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
@@ -358,6 +360,16 @@ fun PriceScreen(
                                             state.selectedFiatCurrencies.moved(index, index + 1),
                                         )
                                     },
+                                    onMoveToTop = {
+                                        viewModel.onFiatCurrenciesReordered(
+                                            state.selectedFiatCurrencies.moved(index, 0),
+                                        )
+                                    },
+                                    onMoveToBottom = {
+                                        viewModel.onFiatCurrenciesReordered(
+                                            state.selectedFiatCurrencies.moved(index, state.selectedFiatCurrencies.lastIndex),
+                                        )
+                                    },
                                     onRemove = { viewModel.onFiatCurrencyToggled(code) },
                                 )
                             }
@@ -380,6 +392,8 @@ private fun CurrencyRowMenu(
     canRemove: Boolean,
     onMoveUp: () -> Unit,
     onMoveDown: () -> Unit,
+    onMoveToTop: () -> Unit,
+    onMoveToBottom: () -> Unit,
     onRemove: () -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -392,7 +406,16 @@ private fun CurrencyRowMenu(
         }
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_up_content_description, code)) },
+                text = { Text(stringResource(MR.strings.move_currency_to_top_content_description)) },
+                leadingIcon = { Icon(Icons.Default.KeyboardDoubleArrowUp, contentDescription = null) },
+                enabled = canMoveUp,
+                onClick = {
+                    expanded = false
+                    onMoveToTop()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(MR.strings.move_currency_up_content_description)) },
                 leadingIcon = { Icon(Icons.Default.KeyboardArrowUp, contentDescription = null) },
                 enabled = canMoveUp,
                 onClick = {
@@ -401,7 +424,7 @@ private fun CurrencyRowMenu(
                 },
             )
             DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_down_content_description, code)) },
+                text = { Text(stringResource(MR.strings.move_currency_down_content_description)) },
                 leadingIcon = { Icon(Icons.Default.KeyboardArrowDown, contentDescription = null) },
                 enabled = canMoveDown,
                 onClick = {
@@ -409,9 +432,18 @@ private fun CurrencyRowMenu(
                     onMoveDown()
                 },
             )
+            DropdownMenuItem(
+                text = { Text(stringResource(MR.strings.move_currency_to_bottom_content_description)) },
+                leadingIcon = { Icon(Icons.Default.KeyboardDoubleArrowDown, contentDescription = null) },
+                enabled = canMoveDown,
+                onClick = {
+                    expanded = false
+                    onMoveToBottom()
+                },
+            )
             if (canRemove) {
                 DropdownMenuItem(
-                    text = { Text(stringResource(MR.strings.remove_currency_content_description, code)) },
+                    text = { Text(stringResource(MR.strings.remove_currency_content_description)) },
                     leadingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
                     onClick = {
                         expanded = false

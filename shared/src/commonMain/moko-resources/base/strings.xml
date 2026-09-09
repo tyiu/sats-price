@@ -12,12 +12,14 @@
     <string name="currency_options_content_description">Options for %1$s</string>
     <string name="done">Done</string>
     <string name="exceeds_max_supply">Exceeds the %1$s maximum supply</string>
-    <string name="move_currency_down_content_description">Move %1$s down</string>
-    <string name="move_currency_up_content_description">Move %1$s up</string>
+    <string name="move_currency_down_content_description">Move down</string>
+    <string name="move_currency_to_bottom_content_description">Move to bottom</string>
+    <string name="move_currency_to_top_content_description">Move to top</string>
+    <string name="move_currency_up_content_description">Move up</string>
     <string name="price_source">Price Source</string>
     <string name="rate_label">Rate</string>
     <string name="refresh_content_description">Refresh</string>
-    <string name="remove_currency_content_description">Remove %1$s</string>
+    <string name="remove_currency_content_description">Remove</string>
     <string name="retry">Retry</string>
     <string name="sats_label">Sats</string>
     <string name="selected_currencies_section_title">Selected Currencies</string>
