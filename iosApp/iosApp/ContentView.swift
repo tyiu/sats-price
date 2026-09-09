@@ -18,14 +18,23 @@ struct ContentView: View {
             .navigationTitle("SatsPrice")
             #if os(iOS)
             // macOS Lists support drag-to-reorder directly; iOS only shows reorder handles
-            // once edit mode is active, which this toggles.
+            // once edit mode is active, which this toggles. Nothing to reorder or delete with
+            // only one currency shown, so the button itself is pointless then.
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
+                    if let state = viewModel.state, displayedRows(for: state).count > 1 {
+                        EditButton()
+                    }
                 }
             }
             #endif
         }
+    }
+
+    private func displayedRows(for state: IosConverterState) -> [FiatRow] {
+        state.isManualSource
+            ? state.fiatRows.filter { $0.code == state.defaultCurrencyCode }
+            : state.fiatRows
     }
 
     @ViewBuilder
@@ -130,9 +139,7 @@ struct ContentView: View {
                     }
                 }
 
-                let displayedRows = state.isManualSource
-                    ? state.fiatRows.filter { $0.code == state.defaultCurrencyCode }
-                    : state.fiatRows
+                let displayedRows = displayedRows(for: state)
 
                 ForEach(Array(displayedRows.enumerated()), id: \.element.code) { index, row in
                     amountRow(
@@ -157,17 +164,17 @@ struct ContentView: View {
                     )
                     .deleteDisabled(row.code == state.defaultCurrencyCode)
                 }
-                .onMove { indices, newOffset in
+                .onMove(perform: displayedRows.count > 1 ? { indices, newOffset in
                     var codes = displayedRows.map(\.code)
                     codes.move(fromOffsets: indices, toOffset: newOffset)
                     viewModel.onFiatCurrenciesReordered(codes)
-                }
+                } : nil)
                 #if os(iOS)
-                .onDelete { indexSet in
+                .onDelete(perform: displayedRows.count > 1 ? { indexSet in
                     for index in indexSet {
                         viewModel.onFiatCurrencyToggled(displayedRows[index].code)
                     }
-                }
+                } : nil)
                 #endif
             }
         }

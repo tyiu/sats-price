@@ -359,33 +359,35 @@ fun PriceScreen(
                                     visualTransformation = DigitGroupingTransformation,
                                     modifier = Modifier.weight(1f),
                                 )
-                                CurrencyRowMenu(
-                                    code = code,
-                                    canMoveUp = index > 0,
-                                    canMoveDown = index < displayedCurrencies.lastIndex,
-                                    canRemove = code != state.defaultCurrencyCode,
-                                    onMoveUp = {
-                                        viewModel.onFiatCurrenciesReordered(
-                                            state.selectedFiatCurrencies.moved(index, index - 1),
-                                        )
-                                    },
-                                    onMoveDown = {
-                                        viewModel.onFiatCurrenciesReordered(
-                                            state.selectedFiatCurrencies.moved(index, index + 1),
-                                        )
-                                    },
-                                    onMoveToTop = {
-                                        viewModel.onFiatCurrenciesReordered(
-                                            state.selectedFiatCurrencies.moved(index, 0),
-                                        )
-                                    },
-                                    onMoveToBottom = {
-                                        viewModel.onFiatCurrenciesReordered(
-                                            state.selectedFiatCurrencies.moved(index, state.selectedFiatCurrencies.lastIndex),
-                                        )
-                                    },
-                                    onRemove = { viewModel.onFiatCurrencyToggled(code) },
-                                )
+                                if (displayedCurrencies.size > 1) {
+                                    CurrencyRowMenu(
+                                        code = code,
+                                        canMoveUp = index > 0,
+                                        canMoveDown = index < displayedCurrencies.lastIndex,
+                                        canRemove = code != state.defaultCurrencyCode,
+                                        onMoveUp = {
+                                            viewModel.onFiatCurrenciesReordered(
+                                                state.selectedFiatCurrencies.moved(index, index - 1),
+                                            )
+                                        },
+                                        onMoveDown = {
+                                            viewModel.onFiatCurrenciesReordered(
+                                                state.selectedFiatCurrencies.moved(index, index + 1),
+                                            )
+                                        },
+                                        onMoveToTop = {
+                                            viewModel.onFiatCurrenciesReordered(
+                                                state.selectedFiatCurrencies.moved(index, 0),
+                                            )
+                                        },
+                                        onMoveToBottom = {
+                                            viewModel.onFiatCurrenciesReordered(
+                                                state.selectedFiatCurrencies.moved(index, state.selectedFiatCurrencies.lastIndex),
+                                            )
+                                        },
+                                        onRemove = { viewModel.onFiatCurrencyToggled(code) },
+                                    )
+                                }
                             }
                         }
                     }
