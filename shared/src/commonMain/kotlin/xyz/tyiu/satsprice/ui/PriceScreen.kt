@@ -311,18 +311,25 @@ fun PriceScreen(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(stringResource(MR.strings.currencies_section_title), style = MaterialTheme.typography.titleMedium)
-                        OutlinedButton(onClick = { showCurrencyPicker = true }) {
-                            Text(
-                                if (state.selectedFiatCurrencies.size <= 1) {
-                                    stringResource(MR.strings.add_currency)
-                                } else {
-                                    stringResource(MR.strings.currencies_selected_count, state.selectedFiatCurrencies.size)
-                                },
-                            )
+                        if (!state.isManualSource) {
+                            OutlinedButton(onClick = { showCurrencyPicker = true }) {
+                                Text(
+                                    if (state.selectedFiatCurrencies.size <= 1) {
+                                        stringResource(MR.strings.add_currency)
+                                    } else {
+                                        stringResource(MR.strings.currencies_selected_count, state.selectedFiatCurrencies.size)
+                                    },
+                                )
+                            }
                         }
                     }
 
-                    state.selectedFiatCurrencies.forEachIndexed { index, code ->
+                    val displayedCurrencies = if (state.isManualSource) {
+                        listOf(state.defaultCurrencyCode)
+                    } else {
+                        state.selectedFiatCurrencies
+                    }
+                    displayedCurrencies.forEachIndexed { index, code ->
                         key(code) {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -350,7 +357,7 @@ fun PriceScreen(
                                 CurrencyRowMenu(
                                     code = code,
                                     canMoveUp = index > 0,
-                                    canMoveDown = index < state.selectedFiatCurrencies.lastIndex,
+                                    canMoveDown = index < displayedCurrencies.lastIndex,
                                     canRemove = code != state.defaultCurrencyCode,
                                     onMoveUp = {
                                         viewModel.onFiatCurrenciesReordered(

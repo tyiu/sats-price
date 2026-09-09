@@ -111,18 +111,24 @@ struct ContentView: View {
             }
 
             Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
-                Button(
-                    state.selectedCurrencyCodes.count <= 1
-                        ? IosLocalizationKt.localizedString(resource: MR.strings.shared.add_currency)
-                        : IosLocalizationKt.localizedFormattedString(
-                            resource: MR.strings.shared.currencies_selected_count,
-                            args: [state.selectedCurrencyCodes.count]
-                        )
-                ) {
-                    showCurrencyPicker = true
+                if !state.isManualSource {
+                    Button(
+                        state.selectedCurrencyCodes.count <= 1
+                            ? IosLocalizationKt.localizedString(resource: MR.strings.shared.add_currency)
+                            : IosLocalizationKt.localizedFormattedString(
+                                resource: MR.strings.shared.currencies_selected_count,
+                                args: [state.selectedCurrencyCodes.count]
+                            )
+                    ) {
+                        showCurrencyPicker = true
+                    }
                 }
 
-                ForEach(Array(state.fiatRows.enumerated()), id: \.element.code) { index, row in
+                let displayedRows = state.isManualSource
+                    ? state.fiatRows.filter { $0.code == state.defaultCurrencyCode }
+                    : state.fiatRows
+
+                ForEach(Array(displayedRows.enumerated()), id: \.element.code) { index, row in
                     amountRow(
                         label: currencyFieldLabel(for: row.code),
                         value: row.amount,
@@ -132,12 +138,12 @@ struct ContentView: View {
                         isPriced: state.pricedCurrencyCodes.contains(row.code),
                         sourceName: state.sourceName,
                         onMoveUp: index > 0 ? {
-                            var codes = state.fiatRows.map(\.code)
+                            var codes = displayedRows.map(\.code)
                             codes.move(fromOffsets: [index], toOffset: index - 1)
                             viewModel.onFiatCurrenciesReordered(codes)
                         } : nil,
-                        onMoveDown: index < state.fiatRows.count - 1 ? {
-                            var codes = state.fiatRows.map(\.code)
+                        onMoveDown: index < displayedRows.count - 1 ? {
+                            var codes = displayedRows.map(\.code)
                             codes.move(fromOffsets: [index], toOffset: index + 2)
                             viewModel.onFiatCurrenciesReordered(codes)
                         } : nil
@@ -145,14 +151,14 @@ struct ContentView: View {
                     .deleteDisabled(row.code == state.defaultCurrencyCode)
                 }
                 .onMove { indices, newOffset in
-                    var codes = state.fiatRows.map(\.code)
+                    var codes = displayedRows.map(\.code)
                     codes.move(fromOffsets: indices, toOffset: newOffset)
                     viewModel.onFiatCurrenciesReordered(codes)
                 }
                 #if os(iOS)
                 .onDelete { indexSet in
                     for index in indexSet {
-                        viewModel.onFiatCurrencyToggled(state.fiatRows[index].code)
+                        viewModel.onFiatCurrencyToggled(displayedRows[index].code)
                     }
                 }
                 #endif

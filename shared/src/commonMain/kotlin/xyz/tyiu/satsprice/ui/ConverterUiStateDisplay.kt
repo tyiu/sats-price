@@ -10,6 +10,7 @@ import kotlin.time.Instant
 /** Derived display strings/flags shared between the Compose UI and the iOS SwiftUI bridge. */
 
 fun ConverterUiState.statusLine(): String {
+    if (isManualSource) return if (sourceName.isEmpty()) "" else "via $sourceName"
     val updated = lastUpdated?.let { "updated ${it.toDateTimeString()}" } ?: "loading rates…"
     return if (sourceName.isEmpty()) updated else "via $sourceName, $updated"
 }
