@@ -19,11 +19,17 @@ class CurrencyFlagTest {
     }
 
     @Test
-    fun currencyFlagEmoji_showsAllFlagsForCurrenciesSharedByMultipleCountries() {
-        assertEquals("🇦🇬 🇦🇮 🇩🇲 🇬🇩 🇰🇳 🇱🇨 🇲🇸 🇻🇨", currencyFlagEmoji("XCD"))
-        assertEquals("🇧🇫 🇧🇯 🇨🇮 🇬🇼 🇲🇱 🇳🇪 🇸🇳 🇹🇬", currencyFlagEmoji("XOF"))
-        assertEquals("🇨🇫 🇨🇬 🇨🇲 🇬🇦 🇬🇶 🇹🇩", currencyFlagEmoji("XAF"))
+    fun currencyFlagEmoji_showsAllFlagsForCurrenciesSharedByFewCountries() {
+        assertEquals("🇨🇼 🇸🇽", currencyFlagEmoji("XCG"))
         assertEquals("🇳🇨 🇵🇫 🇼🇫", currencyFlagEmoji("XPF"))
+    }
+
+    @Test
+    fun currencyFlagEmoji_hidesFlagsForCurrenciesSharedByManyCountries() {
+        // Showing every flag side by side gets visually noisy past a few countries.
+        assertNull(currencyFlagEmoji("XCD")) // 8 countries
+        assertNull(currencyFlagEmoji("XOF")) // 8 countries
+        assertNull(currencyFlagEmoji("XAF")) // 6 countries
     }
 
     @Test

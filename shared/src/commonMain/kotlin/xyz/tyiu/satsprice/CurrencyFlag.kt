@@ -12,17 +12,22 @@ private val MULTI_COUNTRY_CURRENCY_REGION_CODES: Map<String, List<String>> = map
     "XPF" to listOf("NC", "PF", "WF"),
 )
 
+/** Above this many issuing countries, showing every flag side by side is too visually noisy. */
+private const val MAX_FLAGS_PER_CURRENCY = 3
+
 /**
  * A country flag emoji for [code], derived from the first two letters of the ISO 4217 code —
  * which double as the issuing country's ISO 3166-1 alpha-2 code for ordinary national
  * currencies — or null when there's no flag to show. [MULTI_COUNTRY_CURRENCY_REGION_CODES]
  * lists every country sharing a currency with no single issuer, so those show all their flags
- * side by side; the remaining "X"-prefixed codes are precious metals, testing codes, and other
- * non-national codes (XAU, XTS, XXX, ...), none of which has a country to show. EUR is a special
- * case handled separately, using the EU's own flag.
+ * side by side, unless there are more than [MAX_FLAGS_PER_CURRENCY] of them; the remaining
+ * "X"-prefixed codes are precious metals, testing codes, and other non-national codes (XAU, XTS,
+ * XXX, ...), none of which has a country to show. EUR is a special case handled separately, using
+ * the EU's own flag.
  */
 fun currencyFlagEmoji(code: String): String? {
     MULTI_COUNTRY_CURRENCY_REGION_CODES[code]?.let { regionCodes ->
+        if (regionCodes.size > MAX_FLAGS_PER_CURRENCY) return null
         return regionCodes.joinToString(" ") { regionFlagEmoji(it) }
     }
     if (code.startsWith("X")) return null
