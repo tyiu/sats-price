@@ -53,3 +53,8 @@ private fun jsRegionDisplayName(regionCode: String): String = js(
 
 actual fun regionDisplayName(regionCode: String): String? =
     jsRegionDisplayName(regionCode).takeIf { it != regionCode }
+
+// Compose for Web renders everything through Skia onto a <canvas> rather than through the
+// browser's own text stack, so it can't fall back to the browser/OS's color-emoji font the way
+// native targets can — a flag's regional-indicator codepoints draw as empty boxes instead.
+actual fun supportsFlagEmoji(): Boolean = false

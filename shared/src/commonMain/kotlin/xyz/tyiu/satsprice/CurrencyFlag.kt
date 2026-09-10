@@ -34,10 +34,13 @@ internal fun issuingCountryCodes(code: String): List<String> {
 
 /**
  * A country flag emoji for [code], or null when there's no flag to show — either because [code]
- * isn't tied to any country, or because it's shared by more than [MAX_FLAGS_PER_CURRENCY]
- * countries, which would be too visually noisy to show side by side.
+ * isn't tied to any country, because it's shared by more than [MAX_FLAGS_PER_CURRENCY] countries
+ * (too visually noisy to show side by side), or because [supportsFlagEmoji] says the platform
+ * can't render one anyway (Compose for Web's canvas-based text renderer has no color-emoji font
+ * to fall back to, so a flag's regional-indicator codepoints draw as empty boxes there).
  */
 fun currencyFlagEmoji(code: String): String? {
+    if (!supportsFlagEmoji()) return null
     val regionCodes = issuingCountryCodes(code)
     if (regionCodes.isEmpty() || regionCodes.size > MAX_FLAGS_PER_CURRENCY) return null
     return regionCodes.joinToString(" ") { regionFlagEmoji(it) }

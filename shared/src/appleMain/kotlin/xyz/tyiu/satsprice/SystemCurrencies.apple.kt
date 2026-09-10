@@ -37,3 +37,5 @@ actual fun currencyDecimalDigits(code: String): Int {
 
 actual fun regionDisplayName(regionCode: String): String? =
     NSLocale.currentLocale.localizedStringForCountryCode(regionCode)
+
+actual fun supportsFlagEmoji(): Boolean = true

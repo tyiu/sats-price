@@ -43,3 +43,5 @@ actual fun regionDisplayName(regionCode: String): String? {
     if (regionCode !in Locale.getISOCountries()) return null
     return Locale("", regionCode).getDisplayCountry(Locale.getDefault())
 }
+
+actual fun supportsFlagEmoji(): Boolean = true

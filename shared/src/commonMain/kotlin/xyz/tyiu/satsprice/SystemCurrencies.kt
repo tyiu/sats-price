@@ -45,3 +45,10 @@ expect fun localeCurrencyCode(): String?
 
 /** The conventional number of decimal places for [code] (e.g. 2 for USD, 0 for JPY, 3 for BHD). */
 expect fun currencyDecimalDigits(code: String): Int
+
+/**
+ * Whether the current platform's text renderer can draw flag emoji. False on Compose for Web
+ * (js/wasmJs): its canvas-based Skia renderer has no bundled or system color-emoji font to draw a
+ * flag's regional-indicator codepoints with, so they'd otherwise render as empty boxes.
+ */
+expect fun supportsFlagEmoji(): Boolean
