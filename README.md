@@ -27,7 +27,7 @@ height="70">](https://github.com/tyiu/sats-price/releases)
 
 ## Supported Platforms
 
-iOS 16.0+ • macOS 13.0+ • Android 10.0+
+iOS 16.0+ • macOS 13.0+ • Android 7.0+
 
 ## Kotlin Multiplatform
 
@@ -71,8 +71,6 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 - iOS tests: `./gradlew :shared:iosSimulatorArm64Test`
 
 ## Attribution
-
-This project depends on [Skip](https://skip.tools) to build as a multi-platform app.
 
 This project uses [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
 [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform), and
