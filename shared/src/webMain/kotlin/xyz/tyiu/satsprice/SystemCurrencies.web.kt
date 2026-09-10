@@ -6,8 +6,10 @@ private fun jsSupportedCurrencyCodes(): JsArray<JsString> = js("Intl.supportedVa
 
 // A chained `new Foo(x).bar()` inside js() can misparse (`new` binding to the whole chain rather
 // than just the constructor call), so the constructor result is bound to a variable first.
+// `undefined` (rather than a fixed locale like 'en') uses the browser's own locale — code always
+// comes from jsSupportedCurrencyCodes() itself, so .of(code) is guaranteed to resolve.
 private fun jsCurrencyDisplayName(code: String): String = js(
-    "(function() { var names = new Intl.DisplayNames(['en'], { type: 'currency' }); return names.of(code); })()",
+    "(function() { var names = new Intl.DisplayNames(undefined, { type: 'currency' }); return names.of(code); })()",
 )
 
 actual fun systemCurrencies(): List<CurrencyInfo> =
@@ -27,6 +29,10 @@ actual fun systemCurrencies(): List<CurrencyInfo> =
  */
 actual fun localeCurrencyCode(): String? = null
 
+// A currency's decimal-digit count is a property of the currency, not the locale (e.g. JPY's is
+// always 0), so — unlike jsCurrencyDisplayName/jsRegionDisplayName above — locale is only a
+// required constructor argument here, not something the result actually depends on; 'en' is as
+// good as any other.
 private fun jsCurrencyFractionDigits(code: String): Int = js(
     """(function() { var fmt = new Intl.NumberFormat('en', { style: 'currency', currency: code }); return fmt.resolvedOptions().maximumFractionDigits; })()""",
 )
