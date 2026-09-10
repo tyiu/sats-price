@@ -55,12 +55,25 @@ private val WITHDRAWN_CURRENCY_CODES = setOf(
     "SKK", // Slovak Koruna
 )
 
+/**
+ * CLDR appends a "(1927–2002)" or "(2009–2024)" style validity-period annotation to a currency's
+ * display name when it's a historical/superseded one — a broader, data-driven signal than
+ * [WITHDRAWN_CURRENCY_CODES] above, catching ones not yet added there. Not a full replacement for
+ * it, though: some withdrawn currencies (pre-euro ones especially) don't get this treatment in
+ * every ICU dataset and still need an explicit entry — e.g. the year-annotated "Afghan Afghani
+ * (1927–2002)" is how AFA shows up, but "German Mark" carries no such hint that DEM is withdrawn.
+ * Dashes vary (an en dash in most of these, an em dash in at least one seen in practice), so the
+ * character class covers hyphen-minus and both.
+ */
+private val YEAR_ANNOTATION_REGEX = Regex("""\(\d{4}([-–—]\d{4})?\)$""")
+
 actual fun systemCurrencies(): List<CurrencyInfo> =
     jsSupportedCurrencyCodes()
         .toList()
         .map { it.toString() }
         .filterNot { it in WITHDRAWN_CURRENCY_CODES }
         .map { code -> CurrencyInfo(code, jsCurrencyDisplayName(code)) }
+        .filterNot { YEAR_ANNOTATION_REGEX.containsMatchIn(it.displayName) }
         .sortedBy { it.code }
 
 /**
