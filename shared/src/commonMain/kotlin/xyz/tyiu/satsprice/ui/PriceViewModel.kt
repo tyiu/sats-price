@@ -169,11 +169,14 @@ class PriceViewModel(
                         newRates,
                     )
                 }
-            } catch (e: Exception) {
-                // Not localized: this shared ViewModel has no platform Context to resolve a moko-resources
-                // string on Android, and no locale-aware synchronous resolution path that works everywhere.
+            } catch (_: Exception) {
+                // A fixed, generic message rather than e.message: exceptions from the HTTP client
+                // or JSON parsing can carry verbose, technical text (full response bodies, stack
+                // traces) that isn't meaningful to a user. Not localized: this shared ViewModel has
+                // no platform Context to resolve a moko-resources string on Android, and no
+                // locale-aware synchronous resolution path that works everywhere.
                 _uiState.update {
-                    it.copy(isLoading = false, errorMessage = e.message ?: "Could not fetch exchange rates")
+                    it.copy(isLoading = false, errorMessage = "Could not fetch exchange rates")
                 }
             }
         }
