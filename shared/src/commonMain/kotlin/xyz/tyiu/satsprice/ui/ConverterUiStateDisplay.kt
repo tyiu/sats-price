@@ -26,10 +26,14 @@ fun ConverterUiState.exceedsMaxSupply(): Boolean {
 fun ConverterUiState.defaultCurrencyRate(): String =
     rateDisplays[defaultCurrencyCode]?.takeIf { it.isNotEmpty() } ?: ""
 
-/** The current "1 [ConverterUiState.defaultCurrencyCode] = ? Sats" rate, as a plain number. */
+/**
+ * The current "1 [ConverterUiState.defaultCurrencyCode] = ? Sats" rate, as a whole (never
+ * fractional) number of Sats — empty whenever [defaultCurrencyRate] is, so the two rates never
+ * disagree about whether a rate is currently known.
+ */
 fun ConverterUiState.oneCurrencyToSats(): String {
-    val rate = rateDisplays[defaultCurrencyCode]?.toBigDecimalOrNull() ?: return ""
-    return CurrencyConverter.satsPerCurrencyUnit(rate)?.let { formatAmount(it, 2) } ?: ""
+    val rate = defaultCurrencyRate().toBigDecimalOrNull() ?: return ""
+    return CurrencyConverter.satsPerCurrencyUnit(rate)?.let { formatAmount(it, 0) } ?: ""
 }
 
 /** The pinned, non-removable "Current Currency" shown in the currency picker's own section. */

@@ -143,10 +143,16 @@ class PriceViewModel(
     fun refresh() {
         if (currentSource === manualSource && manualSource.rate == null) {
             // No rate typed in (yet): nothing to price fiat currencies with, so clear any stale
-            // rate this might otherwise still compute fiat amounts from.
+            // rate this might otherwise still compute fiat amounts (or the derived "currency to
+            // Sats" rate) from.
             rates = null
             _uiState.update {
-                it.copy(isLoading = false, errorMessage = null, pricedCurrencyCodes = emptySet())
+                it.copy(
+                    isLoading = false,
+                    errorMessage = null,
+                    pricedCurrencyCodes = emptySet(),
+                    rateDisplays = emptyMap(),
+                )
             }
             return
         }
