@@ -294,7 +294,8 @@ class PriceViewModel(
     }
 
     fun onManualSatsPerCurrencyChanged(value: String) {
-        val sanitized = sanitizeDecimalInput(value)
+        // Sats are indivisible — unlike the rate field, this one takes whole numbers only.
+        val sanitized = sanitizeIntegerInput(value)
         val parsedSats = sanitized.toBigDecimalOrNull()
         val rate = parsedSats?.let { sats -> CurrencyConverter.satsPerCurrencyUnit(sats) }
         manualSource.rate = rate

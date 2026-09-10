@@ -115,8 +115,8 @@ struct ContentView: View {
                         NumericField(
                             placeholder: "",
                             value: state.manualSatsPerCurrencyInput,
-                            keyboardType: .decimalPad,
-                            sanitize: sanitizeDecimalInput,
+                            keyboardType: .numberPad,
+                            sanitize: sanitizeIntegerInput,
                             onChange: { viewModel.onManualSatsPerCurrencyChanged($0) },
                             alignment: .trailing
                         )

@@ -214,7 +214,7 @@ fun PriceScreen(
                             value = state.manualSatsPerCurrencyInput,
                             onValueChange = viewModel::onManualSatsPerCurrencyChanged,
                             label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             visualTransformation = DigitGroupingTransformation,
                             modifier = Modifier.fillMaxWidth(),
