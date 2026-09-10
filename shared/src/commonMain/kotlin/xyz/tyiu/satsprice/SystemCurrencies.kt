@@ -17,14 +17,25 @@ fun matchesCurrencySearch(info: CurrencyInfo, query: String): Boolean {
     }
 }
 
+// Region codes are static for the life of the app (they don't depend on [query]), but
+// [matchesCurrencySearch] re-derives a name for every currency on every keystroke — caching here
+// turns that back into a one-time-per-region-code cost. A plain Map (not getOrPut) since a cached
+// null result — a region [regionDisplayName] doesn't recognize — must stay cached rather than
+// being retried every time, which getOrPut would do for a null value.
+private val regionDisplayNameCache = mutableMapOf<String, String?>()
+
 /**
  * A localized display name for ISO 3166-1 alpha-2 [regionCode] (e.g. "Canada"), or null if the
  * platform doesn't recognize it. "EU" is handled directly since it's not a real ISO 3166-1
  * country code — it's [issuingCountryCodes]' own stand-in for EUR's region/flag — and platform
  * locale data doesn't reliably resolve it to a name the way it does real country codes.
  */
-private fun localizedRegionName(regionCode: String): String? =
-    if (regionCode == "EU") "European Union" else regionDisplayName(regionCode)
+private fun localizedRegionName(regionCode: String): String? {
+    if (regionCode in regionDisplayNameCache) return regionDisplayNameCache[regionCode]
+    val name = if (regionCode == "EU") "European Union" else regionDisplayName(regionCode)
+    regionDisplayNameCache[regionCode] = name
+    return name
+}
 
 /** The current platform's localized display name for ISO 3166-1 alpha-2 [regionCode], if known. */
 expect fun regionDisplayName(regionCode: String): String?
