@@ -58,6 +58,17 @@ class CurrencyConverterTest {
     }
 
     @Test
+    fun satsPerCurrencyUnit_isInverseOfTheBtcRate() {
+        // 1 BTC = 50,000 USD, so 1 USD is worth 100,000,000 / 50,000 = 2,000 Sats.
+        assertEquals(BigDecimal.fromLong(2_000), CurrencyConverter.satsPerCurrencyUnit(BigDecimal.fromLong(50_000)))
+    }
+
+    @Test
+    fun satsPerCurrencyUnit_returnsNullForZeroRate() {
+        assertNull(CurrencyConverter.satsPerCurrencyUnit(BigDecimal.fromLong(0)))
+    }
+
+    @Test
     fun handlesAmountsFarBeyondDoubleOrLongRange() {
         // 10^30 BTC: overflows both Double's exact-integer range and Long.MAX_VALUE.
         val hugeBtc = BigDecimal.parseString("1000000000000000000000000000000")

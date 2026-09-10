@@ -4,6 +4,7 @@ import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import xyz.tyiu.satsprice.CurrencyInfo
 import xyz.tyiu.satsprice.domain.CurrencyConverter
+import xyz.tyiu.satsprice.domain.formatAmount
 import xyz.tyiu.satsprice.domain.toBigDecimalOrNull
 import kotlin.time.Instant
 
@@ -24,6 +25,12 @@ fun ConverterUiState.exceedsMaxSupply(): Boolean {
 /** The current "1 BTC = ?" rate in [ConverterUiState.defaultCurrencyCode], as a plain number. */
 fun ConverterUiState.defaultCurrencyRate(): String =
     rateDisplays[defaultCurrencyCode]?.takeIf { it.isNotEmpty() } ?: ""
+
+/** The current "1 [ConverterUiState.defaultCurrencyCode] = ? Sats" rate, as a plain number. */
+fun ConverterUiState.oneCurrencyToSats(): String {
+    val rate = rateDisplays[defaultCurrencyCode]?.toBigDecimalOrNull() ?: return ""
+    return CurrencyConverter.satsPerCurrencyUnit(rate)?.let { formatAmount(it, 2) } ?: ""
+}
 
 /** The pinned, non-removable "Current Currency" shown in the currency picker's own section. */
 fun ConverterUiState.currentCurrency(): CurrencyInfo =

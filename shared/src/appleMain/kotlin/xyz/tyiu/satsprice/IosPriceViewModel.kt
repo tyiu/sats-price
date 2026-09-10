@@ -9,6 +9,7 @@ import xyz.tyiu.satsprice.ui.PriceViewModel
 import xyz.tyiu.satsprice.ui.currentCurrency
 import xyz.tyiu.satsprice.ui.defaultCurrencyRate
 import xyz.tyiu.satsprice.ui.exceedsMaxSupply
+import xyz.tyiu.satsprice.ui.oneCurrencyToSats
 import xyz.tyiu.satsprice.ui.selectedOtherCurrencies
 import xyz.tyiu.satsprice.ui.statusLine
 import xyz.tyiu.satsprice.ui.unselectedCurrencies
@@ -34,6 +35,7 @@ data class IosConverterState(
     val errorMessage: String?,
     val statusLine: String,
     val defaultCurrencyRate: String,
+    val oneCurrencyToSats: String,
 )
 
 /**
@@ -85,4 +87,5 @@ private fun ConverterUiState.toIosState(): IosConverterState = IosConverterState
     errorMessage = errorMessage,
     statusLine = statusLine(),
     defaultCurrencyRate = defaultCurrencyRate(),
+    oneCurrencyToSats = oneCurrencyToSats(),
 )

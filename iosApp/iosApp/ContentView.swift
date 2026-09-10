@@ -105,6 +105,17 @@ struct ContentView: View {
                         }
                     }
                 }
+
+                if !state.oneCurrencyToSats.isEmpty {
+                    HStack {
+                        Text(IosLocalizationKt.localizedFormattedString(
+                            resource: MR.strings.shared.currency_to_sats,
+                            args: [state.defaultCurrencyCode]
+                        ))
+                        Spacer()
+                        Text(NumberFormatKt.groupDigits(value: state.oneCurrencyToSats))
+                    }
+                }
             }
 
             if let error = state.errorMessage {

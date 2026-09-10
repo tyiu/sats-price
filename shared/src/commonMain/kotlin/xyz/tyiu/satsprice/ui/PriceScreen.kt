@@ -213,6 +213,18 @@ fun PriceScreen(
                             }
                         }
                     }
+
+                    val oneCurrencyToSats = state.oneCurrencyToSats()
+                    if (oneCurrencyToSats.isNotEmpty()) {
+                        Text(
+                            text = stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode),
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            text = groupDigits(oneCurrencyToSats),
+                            style = MaterialTheme.typography.headlineSmall,
+                        )
+                    }
                 }
             }
 

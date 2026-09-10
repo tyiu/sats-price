@@ -44,4 +44,8 @@ object CurrencyConverter {
 
     fun fiatToSats(fiat: BigDecimal, rates: ExchangeRates, currency: String): BigDecimal? =
         fiatToBtc(fiat, rates, currency)?.let { btc -> btcToSats(btc) }
+
+    /** Sats worth 1 unit of a currency whose "1 BTC = ?" rate is [rate], or null if [rate] is zero. */
+    fun satsPerCurrencyUnit(rate: BigDecimal): BigDecimal? =
+        if (rate.isZero()) null else SATS_PER_BTC.divide(rate, DIVISION_MODE)
 }
