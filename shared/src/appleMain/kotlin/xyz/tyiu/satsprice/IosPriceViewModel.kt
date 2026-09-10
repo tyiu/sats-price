@@ -9,9 +9,9 @@ import xyz.tyiu.satsprice.ui.PriceViewModel
 import xyz.tyiu.satsprice.ui.currentCurrency
 import xyz.tyiu.satsprice.ui.defaultCurrencyRate
 import xyz.tyiu.satsprice.ui.exceedsMaxSupply
+import xyz.tyiu.satsprice.ui.lastUpdatedDateTime
 import xyz.tyiu.satsprice.ui.oneCurrencyToSats
 import xyz.tyiu.satsprice.ui.selectedOtherCurrencies
-import xyz.tyiu.satsprice.ui.statusLine
 import xyz.tyiu.satsprice.ui.unselectedCurrencies
 
 data class FiatRow(val code: String, val amount: String, val rateDisplay: String)
@@ -34,7 +34,7 @@ data class IosConverterState(
     val manualSatsPerCurrencyInput: String,
     val isLoading: Boolean,
     val errorMessage: String?,
-    val statusLine: String,
+    val lastUpdatedDateTime: String?,
     val defaultCurrencyRate: String,
     val oneCurrencyToSats: String,
 )
@@ -89,7 +89,7 @@ private fun ConverterUiState.toIosState(): IosConverterState = IosConverterState
     manualSatsPerCurrencyInput = manualSatsPerCurrencyInput,
     isLoading = isLoading,
     errorMessage = errorMessage,
-    statusLine = statusLine(),
+    lastUpdatedDateTime = lastUpdatedDateTime(),
     defaultCurrencyRate = defaultCurrencyRate(),
     oneCurrencyToSats = oneCurrencyToSats(),
 )

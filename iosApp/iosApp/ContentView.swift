@@ -37,6 +37,21 @@ struct ContentView: View {
             : state.fiatRows
     }
 
+    /// Nil for Manual (a manually typed rate has no "last updated" moment to show). Doesn't name
+    /// the price source — just when the rate was last fetched.
+    private func statusText(for state: IosConverterState) -> String? {
+        if state.isManualSource {
+            return nil
+        }
+        if let dateTime = state.lastUpdatedDateTime {
+            return IosLocalizationKt.localizedFormattedString(
+                resource: MR.strings.shared.updated_status,
+                args: [dateTime]
+            )
+        }
+        return IosLocalizationKt.localizedString(resource: MR.strings.shared.loading_rates_status)
+    }
+
     #if os(macOS)
     /// [codes] with [moving] relocated to sit right before [target] — how macOS's manual
     /// drag-and-drop (see `.dropDestination` above) computes its new currency order, since
@@ -56,8 +71,8 @@ struct ContentView: View {
         Form {
             Section(
                 footer: Group {
-                    if !state.statusLine.isEmpty {
-                        Text(state.statusLine)
+                    if let statusText = statusText(for: state) {
+                        Text(statusText)
                     }
                 }
             ) {

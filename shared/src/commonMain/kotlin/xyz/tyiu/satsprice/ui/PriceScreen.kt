@@ -141,8 +141,13 @@ fun PriceScreen(
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
                 Text("SatsPrice", style = MaterialTheme.typography.headlineMedium)
-                val statusLine = state.statusLine()
-                if (statusLine.isNotEmpty()) {
+                val statusLine = if (state.isManualSource) {
+                    null
+                } else {
+                    state.lastUpdatedDateTime()?.let { stringResource(MR.strings.updated_status, it) }
+                        ?: stringResource(MR.strings.loading_rates_status)
+                }
+                if (statusLine != null) {
                     Text(
                         text = statusLine,
                         style = MaterialTheme.typography.bodySmall,

@@ -11,10 +11,16 @@ import kotlin.time.Instant
 
 /** Derived display strings/flags shared between the Compose UI and the iOS SwiftUI bridge. */
 
-fun ConverterUiState.statusLine(): String {
-    if (isManualSource) return ""
-    val updated = lastUpdated?.let { "updated ${it.toDateTimeString()}" } ?: "loading rates…"
-    return if (sourceName.isEmpty()) updated else "via $sourceName, $updated"
+/**
+ * The current platform's locale-formatted rendering of [ConverterUiState.lastUpdated] — just the
+ * date/time itself, not the surrounding localized "Updated ..."/"Loading rates…" text, since this
+ * shared code has no Composable/moko-resources context to resolve a localized string from; the UI
+ * layer supplies that around whatever this returns. Null while manual (nothing to show — a
+ * manually typed rate has no "last updated" moment) or before the first fetch completes.
+ */
+fun ConverterUiState.lastUpdatedDateTime(): String? {
+    if (isManualSource) return null
+    return lastUpdated?.toDateTimeString()
 }
 
 fun ConverterUiState.exceedsMaxSupply(): Boolean {

@@ -15,6 +15,7 @@
     <string name="currency_to_sats">%1$s to Sats</string>
     <string name="done">Done</string>
     <string name="exceeds_max_supply">Exceeds the %1$s maximum supply</string>
+    <string name="loading_rates_status">Loading rates…</string>
     <string name="move_currency_down_content_description">Move down</string>
     <string name="move_currency_to_bottom_content_description">Move to bottom</string>
     <string name="move_currency_to_top_content_description">Move to top</string>
@@ -31,4 +32,5 @@
     <string name="search_currencies_placeholder">Search currencies</string>
     <string name="selected_currencies_section_title">Selected Currencies</string>
     <string name="unpriced_currencies_section_title">Unpriced Currencies</string>
+    <string name="updated_status">Updated %1$s</string>
 </resources>
