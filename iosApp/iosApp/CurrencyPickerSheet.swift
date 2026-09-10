@@ -44,10 +44,6 @@ struct CurrencyPickerSheet: View {
                     }
                 }
             }
-            .searchable(
-                text: $searchQuery,
-                prompt: IosLocalizationKt.localizedString(resource: MR.strings.shared.search_currencies_placeholder)
-            )
             .navigationTitle(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
@@ -58,6 +54,15 @@ struct CurrencyPickerSheet: View {
                 }
             }
         }
+        // Applied to the NavigationStack rather than chained onto the List below, alongside
+        // .toolbar/.navigationTitle: combining all three on the same view triggers a SwiftUI/
+        // AppKit bug on macOS ("Update ToolbarReader tried to update multiple times per frame",
+        // logged every time this sheet's first presentation animates in) — harmless in practice,
+        // but splitting .searchable onto the outer view avoids it entirely.
+        .searchable(
+            text: $searchQuery,
+            prompt: IosLocalizationKt.localizedString(resource: MR.strings.shared.search_currencies_placeholder)
+        )
         #if os(macOS)
         // macOS sizes a .sheet() to its content's ideal size rather than the parent window's
         // size (unlike iOS, which presents modally full-size); without an explicit frame here,
