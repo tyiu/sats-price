@@ -31,6 +31,7 @@ data class IosConverterState(
     val sourceName: String,
     val isManualSource: Boolean,
     val manualRateInput: String,
+    val manualSatsPerCurrencyInput: String,
     val isLoading: Boolean,
     val errorMessage: String?,
     val statusLine: String,
@@ -64,6 +65,7 @@ class IosPriceViewModel {
     fun onFiatCurrenciesReordered(newOrder: List<String>) = viewModel.onFiatCurrenciesReordered(newOrder)
     fun onSourceSelected(name: String) = viewModel.onSourceSelected(name)
     fun onManualRateChanged(value: String) = viewModel.onManualRateChanged(value)
+    fun onManualSatsPerCurrencyChanged(value: String) = viewModel.onManualSatsPerCurrencyChanged(value)
 }
 
 private fun ConverterUiState.toIosState(): IosConverterState = IosConverterState(
@@ -83,6 +85,7 @@ private fun ConverterUiState.toIosState(): IosConverterState = IosConverterState
     sourceName = sourceName,
     isManualSource = isManualSource,
     manualRateInput = manualRateInput,
+    manualSatsPerCurrencyInput = manualSatsPerCurrencyInput,
     isLoading = isLoading,
     errorMessage = errorMessage,
     statusLine = statusLine(),

@@ -105,13 +105,22 @@ struct ContentView: View {
                     }
                 }
 
-                if !state.oneCurrencyToSats.isEmpty {
-                    HStack {
-                        Text(IosLocalizationKt.localizedFormattedString(
-                            resource: MR.strings.shared.currency_to_sats,
-                            args: [state.defaultCurrencyCode]
-                        ))
-                        Spacer()
+                HStack {
+                    Text(IosLocalizationKt.localizedFormattedString(
+                        resource: MR.strings.shared.currency_to_sats,
+                        args: [state.defaultCurrencyCode]
+                    ))
+                    Spacer()
+                    if state.isManualSource {
+                        NumericField(
+                            placeholder: "",
+                            value: state.manualSatsPerCurrencyInput,
+                            keyboardType: .decimalPad,
+                            sanitize: sanitizeDecimalInput,
+                            onChange: { viewModel.onManualSatsPerCurrencyChanged($0) },
+                            alignment: .trailing
+                        )
+                    } else if !state.oneCurrencyToSats.isEmpty {
                         Text(NumberFormatKt.groupDigits(value: state.oneCurrencyToSats))
                     }
                 }

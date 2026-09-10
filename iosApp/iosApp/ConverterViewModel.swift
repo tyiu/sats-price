@@ -46,4 +46,8 @@ final class ConverterViewModel: ObservableObject {
     func onManualRateChanged(_ value: String) {
         bridge.onManualRateChanged(value: value)
     }
+
+    func onManualSatsPerCurrencyChanged(_ value: String) {
+        bridge.onManualSatsPerCurrencyChanged(value: value)
+    }
 }

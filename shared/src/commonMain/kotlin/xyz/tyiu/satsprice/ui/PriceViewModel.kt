@@ -50,6 +50,7 @@ data class ConverterUiState(
     val sourceName: String = "",
     val isManualSource: Boolean = false,
     val manualRateInput: String = "",
+    val manualSatsPerCurrencyInput: String = "",
     val isLoading: Boolean = true,
     val errorMessage: String? = null,
     val lastUpdated: Instant? = null,
@@ -239,7 +240,12 @@ class PriceViewModel(
                 if (seedRate != null) {
                     manualSource.rate = seedRate
                     _uiState.update {
-                        it.copy(manualRateInput = formatAmount(seedRate, decimalDigitsFor(defaultCurrencyCode)))
+                        it.copy(
+                            manualRateInput = formatAmount(seedRate, decimalDigitsFor(defaultCurrencyCode)),
+                            manualSatsPerCurrencyInput = CurrencyConverter.satsPerCurrencyUnit(seedRate)
+                                ?.let { sats -> formatAmount(sats, 0) }
+                                .orEmpty(),
+                        )
                     }
                 }
                 refresh()
@@ -260,13 +266,41 @@ class PriceViewModel(
             exchangeRateStore.loadLastKnownRates(source.id)?.rates?.get(defaultCurrencyCode)
         }
 
+    /**
+     * The "BTC to [defaultCurrencyCode]" and "[defaultCurrencyCode] to Sats" fields edit the same
+     * underlying [ManualExchangeRateSource.rate] from two different angles — entering one always
+     * recomputes the other, via the same self-inverse division ([CurrencyConverter.satsPerCurrencyUnit]
+     * of a rate is a Sats amount, and of a Sats amount is a rate).
+     */
     fun onManualRateChanged(value: String) {
         val sanitized = sanitizeDecimalInput(value)
-        _uiState.update { it.copy(manualRateInput = sanitized) }
         // Also cleared (rather than left as the last valid rate) when sanitized fails to parse —
         // e.g. the field is emptied, or is mid-edit on an incomplete number — so refresh() then
         // wipes any fiat amounts computed from it, rather than leaving stale ones on screen.
-        manualSource.rate = sanitized.toBigDecimalOrNull()
+        val parsed = sanitized.toBigDecimalOrNull()
+        manualSource.rate = parsed
+        _uiState.update {
+            it.copy(
+                manualRateInput = sanitized,
+                manualSatsPerCurrencyInput = parsed?.let { rate -> CurrencyConverter.satsPerCurrencyUnit(rate) }
+                    ?.let { sats -> formatAmount(sats, 0) }
+                    .orEmpty(),
+            )
+        }
+        refresh()
+    }
+
+    fun onManualSatsPerCurrencyChanged(value: String) {
+        val sanitized = sanitizeDecimalInput(value)
+        val parsedSats = sanitized.toBigDecimalOrNull()
+        val rate = parsedSats?.let { sats -> CurrencyConverter.satsPerCurrencyUnit(sats) }
+        manualSource.rate = rate
+        _uiState.update {
+            it.copy(
+                manualSatsPerCurrencyInput = sanitized,
+                manualRateInput = rate?.let { formatAmount(it, decimalDigitsFor(defaultCurrencyCode)) }.orEmpty(),
+            )
+        }
         refresh()
     }
 

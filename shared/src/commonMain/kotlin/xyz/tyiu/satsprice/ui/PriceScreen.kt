@@ -209,12 +209,23 @@ fun PriceScreen(
                         }
                     }
 
-                    val oneCurrencyToSats = state.oneCurrencyToSats()
-                    if (oneCurrencyToSats.isNotEmpty()) {
+                    if (state.isManualSource) {
+                        OutlinedTextField(
+                            value = state.manualSatsPerCurrencyInput,
+                            onValueChange = viewModel::onManualSatsPerCurrencyChanged,
+                            label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true,
+                            visualTransformation = DigitGroupingTransformation,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    } else {
+                        val oneCurrencyToSats = state.oneCurrencyToSats()
                         OutlinedTextField(
                             value = oneCurrencyToSats,
                             onValueChange = {},
                             readOnly = true,
+                            enabled = oneCurrencyToSats.isNotEmpty(),
                             label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
                             singleLine = true,
                             visualTransformation = DigitGroupingTransformation,
