@@ -36,4 +36,28 @@ class SystemCurrenciesTest {
         assertFalse(matchesCurrencySearch(usd, "EUR"))
         assertFalse(matchesCurrencySearch(usd, "Euro"))
     }
+
+    @Test
+    fun matchesCurrencySearch_matchesByIssuingCountryName() {
+        // "Canadian Dollar" doesn't contain "Canada" as a substring, so this only passes if the
+        // country-name path (rather than just code/display-name matching) is actually consulted.
+        val cad = CurrencyInfo("CAD", "Canadian Dollar")
+        val countryName = regionDisplayName("CA")
+        assertTrue(countryName != null && countryName.isNotBlank(), "expected a display name for CA")
+
+        assertTrue(matchesCurrencySearch(cad, countryName))
+        assertTrue(matchesCurrencySearch(cad, countryName.lowercase()))
+        assertFalse(matchesCurrencySearch(cad, "Definitely not a matching country name"))
+    }
+
+    @Test
+    fun matchesCurrencySearch_matchesEurozoneByHardcodedEuropeanUnionName() {
+        // "EU" isn't a real ISO 3166-1 country code, so platform locale data can't be relied on
+        // to name it — this is hardcoded rather than delegated to [regionDisplayName].
+        val eur = CurrencyInfo("EUR", "Euro")
+
+        assertTrue(matchesCurrencySearch(eur, "European"))
+        assertTrue(matchesCurrencySearch(eur, "union"))
+        assertFalse(matchesCurrencySearch(eur, "Germany"))
+    }
 }

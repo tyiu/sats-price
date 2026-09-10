@@ -34,3 +34,6 @@ actual fun currencyDecimalDigits(code: String): Int {
     formatter.currencyCode = code
     return formatter.maximumFractionDigits.toInt()
 }
+
+actual fun regionDisplayName(regionCode: String): String? =
+    NSLocale.currentLocale.localizedStringForCountryCode(regionCode)

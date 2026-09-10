@@ -37,3 +37,9 @@ actual fun currencyDecimalDigits(code: String): Int = try {
 } catch (e: IllegalArgumentException) {
     2
 }
+
+@Suppress("DEPRECATION") // Locale(language, country) still works fine; Locale.of() needs newer Android API levels.
+actual fun regionDisplayName(regionCode: String): String? {
+    if (regionCode !in Locale.getISOCountries()) return null
+    return Locale("", regionCode).getDisplayCountry(Locale.getDefault())
+}

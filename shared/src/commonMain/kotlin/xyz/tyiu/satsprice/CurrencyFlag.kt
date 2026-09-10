@@ -16,24 +16,31 @@ private val MULTI_COUNTRY_CURRENCY_REGION_CODES: Map<String, List<String>> = map
 private const val MAX_FLAGS_PER_CURRENCY = 3
 
 /**
- * A country flag emoji for [code], derived from the first two letters of the ISO 4217 code —
- * which double as the issuing country's ISO 3166-1 alpha-2 code for ordinary national
- * currencies — or null when there's no flag to show. [MULTI_COUNTRY_CURRENCY_REGION_CODES]
- * lists every country sharing a currency with no single issuer, so those show all their flags
- * side by side, unless there are more than [MAX_FLAGS_PER_CURRENCY] of them; the remaining
- * "X"-prefixed codes are precious metals, testing codes, and other non-national codes (XAU, XTS,
- * XXX, ...), none of which has a country to show. EUR is a special case handled separately, using
- * the EU's own flag.
+ * ISO 3166-1 alpha-2 codes of every country that issues [code], derived from the first two
+ * letters of the ISO 4217 code — which double as the issuing country's ISO 3166-1 alpha-2 code
+ * for ordinary national currencies — or empty when [code] isn't tied to any country.
+ * [MULTI_COUNTRY_CURRENCY_REGION_CODES] lists every country sharing a currency with no single
+ * issuer; the remaining "X"-prefixed codes are precious metals, testing codes, and other
+ * non-national codes (XAU, XTS, XXX, ...), none of which has a country. EUR is a special case,
+ * using the EU's own region code. Shared by [currencyFlagEmoji] and currency search-by-country.
+ */
+internal fun issuingCountryCodes(code: String): List<String> {
+    MULTI_COUNTRY_CURRENCY_REGION_CODES[code]?.let { return it }
+    if (code.startsWith("X")) return emptyList()
+    val regionCode = if (code == "EUR") "EU" else code.take(2)
+    if (regionCode.length != 2 || regionCode.any { it !in 'A'..'Z' }) return emptyList()
+    return listOf(regionCode)
+}
+
+/**
+ * A country flag emoji for [code], or null when there's no flag to show — either because [code]
+ * isn't tied to any country, or because it's shared by more than [MAX_FLAGS_PER_CURRENCY]
+ * countries, which would be too visually noisy to show side by side.
  */
 fun currencyFlagEmoji(code: String): String? {
-    MULTI_COUNTRY_CURRENCY_REGION_CODES[code]?.let { regionCodes ->
-        if (regionCodes.size > MAX_FLAGS_PER_CURRENCY) return null
-        return regionCodes.joinToString(" ") { regionFlagEmoji(it) }
-    }
-    if (code.startsWith("X")) return null
-    val regionCode = if (code == "EUR") "EU" else code.take(2)
-    if (regionCode.length != 2 || regionCode.any { it !in 'A'..'Z' }) return null
-    return regionFlagEmoji(regionCode)
+    val regionCodes = issuingCountryCodes(code)
+    if (regionCodes.isEmpty() || regionCodes.size > MAX_FLAGS_PER_CURRENCY) return null
+    return regionCodes.joinToString(" ") { regionFlagEmoji(it) }
 }
 
 /** The flag emoji for the 2-letter ISO 3166-1 alpha-2 [regionCode]. */

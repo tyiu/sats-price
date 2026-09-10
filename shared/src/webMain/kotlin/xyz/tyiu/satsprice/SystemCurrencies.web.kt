@@ -36,3 +36,20 @@ actual fun currencyDecimalDigits(code: String): Int = try {
 } catch (e: Exception) {
     2
 }
+
+// Falls back to the region code itself (rather than a JS null/undefined) when unrecognized, since
+// a plain `-> String?` return type doesn't reliably round-trip through js() interop here; that
+// fallback is filtered back out to null actual-side below, same as the other platforms.
+private fun jsRegionDisplayName(regionCode: String): String = js(
+    """(function() {
+        try {
+            var names = new Intl.DisplayNames(['en'], { type: 'region' });
+            return names.of(regionCode) || regionCode;
+        } catch (e) {
+            return regionCode;
+        }
+    })()""",
+)
+
+actual fun regionDisplayName(regionCode: String): String? =
+    jsRegionDisplayName(regionCode).takeIf { it != regionCode }
