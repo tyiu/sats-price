@@ -18,7 +18,14 @@ private fun jsCurrencyDisplayName(code: String): String = js(
  * necessarily incomplete and grows over time as more turn up. Unlike JVM/Android/Apple, there's
  * no web API to derive "currently assigned to some country" the way `java.util.Currency`/
  * `NSLocale` do (see [localeCurrencyCode] below), so this is a manually maintained exclusion list
- * instead. Needs a new entry whenever another currency is retired, or another old one turns up.
+ * instead, cross-checked against
+ * [Wikipedia's historical ISO 4217 codes table](https://en.wikipedia.org/wiki/ISO_4217#Historical_codes)
+ * (2026-09-10). Needs a new entry whenever another currency is retired, or another old one turns
+ * up. Deliberately excludes "BGN" despite Wikipedia listing a fourth, withdrawn Bulgarian lev
+ * (→ EUR): the JVM's own live-derived "currently used" set (the reference this list is checked
+ * against) still resolves BGN as Bulgaria's current currency, and matching that beats matching
+ * Wikipedia if the two disagree — this file's whole point is currency data this app can't get
+ * from a web API of its own.
  */
 private val WITHDRAWN_CURRENCY_CODES = setOf(
     "ANG", // Netherlands Antillean Guilder — replaced by XCG (Caribbean Guilder), April 2025
@@ -53,6 +60,72 @@ private val WITHDRAWN_CURRENCY_CODES = setOf(
     "PTE", // Portuguese Escudo
     "SIT", // Slovenian Tolar
     "SKK", // Slovak Koruna
+
+    // The rest of Wikipedia's historical codes table not already covered above.
+    "ARA", "ARP", "ARY", // Argentine austral/peso argentino/peso ley — replaced by ARS
+    "AYM", "AZM", // Azerbaijani manat (old) — replaced by AZN
+    "BAD", // Bosnia and Herzegovina dinar — replaced by BAM
+    "BEC", "BEL", // Belgian convertible/financial franc (funds codes)
+    "BGJ", "BGK", "BGL", // Bulgarian lev (first/second/third) — replaced by BGN
+    "BOP", // Bolivian peso — replaced by BOB
+    "BRB", "BRC", "BRE", "BRN", "BRR", // Brazilian cruzeiro/cruzado, through several redenominations — replaced by BRL
+    "BUK", // Burmese kyat — replaced by MMK
+    "BYB", // Belarusian ruble (first) — replaced by BYR, itself replaced by BYN
+    "CHC", // WIR franc (electronic)
+    "CSD", // Serbian dinar (old) — replaced by RSD
+    "CSJ", "CSK", // Czechoslovak koruna — split into CZK/SKK
+    "DDM", // East German mark — replaced by DEM
+    "ECS", "ECV", // Ecuadorian sucre / Unit of Constant Value — replaced by USD
+    "ESA", "ESB", // Spanish peseta (account A/B)
+    "GEK", // Georgian kuponi — replaced by GEL
+    "GHC", "GHP", // Ghanaian cedi (old) — replaced by GHS
+    "GNE", "GNS", // Guinean syli — replaced by GNF
+    "GQE", // Equatorial Guinean ekwele — replaced by XAF
+    "GWE", "GWP", // Guinean/Guinea-Bissau escudo/peso — replaced by XOF
+    "HRD", // Croatian dinar — replaced by HRK, itself replaced by EUR
+    "ILP", "ILR", // Israeli pound/shekel (old) — replaced by ILS
+    "ISJ", // Icelandic króna (first) — replaced by ISK
+    "LAJ", // Lao kip (old) — replaced by LAK
+    "LSM", // Lesotho loti (old)
+    "LTT", // Lithuanian talonas — replaced by LTL, itself replaced by EUR
+    "LUC", "LUL", // Luxembourg convertible/financial franc
+    "LVR", // Latvian rublis — replaced by LVL, itself replaced by EUR
+    "MGF", // Malagasy franc — replaced by MGA
+    "MLF", // Malian franc — replaced by XOF
+    "MRO", // Mauritanian ouguiya (old) — replaced by MRU
+    "MTP", // Maltese pound — replaced by MTL, itself replaced by EUR
+    "MVQ", // Maldivian rupee (old) — replaced by MVR
+    "MXP", // Mexican peso (old) — replaced by MXN
+    "MZE", "MZM", // Mozambican escudo/metical (old) — replaced by MZN
+    "NIC", // Nicaraguan córdoba (old) — replaced by NIO
+    "PEH", "PEI", "PES", // Peruvian sol/inti, through several redenominations — replaced by PEN
+    "PLZ", // Polish zloty (old) — replaced by PLN
+    "RHD", // Rhodesian dollar
+    "ROK", "ROL", // Romanian leu (old) — replaced by RON
+    "RUR", // Russian ruble (old) — replaced by RUB
+    "SDD", "SDP", // Sudanese dinar/old pound — replaced by SDG
+    "SRG", // Surinamese guilder — replaced by SRD
+    "STD", // São Tomé and Príncipe dobra (old) — replaced by STN
+    "SUR", // Soviet Union ruble
+    "TJR", // Tajikistani ruble — replaced by TJS
+    "TMM", // Turkmenistani manat (old) — replaced by TMT
+    "TPE", // Portuguese Timorese escudo — replaced by USD
+    "TRL", // Turkish lira (old) — replaced by TRY
+    "UAK", // Ukrainian karbovanets — replaced by UAH
+    "UGS", "UGW", // Ugandan shilling (old)
+    "USS", // US dollar (same-day settlement)
+    "UYN", "UYP", // Uruguayan peso (old) — replaced by UYU
+    "VEB", "VEF", // Venezuelan bolívar (old) — replaced by VES
+    "VNC", // Vietnamese đồng (old) — replaced by VND
+    "XEU", // European Currency Unit — replaced by EUR
+    "XFO", "XFU", // Gold franc/UIC franc (settlement codes)
+    "XRE", // RINET funds code
+    "YDD", // South Yemeni dinar — replaced by YER
+    "YUD", "YUM", "YUN", // Yugoslav dinar, through several redenominations
+    "ZAL", // South African financial rand
+    "ZMK", // Zambian kwacha (old) — replaced by ZMW
+    "ZRN", "ZRZ", // Zairean zaire/new zaire — replaced by CDF
+    "ZWC", "ZWD", "ZWN", "ZWR", // Zimbabwean dollar (first through third) — replaced by ZWL, itself replaced by ZWG
 )
 
 /**
