@@ -13,7 +13,7 @@ fun matchesCurrencySearch(info: CurrencyInfo, query: String): Boolean {
     if (info.code.contains(query, ignoreCase = true)) return true
     if (info.displayName.contains(query, ignoreCase = true)) return true
     return issuingCountryCodes(info.code).any { regionCode ->
-        localizedRegionName(regionCode)?.contains(query, ignoreCase = true) == true
+        cachedRegionDisplayName(regionCode)?.contains(query, ignoreCase = true) == true
     }
 }
 
@@ -24,20 +24,20 @@ fun matchesCurrencySearch(info: CurrencyInfo, query: String): Boolean {
 // being retried every time, which getOrPut would do for a null value.
 private val regionDisplayNameCache = mutableMapOf<String, String?>()
 
-/**
- * A localized display name for ISO 3166-1 alpha-2 [regionCode] (e.g. "Canada"), or null if the
- * platform doesn't recognize it. "EU" is handled directly since it's not a real ISO 3166-1
- * country code — it's [issuingCountryCodes]' own stand-in for EUR's region/flag — and platform
- * locale data doesn't reliably resolve it to a name the way it does real country codes.
- */
-private fun localizedRegionName(regionCode: String): String? {
+private fun cachedRegionDisplayName(regionCode: String): String? {
     if (regionCode in regionDisplayNameCache) return regionDisplayNameCache[regionCode]
-    val name = if (regionCode == "EU") "European Union" else regionDisplayName(regionCode)
+    val name = regionDisplayName(regionCode)
     regionDisplayNameCache[regionCode] = name
     return name
 }
 
-/** The current platform's localized display name for ISO 3166-1 alpha-2 [regionCode], if known. */
+/**
+ * The current platform's localized display name for ISO 3166-1 alpha-2 [regionCode], if known.
+ * Also handles "EU" — [issuingCountryCodes]' own stand-in for EUR's region/flag, and not a real
+ * ISO 3166-1 code — since every platform's locale data resolves it correctly regardless (e.g.
+ * "European Union" in en, "Union européenne" in fr): CLDR, which all of their locale data is
+ * ultimately sourced from, defines "EU" as a grouping in its own right.
+ */
 expect fun regionDisplayName(regionCode: String): String?
 
 /**
@@ -52,7 +52,7 @@ fun warmRegionDisplayNameCache(currencies: List<CurrencyInfo>) {
     currencies.asSequence()
         .flatMap { issuingCountryCodes(it.code).asSequence() }
         .distinct()
-        .forEach { regionCode -> localizedRegionName(regionCode) }
+        .forEach { regionCode -> cachedRegionDisplayName(regionCode) }
 }
 
 /**

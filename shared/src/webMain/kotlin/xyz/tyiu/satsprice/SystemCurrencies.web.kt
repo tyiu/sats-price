@@ -37,13 +37,15 @@ actual fun currencyDecimalDigits(code: String): Int = try {
     2
 }
 
-// Falls back to the region code itself (rather than a JS null/undefined) when unrecognized, since
-// a plain `-> String?` return type doesn't reliably round-trip through js() interop here; that
-// fallback is filtered back out to null actual-side below, same as the other platforms.
+// `undefined` (rather than a fixed locale like 'en') uses the browser's own locale, matching the
+// other platforms' regionDisplayName(). Falls back to the region code itself (rather than a JS
+// null/undefined) when unrecognized, since a plain `-> String?` return type doesn't reliably
+// round-trip through js() interop here; that fallback is filtered back out to null actual-side
+// below, same as the other platforms.
 private fun jsRegionDisplayName(regionCode: String): String = js(
     """(function() {
         try {
-            var names = new Intl.DisplayNames(['en'], { type: 'region' });
+            var names = new Intl.DisplayNames(undefined, { type: 'region' });
             return names.of(regionCode) || regionCode;
         } catch (e) {
             return regionCode;

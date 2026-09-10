@@ -51,13 +51,16 @@ class SystemCurrenciesTest {
     }
 
     @Test
-    fun matchesCurrencySearch_matchesEurozoneByHardcodedEuropeanUnionName() {
-        // "EU" isn't a real ISO 3166-1 country code, so platform locale data can't be relied on
-        // to name it — this is hardcoded rather than delegated to [regionDisplayName].
+    fun matchesCurrencySearch_matchesEurozoneByEuropeanUnionName() {
+        // "EU" isn't a real ISO 3166-1 country code, but every platform's locale data resolves it
+        // correctly anyway (CLDR defines it as a grouping in its own right) — regionDisplayName()
+        // isn't special-cased for it.
         val eur = CurrencyInfo("EUR", "Euro")
+        val euName = regionDisplayName("EU")
+        assertTrue(euName != null && euName.isNotBlank(), "expected a display name for EU")
 
-        assertTrue(matchesCurrencySearch(eur, "European"))
-        assertTrue(matchesCurrencySearch(eur, "union"))
-        assertFalse(matchesCurrencySearch(eur, "Germany"))
+        assertTrue(matchesCurrencySearch(eur, euName))
+        assertTrue(matchesCurrencySearch(eur, euName.lowercase()))
+        assertFalse(matchesCurrencySearch(eur, "Definitely not a matching country name"))
     }
 }

@@ -38,10 +38,12 @@ actual fun currencyDecimalDigits(code: String): Int = try {
     2
 }
 
+// Doesn't gate on Locale.getISOCountries() — that would incorrectly exclude "EU", which isn't a
+// real ISO 3166-1 code but which getDisplayCountry() resolves correctly anyway (CLDR defines it
+// as a grouping in its own right). A genuinely-unresolvable code's display name just echoes the
+// code back unchanged, so that's the signal used to report "unknown" instead.
 @Suppress("DEPRECATION") // Locale(language, country) still works fine; Locale.of() needs newer Android API levels.
-actual fun regionDisplayName(regionCode: String): String? {
-    if (regionCode !in Locale.getISOCountries()) return null
-    return Locale("", regionCode).getDisplayCountry(Locale.getDefault())
-}
+actual fun regionDisplayName(regionCode: String): String? =
+    Locale("", regionCode).getDisplayCountry(Locale.getDefault()).takeIf { it != regionCode }
 
 actual fun supportsFlagEmoji(): Boolean = true
