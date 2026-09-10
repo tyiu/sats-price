@@ -139,21 +139,11 @@ fun PriceScreen(
                 .padding(horizontal = screenHorizontalPadding, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp)) {
-                Text("SatsPrice", style = MaterialTheme.typography.headlineMedium)
-                val statusLine = if (state.isManualSource) {
-                    null
-                } else {
-                    state.lastUpdatedDateTime()?.let { stringResource(MR.strings.updated_status, it) }
-                        ?: stringResource(MR.strings.loading_rates_status)
-                }
-                if (statusLine != null) {
-                    Text(
-                        text = statusLine,
-                        style = MaterialTheme.typography.bodySmall,
-                    )
-                }
-            }
+            Text(
+                "SatsPrice",
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+            )
 
             Card(modifier = Modifier.fillMaxWidth(), colors = SectionColors) {
                 Column(
@@ -237,6 +227,20 @@ fun PriceScreen(
                             singleLine = true,
                             visualTransformation = DigitGroupingTransformation,
                             modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+
+                    val statusLine = if (state.isManualSource) {
+                        null
+                    } else {
+                        state.lastUpdatedDateTime()?.let { stringResource(MR.strings.updated_status, it) }
+                            ?: stringResource(MR.strings.loading_rates_status)
+                    }
+                    if (statusLine != null) {
+                        Text(
+                            text = statusLine,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
