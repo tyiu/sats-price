@@ -5,7 +5,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
 import androidx.compose.foundation.layout.fillMaxSize
@@ -168,11 +167,6 @@ fun PriceScreen(
                         )
                     }
 
-                    Text(
-                        text = stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -182,7 +176,7 @@ fun PriceScreen(
                             OutlinedTextField(
                                 value = state.manualRateInput,
                                 onValueChange = viewModel::onManualRateChanged,
-                                label = { Text(stringResource(MR.strings.rate_label)) },
+                                label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                                 singleLine = true,
                                 visualTransformation = DigitGroupingTransformation,
@@ -190,15 +184,16 @@ fun PriceScreen(
                             )
                         } else {
                             val rate = state.defaultCurrencyRate()
-                            if (rate.isNotEmpty()) {
-                                Text(
-                                    text = groupDigits(rate),
-                                    style = MaterialTheme.typography.headlineSmall,
-                                    modifier = Modifier.weight(1f),
-                                )
-                            } else {
-                                Spacer(modifier = Modifier.weight(1f))
-                            }
+                            OutlinedTextField(
+                                value = rate,
+                                onValueChange = {},
+                                readOnly = true,
+                                enabled = rate.isNotEmpty(),
+                                label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
+                                singleLine = true,
+                                visualTransformation = DigitGroupingTransformation,
+                                modifier = Modifier.weight(1f),
+                            )
                         }
                         if (!state.isManualSource) {
                             if (state.isLoading) {
@@ -216,13 +211,14 @@ fun PriceScreen(
 
                     val oneCurrencyToSats = state.oneCurrencyToSats()
                     if (oneCurrencyToSats.isNotEmpty()) {
-                        Text(
-                            text = stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Text(
-                            text = groupDigits(oneCurrencyToSats),
-                            style = MaterialTheme.typography.headlineSmall,
+                        OutlinedTextField(
+                            value = oneCurrencyToSats,
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
+                            singleLine = true,
+                            visualTransformation = DigitGroupingTransformation,
+                            modifier = Modifier.fillMaxWidth(),
                         )
                     }
                 }

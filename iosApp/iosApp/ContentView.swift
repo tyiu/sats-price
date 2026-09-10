@@ -55,10 +55,6 @@ struct ContentView: View {
     private func form(for state: IosConverterState) -> some View {
         Form {
             Section(
-                header: Text(IosLocalizationKt.localizedFormattedString(
-                    resource: MR.strings.shared.btc_to_currency,
-                    args: [state.defaultCurrencyCode]
-                )),
                 footer: Group {
                     if !state.statusLine.isEmpty {
                         Text(state.statusLine)
@@ -78,19 +74,22 @@ struct ContentView: View {
                 }
 
                 HStack {
+                    Text(IosLocalizationKt.localizedFormattedString(
+                        resource: MR.strings.shared.btc_to_currency,
+                        args: [state.defaultCurrencyCode]
+                    ))
+                    Spacer()
                     if state.isManualSource {
                         NumericField(
-                            placeholder: IosLocalizationKt.localizedString(resource: MR.strings.shared.rate_label),
+                            placeholder: "",
                             value: state.manualRateInput,
                             keyboardType: .decimalPad,
                             sanitize: sanitizeDecimalInput,
-                            onChange: { viewModel.onManualRateChanged($0) }
+                            onChange: { viewModel.onManualRateChanged($0) },
+                            alignment: .trailing
                         )
                     } else if !state.defaultCurrencyRate.isEmpty {
                         Text(NumberFormatKt.groupDigits(value: state.defaultCurrencyRate))
-                        Spacer()
-                    } else {
-                        Spacer()
                     }
                     if !state.isManualSource {
                         if state.isLoading {
