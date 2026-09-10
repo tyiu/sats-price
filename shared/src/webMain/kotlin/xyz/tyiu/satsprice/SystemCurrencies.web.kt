@@ -13,35 +13,53 @@ private fun jsCurrencyDisplayName(code: String): String = js(
 )
 
 /**
- * Which currency codes `Intl.supportedValuesOf('currency')` returns is ICU-version-dependent, and
- * some browsers' ICU data includes codes for currencies retired decades ago (AFA, ALK, AOK, AON,
- * AOR, ...) alongside genuinely current ones — a moving target, and not one an exclusion list can
- * keep up with. So rather than trying to exclude every historical code some browser might expose,
- * this allowlists the ones actually still in use instead: unlike JVM/Android/Apple, there's no web
- * API to derive "currently assigned to some country" the way `java.util.Currency`/`NSLocale` do
- * (see [localeCurrencyCode] below), so this is a manually maintained list, taken directly from the
- * JVM's own live-derived set (checked 2026-09-10). Needs a new entry whenever a currency changes.
+ * `Intl.supportedValuesOf('currency')` includes a lot of codes for currencies that have actually
+ * been withdrawn/superseded since — which ones depends on the browser's ICU data, so this list is
+ * necessarily incomplete and grows over time as more turn up. Unlike JVM/Android/Apple, there's
+ * no web API to derive "currently assigned to some country" the way `java.util.Currency`/
+ * `NSLocale` do (see [localeCurrencyCode] below), so this is a manually maintained exclusion list
+ * instead. Needs a new entry whenever another currency is retired, or another old one turns up.
  */
-private val ACTIVE_CURRENCY_CODES = setOf(
-    "AED", "AFN", "ALL", "AMD", "AOA", "ARS", "AUD", "AWG", "AZN", "BAM", "BBD", "BDT", "BGN",
-    "BHD", "BIF", "BMD", "BND", "BOB", "BRL", "BSD", "BTN", "BWP", "BYN", "BZD", "CAD", "CDF",
-    "CHF", "CLP", "CNY", "COP", "CRC", "CUP", "CVE", "CZK", "DJF", "DKK", "DOP", "DZD", "EGP",
-    "ERN", "ETB", "EUR", "FJD", "FKP", "GBP", "GEL", "GHS", "GIP", "GMD", "GNF", "GTQ", "GYD",
-    "HKD", "HNL", "HTG", "HUF", "IDR", "ILS", "INR", "IQD", "IRR", "ISK", "JMD", "JOD", "JPY",
-    "KES", "KGS", "KHR", "KMF", "KPW", "KRW", "KWD", "KYD", "KZT", "LAK", "LBP", "LKR", "LRD",
-    "LSL", "LYD", "MAD", "MDL", "MGA", "MKD", "MMK", "MNT", "MOP", "MRU", "MUR", "MVR", "MWK",
-    "MXN", "MYR", "MZN", "NAD", "NGN", "NIO", "NOK", "NPR", "NZD", "OMR", "PAB", "PEN", "PGK",
-    "PHP", "PKR", "PLN", "PYG", "QAR", "RON", "RSD", "RUB", "RWF", "SAR", "SBD", "SCR", "SDG",
-    "SEK", "SGD", "SHP", "SLE", "SOS", "SRD", "SSP", "STN", "SVC", "SYP", "SZL", "THB", "TJS",
-    "TMT", "TND", "TOP", "TRY", "TTD", "TWD", "TZS", "UAH", "UGX", "USD", "UYU", "UZS", "VES",
-    "VND", "VUV", "WST", "XAF", "XCD", "XCG", "XOF", "XPF", "YER", "ZAR", "ZMW", "ZWG",
-) + PRECIOUS_METAL_CURRENCY_CODES
+private val WITHDRAWN_CURRENCY_CODES = setOf(
+    "ANG", // Netherlands Antillean Guilder — replaced by XCG (Caribbean Guilder), April 2025
+    "CUC", // Cuban Convertible Peso — unified into CUP, January 2021
+    "HRK", // Croatian Kuna — replaced by EUR, January 2023
+    "SLL", // Sierra Leonean Leone (old) — redenominated to SLE, 2022
+    "ZWL", // Zimbabwean Dollar (old) — replaced by ZWG (Zimbabwe Gold), April 2024
+
+    // Old Angolan Kwanza, through several redenominations — replaced by AOA
+    "AOK", "AON", "AOR",
+    "AFA", // Afghan Afghani (old) — replaced by AFN
+    "ALK", // Albanian Lek (old) — replaced by ALL
+
+    // Pre-euro legacy currencies, withdrawn on adoption of the euro
+    "ADP", // Andorran Peseta
+    "ATS", // Austrian Schilling
+    "BEF", // Belgian Franc
+    "CYP", // Cypriot Pound
+    "DEM", // Deutsche Mark
+    "EEK", // Estonian Kroon
+    "ESP", // Spanish Peseta
+    "FIM", // Finnish Markka
+    "FRF", // French Franc
+    "GRD", // Greek Drachma
+    "IEP", // Irish Pound
+    "ITL", // Italian Lira
+    "LTL", // Lithuanian Litas
+    "LUF", // Luxembourg Franc
+    "LVL", // Latvian Lats
+    "MTL", // Maltese Lira
+    "NLG", // Dutch Guilder
+    "PTE", // Portuguese Escudo
+    "SIT", // Slovenian Tolar
+    "SKK", // Slovak Koruna
+)
 
 actual fun systemCurrencies(): List<CurrencyInfo> =
     jsSupportedCurrencyCodes()
         .toList()
         .map { it.toString() }
-        .filter { it in ACTIVE_CURRENCY_CODES }
+        .filterNot { it in WITHDRAWN_CURRENCY_CODES }
         .map { code -> CurrencyInfo(code, jsCurrencyDisplayName(code)) }
         .sortedBy { it.code }
 
