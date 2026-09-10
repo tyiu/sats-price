@@ -591,19 +591,43 @@ private fun CurrencyPickerScreen(
                     }
                 }
 
-                if (unselected.isNotEmpty()) {
+                val (unselectedPriced, unselectedUnpriced) = unselected.partition { state.isPriced(it.code) }
+
+                if (unselectedPriced.isNotEmpty()) {
                     Column {
                         Text(
-                            stringResource(MR.strings.currencies_section_title).uppercase(),
+                            stringResource(MR.strings.priced_currencies_section_title).uppercase(),
                             style = SectionHeaderStyle,
                             modifier = Modifier.padding(bottom = 4.dp),
                         )
-                        unselected.forEach { info ->
+                        unselectedPriced.forEach { info ->
                             key(info.code) {
                                 CurrencyRow(
                                     info = info,
                                     isSelected = false,
-                                    isPriced = state.isPriced(info.code),
+                                    isPriced = true,
+                                    sourceName = state.sourceName,
+                                    localeCurrencyCode = state.localeCurrencyCode,
+                                    onClick = { onToggle(info.code) },
+                                )
+                            }
+                        }
+                    }
+                }
+
+                if (unselectedUnpriced.isNotEmpty()) {
+                    Column {
+                        Text(
+                            stringResource(MR.strings.unpriced_currencies_section_title).uppercase(),
+                            style = SectionHeaderStyle,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                        unselectedUnpriced.forEach { info ->
+                            key(info.code) {
+                                CurrencyRow(
+                                    info = info,
+                                    isSelected = false,
+                                    isPriced = false,
                                     sourceName = state.sourceName,
                                     localeCurrencyCode = state.localeCurrencyCode,
                                     onClick = { onToggle(info.code) },

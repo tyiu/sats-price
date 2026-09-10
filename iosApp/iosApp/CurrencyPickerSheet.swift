@@ -36,9 +36,20 @@ struct CurrencyPickerSheet: View {
                 }
 
                 let matchingUnselected = unselectedCurrencies.filter(matches)
-                if !matchingUnselected.isEmpty {
-                    Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
-                        ForEach(matchingUnselected, id: \.code) { info in
+                let unselectedPriced = matchingUnselected.filter { pricedCurrencyCodes.contains($0.code) }
+                let unselectedUnpriced = matchingUnselected.filter { !pricedCurrencyCodes.contains($0.code) }
+
+                if !unselectedPriced.isEmpty {
+                    Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.priced_currencies_section_title)) {
+                        ForEach(unselectedPriced, id: \.code) { info in
+                            currencyRow(for: info, isSelected: false, onTap: { onToggle(info.code) })
+                        }
+                    }
+                }
+
+                if !unselectedUnpriced.isEmpty {
+                    Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.unpriced_currencies_section_title)) {
+                        ForEach(unselectedUnpriced, id: \.code) { info in
                             currencyRow(for: info, isSelected: false, onTap: { onToggle(info.code) })
                         }
                     }

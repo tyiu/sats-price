@@ -19,10 +19,12 @@
     <string name="move_currency_to_top_content_description">Move to top</string>
     <string name="move_currency_up_content_description">Move up</string>
     <string name="price_source">Price Source</string>
+    <string name="priced_currencies_section_title">Priced Currencies</string>
     <string name="refresh_content_description">Refresh</string>
     <string name="remove_currency_content_description">Remove</string>
     <string name="retry">Retry</string>
     <string name="sats_label">Sats</string>
     <string name="search_currencies_placeholder">Search currencies</string>
     <string name="selected_currencies_section_title">Selected Currencies</string>
+    <string name="unpriced_currencies_section_title">Unpriced Currencies</string>
 </resources>
