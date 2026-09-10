@@ -12,13 +12,28 @@ private fun jsCurrencyDisplayName(code: String): String = js(
     "(function() { var names = new Intl.DisplayNames(undefined, { type: 'currency' }); return names.of(code); })()",
 )
 
+/**
+ * `Intl.supportedValuesOf('currency')` includes a handful of codes for currencies that have
+ * actually been withdrawn/superseded since — unlike JVM/Android/Apple, there's no web API to
+ * derive "currently assigned to some country" the way `java.util.Currency`/`NSLocale` do (see
+ * [localeCurrencyCode] below), so this is a manually maintained exclusion list instead, checked
+ * (2026-09-10) against the JVM's own live-derived set. Needs a new entry whenever another
+ * currency is retired.
+ */
+private val WITHDRAWN_CURRENCY_CODES = setOf(
+    "ANG", // Netherlands Antillean Guilder — replaced by XCG (Caribbean Guilder), April 2025
+    "CUC", // Cuban Convertible Peso — unified into CUP, January 2021
+    "HRK", // Croatian Kuna — replaced by EUR, January 2023
+    "SLL", // Sierra Leonean Leone (old) — redenominated to SLE, 2022
+    "ZWL", // Zimbabwean Dollar (old) — replaced by ZWG (Zimbabwe Gold), April 2024
+)
+
 actual fun systemCurrencies(): List<CurrencyInfo> =
     jsSupportedCurrencyCodes()
         .toList()
-        .map { jsCode ->
-            val code = jsCode.toString()
-            CurrencyInfo(code, jsCurrencyDisplayName(code))
-        }
+        .map { it.toString() }
+        .filterNot { it in WITHDRAWN_CURRENCY_CODES }
+        .map { code -> CurrencyInfo(code, jsCurrencyDisplayName(code)) }
         .sortedBy { it.code }
 
 /**
