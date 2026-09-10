@@ -33,6 +33,7 @@ import xyz.tyiu.satsprice.domain.sanitizeIntegerInput
 import xyz.tyiu.satsprice.domain.toBigDecimalOrNull
 import xyz.tyiu.satsprice.localeCurrencyCode
 import xyz.tyiu.satsprice.systemCurrencies
+import xyz.tyiu.satsprice.warmRegionDisplayNameCache
 import kotlin.time.Instant
 
 private const val AUTO_REFRESH_INTERVAL_MILLIS = 60_000L
@@ -106,6 +107,10 @@ class PriceViewModel(
 
     init {
         manualSource.currencyCode = defaultCurrencyCode
+        // Fired off separately (rather than folded into the launch below) so it doesn't delay
+        // that one's own startup work — this just needs to finish before the user reaches the
+        // currency picker's search field, not before anything else.
+        viewModelScope.launch { warmRegionDisplayNameCache(systemCurrencyList) }
         viewModelScope.launch {
             selectedCurrenciesStore.loadSelectedCurrencies().takeIf { it.isNotEmpty() }?.let { persisted ->
                 lastPersistedSelection = persisted

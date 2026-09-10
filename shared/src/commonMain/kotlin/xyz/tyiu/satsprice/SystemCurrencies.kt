@@ -41,6 +41,21 @@ private fun localizedRegionName(regionCode: String): String? {
 expect fun regionDisplayName(regionCode: String): String?
 
 /**
+ * Pre-populates [regionDisplayNameCache] for every region code [currencies] issue from, so the
+ * first character typed into currency search doesn't pay for all of them at once. Intended to be
+ * called once, asynchronously, before the user has a chance to reach the search field — e.g. from
+ * a coroutine launched at startup, not blocking that launch's other work. Not thread-safe:
+ * [regionDisplayNameCache] is a plain, unsynchronized map, so this (like [matchesCurrencySearch])
+ * must only ever run on the single thread/dispatcher UI state changes are made from.
+ */
+fun warmRegionDisplayNameCache(currencies: List<CurrencyInfo>) {
+    currencies.asSequence()
+        .flatMap { issuingCountryCodes(it.code).asSequence() }
+        .distinct()
+        .forEach { regionCode -> localizedRegionName(regionCode) }
+}
+
+/**
  * ISO 4217 codes for the precious metals actively traded today. These aren't tied to any
  * country, so a currently-used-currency filter derived from country/locale data (as the
  * Android/JVM/Apple [systemCurrencies] implementations do, to drop long-withdrawn currencies
