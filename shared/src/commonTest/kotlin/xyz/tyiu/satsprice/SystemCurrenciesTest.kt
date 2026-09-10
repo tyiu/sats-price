@@ -2,6 +2,7 @@ package xyz.tyiu.satsprice
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class SystemCurrenciesTest {
@@ -21,5 +22,18 @@ class SystemCurrenciesTest {
         assertEquals(2, currencyDecimalDigits("USD"))
         assertEquals(0, currencyDecimalDigits("JPY"))
         assertEquals(3, currencyDecimalDigits("BHD"))
+    }
+
+    @Test
+    fun matchesCurrencySearch_matchesByCodeOrDisplayNameCaseInsensitively() {
+        val usd = CurrencyInfo("USD", "US Dollar")
+
+        assertTrue(matchesCurrencySearch(usd, ""))
+        assertTrue(matchesCurrencySearch(usd, "usd"))
+        assertTrue(matchesCurrencySearch(usd, "USD"))
+        assertTrue(matchesCurrencySearch(usd, "dollar"))
+        assertTrue(matchesCurrencySearch(usd, "US Doll"))
+        assertFalse(matchesCurrencySearch(usd, "EUR"))
+        assertFalse(matchesCurrencySearch(usd, "Euro"))
     }
 }

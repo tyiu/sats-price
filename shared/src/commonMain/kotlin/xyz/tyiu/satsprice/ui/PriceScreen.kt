@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
 import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -70,6 +71,7 @@ import xyz.tyiu.satsprice.domain.CurrencyConverter
 import xyz.tyiu.satsprice.domain.formatAmount
 import xyz.tyiu.satsprice.domain.groupDigits
 import xyz.tyiu.satsprice.domain.localizedDecimalSeparator
+import xyz.tyiu.satsprice.matchesCurrencySearch
 import xyz.tyiu.satsprice.shared.MR
 
 private val SectionColors
@@ -497,6 +499,28 @@ private fun CurrencyPickerScreen(
                 TextButton(onClick = onDone) { Text(stringResource(MR.strings.done)) }
             }
 
+            var searchQuery by remember { mutableStateOf("") }
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                placeholder = { Text(stringResource(MR.strings.search_currencies_placeholder)) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
+                trailingIcon = if (searchQuery.isNotEmpty()) {
+                    {
+                        IconButton(onClick = { searchQuery = "" }) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = stringResource(MR.strings.clear_search_content_description),
+                            )
+                        }
+                    }
+                } else {
+                    null
+                },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = screenHorizontalPadding),
+            )
+
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -504,22 +528,26 @@ private fun CurrencyPickerScreen(
                     .padding(horizontal = screenHorizontalPadding, vertical = 8.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
-                val selectedOthers = state.selectedOtherCurrencies()
+                val currentCurrency = state.currentCurrency()
+                val selectedOthers = state.selectedOtherCurrencies().filter { matchesCurrencySearch(it, searchQuery) }
+                val unselected = state.unselectedCurrencies().filter { matchesCurrencySearch(it, searchQuery) }
 
-                Column {
-                    Text(
-                        stringResource(MR.strings.current_currency_section_title).uppercase(),
-                        style = SectionHeaderStyle,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                    CurrencyRow(
-                        info = state.currentCurrency(),
-                        isSelected = true,
-                        isPriced = state.isPriced(state.currentCurrency().code),
-                        sourceName = state.sourceName,
-                        localeCurrencyCode = state.localeCurrencyCode,
-                        onClick = null,
-                    )
+                if (matchesCurrencySearch(currentCurrency, searchQuery)) {
+                    Column {
+                        Text(
+                            stringResource(MR.strings.current_currency_section_title).uppercase(),
+                            style = SectionHeaderStyle,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                        CurrencyRow(
+                            info = currentCurrency,
+                            isSelected = true,
+                            isPriced = state.isPriced(currentCurrency.code),
+                            sourceName = state.sourceName,
+                            localeCurrencyCode = state.localeCurrencyCode,
+                            onClick = null,
+                        )
+                    }
                 }
 
                 if (selectedOthers.isNotEmpty()) {
@@ -544,22 +572,24 @@ private fun CurrencyPickerScreen(
                     }
                 }
 
-                Column {
-                    Text(
-                        stringResource(MR.strings.currencies_section_title).uppercase(),
-                        style = SectionHeaderStyle,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                    state.unselectedCurrencies().forEach { info ->
-                        key(info.code) {
-                            CurrencyRow(
-                                info = info,
-                                isSelected = false,
-                                isPriced = state.isPriced(info.code),
-                                sourceName = state.sourceName,
-                                localeCurrencyCode = state.localeCurrencyCode,
-                                onClick = { onToggle(info.code) },
-                            )
+                if (unselected.isNotEmpty()) {
+                    Column {
+                        Text(
+                            stringResource(MR.strings.currencies_section_title).uppercase(),
+                            style = SectionHeaderStyle,
+                            modifier = Modifier.padding(bottom = 4.dp),
+                        )
+                        unselected.forEach { info ->
+                            key(info.code) {
+                                CurrencyRow(
+                                    info = info,
+                                    isSelected = false,
+                                    isPriced = state.isPriced(info.code),
+                                    sourceName = state.sourceName,
+                                    localeCurrencyCode = state.localeCurrencyCode,
+                                    onClick = { onToggle(info.code) },
+                                )
+                            }
                         }
                     }
                 }

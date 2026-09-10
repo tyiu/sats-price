@@ -11,28 +11,43 @@ struct CurrencyPickerSheet: View {
     let onToggle: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var searchQuery = ""
+
+    private func matches(_ info: CurrencyInfo) -> Bool {
+        SystemCurrenciesKt.matchesCurrencySearch(info: info, query: searchQuery)
+    }
 
     var body: some View {
         NavigationStack {
             List {
-                Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.current_currency_section_title)) {
-                    currencyRow(for: currentCurrency, isSelected: true, onTap: nil)
+                if matches(currentCurrency) {
+                    Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.current_currency_section_title)) {
+                        currencyRow(for: currentCurrency, isSelected: true, onTap: nil)
+                    }
                 }
 
-                if !selectedOtherCurrencies.isEmpty {
+                let matchingSelectedOthers = selectedOtherCurrencies.filter(matches)
+                if !matchingSelectedOthers.isEmpty {
                     Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.selected_currencies_section_title)) {
-                        ForEach(selectedOtherCurrencies, id: \.code) { info in
+                        ForEach(matchingSelectedOthers, id: \.code) { info in
                             currencyRow(for: info, isSelected: true, onTap: { onToggle(info.code) })
                         }
                     }
                 }
 
-                Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
-                    ForEach(unselectedCurrencies, id: \.code) { info in
-                        currencyRow(for: info, isSelected: false, onTap: { onToggle(info.code) })
+                let matchingUnselected = unselectedCurrencies.filter(matches)
+                if !matchingUnselected.isEmpty {
+                    Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
+                        ForEach(matchingUnselected, id: \.code) { info in
+                            currencyRow(for: info, isSelected: false, onTap: { onToggle(info.code) })
+                        }
                     }
                 }
             }
+            .searchable(
+                text: $searchQuery,
+                prompt: IosLocalizationKt.localizedString(resource: MR.strings.shared.search_currencies_placeholder)
+            )
             .navigationTitle(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title))
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)

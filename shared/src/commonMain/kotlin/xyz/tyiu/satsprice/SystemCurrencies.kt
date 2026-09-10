@@ -3,6 +3,16 @@ package xyz.tyiu.satsprice
 data class CurrencyInfo(val code: String, val displayName: String)
 
 /**
+ * Whether [info]'s code or display name contains [query], case-insensitively. A plain function
+ * (rather than a `CurrencyInfo` extension) so Kotlin/Native exports a predictable, positionally
+ * clear Swift signature, matching [currencyFlagEmoji]'s style.
+ */
+fun matchesCurrencySearch(info: CurrencyInfo, query: String): Boolean =
+    query.isBlank() ||
+        info.code.contains(query, ignoreCase = true) ||
+        info.displayName.contains(query, ignoreCase = true)
+
+/**
  * ISO 4217 codes for the precious metals actively traded today. These aren't tied to any
  * country, so a currently-used-currency filter derived from country/locale data (as the
  * Android/JVM/Apple [systemCurrencies] implementations do, to drop long-withdrawn currencies

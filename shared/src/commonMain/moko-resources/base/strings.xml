@@ -3,6 +3,7 @@
     <string name="bitcoin_section_title">Bitcoin</string>
     <string name="btc_label">BTC</string>
     <string name="btc_to_currency">1 BTC to %1$s</string>
+    <string name="clear_search_content_description">Clear search</string>
     <string name="currencies_section_title">Currencies</string>
     <string name="currencies_selected_count">%1$d selected</string>
     <string name="current_currency_section_title">Current Currency</string>
@@ -22,5 +23,6 @@
     <string name="remove_currency_content_description">Remove</string>
     <string name="retry">Retry</string>
     <string name="sats_label">Sats</string>
+    <string name="search_currencies_placeholder">Search currencies</string>
     <string name="selected_currencies_section_title">Selected Currencies</string>
 </resources>
