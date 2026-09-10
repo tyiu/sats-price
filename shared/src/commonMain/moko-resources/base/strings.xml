@@ -3,6 +3,7 @@
     <string name="bitcoin_section_title">Bitcoin</string>
     <string name="btc_label">BTC</string>
     <string name="btc_to_currency">BTC to %1$s</string>
+    <string name="cancel">Cancel</string>
     <string name="clear_search_content_description">Clear search</string>
     <string name="currencies_section_title">Currencies</string>
     <string name="currencies_selected_count">%1$d selected</string>
@@ -22,6 +23,9 @@
     <string name="priced_currencies_section_title">Priced Currencies</string>
     <string name="refresh_content_description">Refresh</string>
     <string name="remove_currency_content_description">Remove</string>
+    <string name="reset_selected_currencies_button">Reset</string>
+    <string name="reset_selected_currencies_confirmation_message">This keeps %1$s, but removes every other currency you\'ve added.</string>
+    <string name="reset_selected_currencies_confirmation_title">Remove all selected currencies?</string>
     <string name="retry">Retry</string>
     <string name="sats_label">Sats</string>
     <string name="search_currencies_placeholder">Search currencies</string>

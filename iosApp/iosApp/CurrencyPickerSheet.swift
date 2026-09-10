@@ -8,10 +8,13 @@ struct CurrencyPickerSheet: View {
     let pricedCurrencyCodes: [String]
     let sourceName: String
     let localeCurrencyCode: String?
+    let selectedCount: Int
     let onToggle: (String) -> Void
+    let onReset: () -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var searchQuery = ""
+    @State private var showResetConfirmation = false
 
     private func matches(_ info: CurrencyInfo) -> Bool {
         SystemCurrenciesKt.matchesCurrencySearch(info: info, query: searchQuery)
@@ -60,6 +63,16 @@ struct CurrencyPickerSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             #endif
             .toolbar {
+                if selectedCount > 1 {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(
+                            IosLocalizationKt.localizedString(resource: MR.strings.shared.reset_selected_currencies_button),
+                            role: .destructive
+                        ) {
+                            showResetConfirmation = true
+                        }
+                    }
+                }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(IosLocalizationKt.localizedString(resource: MR.strings.shared.done)) { dismiss() }
                 }
@@ -74,6 +87,23 @@ struct CurrencyPickerSheet: View {
             text: $searchQuery,
             prompt: IosLocalizationKt.localizedString(resource: MR.strings.shared.search_currencies_placeholder)
         )
+        .alert(
+            IosLocalizationKt.localizedString(resource: MR.strings.shared.reset_selected_currencies_confirmation_title),
+            isPresented: $showResetConfirmation
+        ) {
+            Button(
+                IosLocalizationKt.localizedString(resource: MR.strings.shared.reset_selected_currencies_button),
+                role: .destructive
+            ) {
+                onReset()
+            }
+            Button(IosLocalizationKt.localizedString(resource: MR.strings.shared.cancel), role: .cancel) {}
+        } message: {
+            Text(IosLocalizationKt.localizedFormattedString(
+                resource: MR.strings.shared.reset_selected_currencies_confirmation_message,
+                args: [currentCurrency.code]
+            ))
+        }
         #if os(macOS)
         // macOS sizes a .sheet() to its content's ideal size rather than the parent window's
         // size (unlike iOS, which presents modally full-size); without an explicit frame here,

@@ -63,6 +63,7 @@ class IosPriceViewModel {
     fun onFiatAmountChanged(code: String, value: String) = viewModel.onFiatAmountChanged(code, value)
     fun onFiatCurrencyToggled(code: String) = viewModel.onFiatCurrencyToggled(code)
     fun onFiatCurrenciesReordered(newOrder: List<String>) = viewModel.onFiatCurrenciesReordered(newOrder)
+    fun onSelectedCurrenciesReset() = viewModel.onSelectedCurrenciesReset()
     fun onSourceSelected(name: String) = viewModel.onSourceSelected(name)
     fun onManualRateChanged(value: String) = viewModel.onManualRateChanged(value)
     fun onManualSatsPerCurrencyChanged(value: String) = viewModel.onManualSatsPerCurrencyChanged(value)

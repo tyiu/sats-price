@@ -238,7 +238,9 @@ struct ContentView: View {
                 pricedCurrencyCodes: state.pricedCurrencyCodes,
                 sourceName: state.sourceName,
                 localeCurrencyCode: state.localeCurrencyCode,
-                onToggle: { viewModel.onFiatCurrencyToggled($0) }
+                selectedCount: state.selectedCurrencyCodes.count,
+                onToggle: { viewModel.onFiatCurrencyToggled($0) },
+                onReset: { viewModel.onSelectedCurrenciesReset() }
             )
         }
         .environment(\.openURL, OpenURLAction { url in

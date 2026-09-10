@@ -207,6 +207,16 @@ class PriceViewModel(
         persistSelectionIfChanged(_uiState.value.selectedFiatCurrencies)
     }
 
+    /** Removes every selected currency except the pinned [defaultCurrencyCode]. */
+    fun onSelectedCurrenciesReset() {
+        _uiState.update { state ->
+            if (state.selectedFiatCurrencies == listOf(defaultCurrencyCode)) return@update state
+            val newState = state.copy(selectedFiatCurrencies = listOf(defaultCurrencyCode))
+            rates?.let { recomputeFromKnownField(newState, it) } ?: newState
+        }
+        persistSelectionIfChanged(_uiState.value.selectedFiatCurrencies)
+    }
+
     /**
      * Reorders the selected currencies to [newOrder]. Any code in [newOrder] that isn't
      * currently selected is ignored, and any currently-selected code missing from [newOrder]

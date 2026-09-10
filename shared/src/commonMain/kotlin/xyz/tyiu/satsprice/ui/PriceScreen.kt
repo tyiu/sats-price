@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -120,6 +121,7 @@ fun PriceScreen(
         CurrencyPickerScreen(
             state = state,
             onToggle = viewModel::onFiatCurrencyToggled,
+            onReset = viewModel::onSelectedCurrenciesReset,
             onDone = { showCurrencyPicker = false },
         )
         return
@@ -501,8 +503,32 @@ private fun CurrencyRowMenu(
 private fun CurrencyPickerScreen(
     state: ConverterUiState,
     onToggle: (String) -> Unit,
+    onReset: () -> Unit,
     onDone: () -> Unit,
 ) {
+    var showResetConfirmation by remember { mutableStateOf(false) }
+
+    if (showResetConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showResetConfirmation = false },
+            title = { Text(stringResource(MR.strings.reset_selected_currencies_confirmation_title)) },
+            text = {
+                Text(stringResource(MR.strings.reset_selected_currencies_confirmation_message, state.defaultCurrencyCode))
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showResetConfirmation = false
+                        onReset()
+                    },
+                ) { Text(stringResource(MR.strings.reset_selected_currencies_button)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showResetConfirmation = false }) { Text(stringResource(MR.strings.cancel)) }
+            },
+        )
+    }
+
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             modifier = Modifier
@@ -515,7 +541,14 @@ private fun CurrencyPickerScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(stringResource(MR.strings.currencies_section_title), style = MaterialTheme.typography.headlineSmall)
-                TextButton(onClick = onDone) { Text(stringResource(MR.strings.done)) }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (state.selectedFiatCurrencies.size > 1) {
+                        TextButton(onClick = { showResetConfirmation = true }) {
+                            Text(stringResource(MR.strings.reset_selected_currencies_button))
+                        }
+                    }
+                    TextButton(onClick = onDone) { Text(stringResource(MR.strings.done)) }
+                }
             }
 
             var searchQuery by remember { mutableStateOf("") }
