@@ -7,11 +7,17 @@ real trial-and-error to get right.
 
 ## What this is
 
-SatsPrice is a Kotlin Multiplatform app (shipped on iOS, macOS, and Android;
-Web and Desktop/JVM exist as fast dev/preview targets, not shipped products —
-see `data/db/SqlDelightStores.kt`'s doc comment). It converts between BTC,
-Sats, and fiat currencies using live exchange rates (Coinbase, CoinGecko, or
-a manually typed-in rate).
+SatsPrice is a Kotlin Multiplatform app, currently released on iOS, macOS,
+and Android (see README's Supported Platforms/Download and Install). Web and
+Desktop/JVM are real future release targets too — `desktopApp` already has
+full native packaging configured (DMG/MSI/DEB, see its `build.gradle.kts`) —
+but neither has a release/CI pipeline set up yet, so treat them as
+not-yet-shipped rather than dev-only. Web specifically also has no real
+persistence yet (see `data/db/SqlDelightStores.kt`'s doc comment: no
+SQLDelight driver, in-memory only, nothing survives a page reload) — worth
+keeping in mind if that platform's release plans firm up. The app converts
+between BTC, Sats, and fiat currencies using live exchange rates (Coinbase,
+CoinGecko, or a manually typed-in rate).
 
 This is a from-scratch rewrite of an earlier Skip-based (Swift-transpiled-to-
 Kotlin) implementation — `main` is now this Kotlin Multiplatform project.
@@ -141,8 +147,8 @@ SQLDelight (`data/db/SqlDelightStores.kt` + platform-specific driver
 `actual`s) backs `ExchangeRateStore`/`SelectedCurrenciesStore`/
 `SelectedSourceStore`, each exposed via an `expect fun createXStore()`
 factory. Web has no real SQLDelight driver — it gets an in-memory-only
-fallback (nothing persists across a page reload), consistent with web not
-being a shipped platform.
+fallback (nothing persists across a page reload). This is a known gap to
+close if/when Web's release plans firm up, not a permanent design choice.
 
 ## Testing and verification
 
