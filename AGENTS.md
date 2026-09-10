@@ -15,9 +15,6 @@ a manually typed-in rate).
 
 This is a from-scratch rewrite of an earlier Skip-based (Swift-transpiled-to-
 Kotlin) implementation — `main` is now this Kotlin Multiplatform project.
-Any branch still describing a `skip build`/Swift Package Manager workflow
-(e.g. `update-readme`) predates the rewrite and isn't a useful reference for
-anything in this codebase.
 
 ## Module layout
 
