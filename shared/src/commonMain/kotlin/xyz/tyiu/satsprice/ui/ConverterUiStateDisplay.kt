@@ -5,6 +5,7 @@ import kotlinx.datetime.toLocalDateTime
 import xyz.tyiu.satsprice.CurrencyInfo
 import xyz.tyiu.satsprice.domain.CurrencyConverter
 import xyz.tyiu.satsprice.domain.formatAmount
+import xyz.tyiu.satsprice.domain.localizedDateTime
 import xyz.tyiu.satsprice.domain.toBigDecimalOrNull
 import kotlin.time.Instant
 
@@ -52,7 +53,5 @@ fun ConverterUiState.unselectedCurrencies(): List<CurrencyInfo> =
 /** Whether the active price source quotes a rate for [code] — every currency is listed regardless. */
 fun ConverterUiState.isPriced(code: String): Boolean = code in pricedCurrencyCodes
 
-private fun Instant.toDateTimeString(): String {
-    val local = toLocalDateTime(TimeZone.currentSystemDefault())
-    return local.toString().substringBefore('.').replace('T', ' ')
-}
+private fun Instant.toDateTimeString(): String =
+    localizedDateTime(toLocalDateTime(TimeZone.currentSystemDefault()))
