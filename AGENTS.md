@@ -13,12 +13,11 @@ see `data/db/SqlDelightStores.kt`'s doc comment). It converts between BTC,
 Sats, and fiat currencies using live exchange rates (Coinbase, CoinGecko, or
 a manually typed-in rate).
 
-The project is currently developed on the `kmp` branch, not `main` — it's a
-from-scratch Kotlin Multiplatform rewrite of an earlier Skip-based
-(Swift-transpiled-to-Kotlin) implementation. `main` still has the old Skip
-app. Don't use the `update-readme` branch as a reference for anything — it's
-a stale branch from before the Skip → KMP migration and describes a build
-process (`skip build`, Swift Package Manager) this project no longer uses.
+This is a from-scratch rewrite of an earlier Skip-based (Swift-transpiled-to-
+Kotlin) implementation — `main` is now this Kotlin Multiplatform project.
+Any branch still describing a `skip build`/Swift Package Manager workflow
+(e.g. `update-readme`) predates the rewrite and isn't a useful reference for
+anything in this codebase.
 
 ## Module layout
 
