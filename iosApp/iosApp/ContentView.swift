@@ -351,7 +351,12 @@ private struct NumericField: View {
             #endif
             .multilineTextAlignment(alignment)
             #if os(macOS)
-            .frame(maxWidth: 140)
+            // Bounded rather than unconstrained so the field doesn't grow to fill the whole row
+            // (the original reason for a fixed width here), but wide enough for the largest
+            // values this app actually displays — e.g. a Sats amount at the max BTC supply
+            // (`maxSupplyBtcAmount` * 100,000,000) is a 16-digit, comma-grouped ~21-character
+            // string, which a 140pt cap was clipping.
+            .frame(minWidth: 80, idealWidth: 140, maxWidth: 220)
             #endif
             .onAppear { text = NumberFormatKt.groupDigits(value: value) }
             .onChange(of: text) { newValue in
