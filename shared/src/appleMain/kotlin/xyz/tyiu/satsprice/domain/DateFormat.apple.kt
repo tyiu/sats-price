@@ -1,6 +1,7 @@
 package xyz.tyiu.satsprice.domain
 
 import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.number
 import platform.Foundation.NSCalendar
 import platform.Foundation.NSDateComponents
 import platform.Foundation.NSDateFormatter
@@ -12,8 +13,8 @@ import platform.Foundation.currentLocale
 actual fun localizedDateTime(dateTime: LocalDateTime): String {
     val components = NSDateComponents().apply {
         year = dateTime.year.toLong()
-        month = dateTime.monthNumber.toLong()
-        day = dateTime.dayOfMonth.toLong()
+        month = dateTime.month.number.toLong()
+        day = dateTime.day.toLong()
         hour = dateTime.hour.toLong()
         minute = dateTime.minute.toLong()
     }
