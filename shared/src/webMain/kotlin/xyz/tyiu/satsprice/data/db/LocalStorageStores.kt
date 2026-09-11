@@ -10,10 +10,11 @@ import xyz.tyiu.satsprice.data.ExchangeRates
 import kotlin.time.Instant
 
 /**
- * Web isn't a shipped platform (see README's Supported Platforms) and SQLDelight's web driver
- * needs a worker plus a wasm sqlite binary, so persistence here goes through the browser's
- * localStorage instead of a real database — plenty for this small amount of data, and it
- * survives page reloads unlike the in-memory state it replaced.
+ * SQLDelight's web driver needs a worker plus a wasm sqlite binary, so persistence here goes
+ * through the browser's localStorage instead of a real database — plenty for this small amount
+ * of data, and it survives page reloads like the other platforms' real databases do. Scoped to
+ * the browser profile/origin, though: it won't survive a cleared site data / private window, and
+ * doesn't sync or back up anywhere.
  */
 private val json = Json { ignoreUnknownKeys = true }
 

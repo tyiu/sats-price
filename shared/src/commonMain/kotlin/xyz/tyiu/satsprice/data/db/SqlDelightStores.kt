@@ -10,8 +10,8 @@ import kotlin.time.Instant
 /**
  * Shared by every platform that opens a real [AppDatabase] (Android, Desktop, iOS/macOS) — only
  * driver construction differs per platform, so that's the only expect/actual boundary needed.
- * Web isn't a shipped platform (see README's Supported Platforms) and gets an in-memory fallback
- * instead of a real driver.
+ * Web has no real SQLDelight driver and uses a `localStorage`-backed fallback instead (see
+ * `LocalStorageStores.kt`).
  */
 internal class SqlDelightExchangeRateStore(private val database: AppDatabase) : ExchangeRateStore {
     override suspend fun loadLastKnownRates(sourceId: String): ExchangeRates? = withContext(Dispatchers.Default) {
