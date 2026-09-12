@@ -29,19 +29,18 @@ iOS 16.0+ • macOS 13.0+ • Android 7.0+
 
 ## Kotlin Multiplatform
 
-This is a Kotlin Multiplatform project targeting Android, iOS, Web, Desktop (JVM).
+This is a Kotlin Multiplatform project targeting Android, iOS, macOS, Web, and Desktop (JVM).
 
-* [/iosApp](./iosApp/iosApp) contains an iOS application. Even if you’re sharing your UI with Compose Multiplatform, you
-  need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+* [/shared](./shared/src) contains almost the entire app — UI (built with Compose Multiplatform),
+  view models, data sources, and domain logic. [commonMain](./shared/src/commonMain/kotlin) holds
+  code shared by every target, alongside platform-specific source sets: `androidMain`, `jvmMain`
+  (Desktop), `appleMain` (iOS and macOS), and `webMain` (JS and Wasm).
 
-* [/shared](./shared/src) is for code that will be shared across your Compose Multiplatform applications. It contains
-  several subfolders:
-    - [commonMain](./shared/src/commonMain/kotlin) is for code that’s common for all targets.
-    - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name. For
-      example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-      the [iosMain](./shared/src/iosMain/kotlin) folder would be the right place for such calls. Similarly, if you want
-      to edit the Desktop (JVM) specific part, the [jvmMain](./shared/src/jvmMain/kotlin)
-      folder is the appropriate location.
+* [/androidApp](./androidApp), [/desktopApp](./desktopApp), and [/webApp](./webApp) are thin
+  launcher shells around `shared`'s Compose UI.
+
+* [/iosApp](./iosApp/iosApp) is a native SwiftUI app (shared across iOS and macOS), not Compose —
+  it talks to `shared` through a hand-written bridge rather than rendering Compose directly.
 
 ### Running the apps
 
