@@ -1,5 +1,3 @@
-<div align="center">
-
 <img src="./docs/assets/satsprice-logo.png" alt="SatsPrice Logo" title="SatsPrice logo" width="256"/>
 
 # SatsPrice
@@ -84,5 +82,3 @@ The following free APIs are used:
   - [Get Spot Price](https://docs.cdp.coinbase.com/coinbase-app/docs/api-prices#get-spot-price)
 - CoinGecko
   - [Coin Price by IDs](https://docs.coingecko.com/reference/simple-price)
-
-</div>
