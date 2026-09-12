@@ -26,7 +26,29 @@ struct ContentView: View {
                         EditButton()
                     }
                 }
+                // NumericField's .decimalPad/.numberPad keyboards have no Return/Done key of
+                // their own (unlike a standard text keyboard). `.scrollDismissesKeyboard` alone
+                // isn't a reliable substitute here — Form's sections without .onMove/.onDelete
+                // (Price Source, Bitcoin) don't consistently wire up the drag-to-dismiss gesture,
+                // so it only ever worked when dragging within the Currencies section. This is a
+                // deterministic fallback that works regardless of which field is focused.
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
+                    } label: {
+                        Text(IosLocalizationKt.localizedString(resource: MR.strings.shared.done))
+                    }
+                }
             }
+            // Kept alongside the Done button above: a free bonus in the Currencies section,
+            // where it does work reliably (see the toolbar comment for where it falls short).
+            .scrollDismissesKeyboard(.interactively)
             #endif
         }
     }
