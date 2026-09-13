@@ -27,6 +27,24 @@ height="70">](https://github.com/tyiu/sats-price/releases)
 
 iOS 16.0+ • macOS 13.0+ • Android 7.0+
 
+## Screenshots
+
+### Android
+
+<img src="./docs/assets/screenshots/android/android-1.png" width="200"> <img src="./docs/assets/screenshots/android/android-2.png" width="200"> <img src="./docs/assets/screenshots/android/android-3.png" width="200"> <img src="./docs/assets/screenshots/android/android-4.png" width="200"> <img src="./docs/assets/screenshots/android/android-5.png" width="200"> <img src="./docs/assets/screenshots/android/android-6.png" width="200"> <img src="./docs/assets/screenshots/android/android-7.png" width="200"> <img src="./docs/assets/screenshots/android/android-8.png" width="200">
+
+### iPhone
+
+<img src="./docs/assets/screenshots/iphone/iphone-1.png" width="200"> <img src="./docs/assets/screenshots/iphone/iphone-2.png" width="200"> <img src="./docs/assets/screenshots/iphone/iphone-3.png" width="200"> <img src="./docs/assets/screenshots/iphone/iphone-4.png" width="200"> <img src="./docs/assets/screenshots/iphone/iphone-5.png" width="200"> <img src="./docs/assets/screenshots/iphone/iphone-6.png" width="200"> <img src="./docs/assets/screenshots/iphone/iphone-7.png" width="200"> <img src="./docs/assets/screenshots/iphone/iphone-8.png" width="200">
+
+### iPad
+
+<img src="./docs/assets/screenshots/ipad/ipad-1.png" width="320"> <img src="./docs/assets/screenshots/ipad/ipad-2.png" width="320"> <img src="./docs/assets/screenshots/ipad/ipad-3.png" width="320"> <img src="./docs/assets/screenshots/ipad/ipad-4.png" width="320"> <img src="./docs/assets/screenshots/ipad/ipad-5.png" width="320"> <img src="./docs/assets/screenshots/ipad/ipad-6.png" width="320"> <img src="./docs/assets/screenshots/ipad/ipad-7.png" width="320"> <img src="./docs/assets/screenshots/ipad/ipad-8.png" width="320">
+
+### macOS
+
+<img src="./docs/assets/screenshots/macos/macos-1.png" width="320"> <img src="./docs/assets/screenshots/macos/macos-2.png" width="320"> <img src="./docs/assets/screenshots/macos/macos-3.png" width="320"> <img src="./docs/assets/screenshots/macos/macos-4.png" width="320"> <img src="./docs/assets/screenshots/macos/macos-5.png" width="320"> <img src="./docs/assets/screenshots/macos/macos-6.png" width="320">
+
 ## Kotlin Multiplatform
 
 This is a Kotlin Multiplatform project targeting Android, iOS, macOS, Web, and Desktop (JVM).
