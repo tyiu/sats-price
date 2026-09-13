@@ -1,7 +1,18 @@
-satsprice:
-  android:
-    name: SatsPrice
-    description: SatsPrice fetches the price of Bitcoin relative to common fiat currencies from multiple sources, and converts inputted amounts between Sats, BTC, and the selected fiat currency.
-    repository: https://github.com/tyiu/sats-price
-    artifacts:
-      - SatsPrice-v%v.apk
+repository: https://github.com/tyiu/sats-price
+description: SatsPrice fetches the price of Bitcoin relative to common fiat currencies from multiple sources, and converts inputted amounts between Sats, BTC, and the selected fiat currencies.
+summary: Bitcoin price calculator app
+tags:
+    - Bitcoin,BTC,sats,satoshi,satoshis,calculator,price,exchange,fiat,currency
+license: GPL-3.0
+website: https://github.com/tyiu/sats-price
+images:
+    - docs/assets/screenshots/android/android-1.png
+    - docs/assets/screenshots/android/android-2.png
+    - docs/assets/screenshots/android/android-3.png
+    - docs/assets/screenshots/android/android-4.png
+    - docs/assets/screenshots/android/android-5.png
+    - docs/assets/screenshots/android/android-6.png
+    - docs/assets/screenshots/android/android-7.png
+    - docs/assets/screenshots/android/android-8.png
+metadata_sources:
+    - github
