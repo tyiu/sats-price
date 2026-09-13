@@ -12,15 +12,15 @@ This app fetches the price of Bitcoin relative to common fiat currencies from mu
 ## Download and Install
 
 [<img src="./docs/assets/download_on_apple.svg"
-alt="Download on the Apple App Store"
+alt="Download on the App Store"
 height="70">](https://apps.apple.com/app/satsprice/id6478230475)
-[<img src="./docs/assets/download_on_zapstore.svg"
+[<img src="./docs/assets/get-it-on-zapstore.svg"
 alt="Get it on Zap Store"
-height="70">](https://github.com/zapstore/zapstore/releases)
+height="70">](https://zapstore.dev/apps/xyz.tyiu.SatsPrice)
 [<img src="./docs/assets/download_on_obtainium.png"
 alt="Get it on Obtaininum"
 height="70">](https://github.com/ImranR98/Obtainium)
-[<img src="./docs/assets/download_on_github.svg" alt="Get it on GitHub"
+[<img src="./docs/assets/badge_github.png" alt="Get it on GitHub"
 height="70">](https://github.com/tyiu/sats-price/releases)
 
 ## Supported Platforms
