@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SatsPrice — Bitcoin Price &amp; Sats Converter</title>
+<meta name="description" content="SatsPrice converts Bitcoin, satoshis, and fiat currency in real time, sourced from Coinbase and CoinGecko. Free and open source for Android, iOS, and macOS." />
+<link rel="icon" href="assets/app-icon.png" type="image/png" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="bg-glow"></div>
+
+<header class="site-header">
+  <div class="container">
+    <a href="#top" class="brand">
+      <img src="assets/logo.png" alt="SatsPrice icon" />
+      <span>SatsPrice</span>
+    </a>
+
+    <nav class="main-nav">
+      <a href="#features">Features</a>
+      <a href="#platforms">Screenshots</a>
+      <a href="#download">Download</a>
+      <a href="https://github.com/tyiu/sats-price" target="_blank" rel="noopener">Code</a>
+    </nav>
+
+    <div class="header-cta">
+      <a href="#download" class="btn btn-primary btn-sm">Get the app</a>
+      <button class="nav-toggle" aria-label="Toggle menu" id="navToggle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-nav" id="mobileNav">
+    <a href="#features">Features</a>
+    <a href="#platforms">Screenshots</a>
+    <a href="#download">Download</a>
+    <a href="https://github.com/tyiu/sats-price" target="_blank" rel="noopener">GitHub</a>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-copy">
+        <p class="eyebrow">Bitcoin price calculator</p>
+        <h1>Know your <span class="accent">sats</span>,<br />wherever you carry Bitcoin.</h1>
+        <p class="lead">
+          SatsPrice converts Bitcoin, satoshis, and fiat currency in real time — sourced live
+          from Coinbase and CoinGecko, or set your own exchange rate. No account, no ads,
+          no tracking.
+        </p>
+
+        <div class="hero-actions">
+          <a href="#download" class="btn btn-primary">Download SatsPrice</a>
+          <a href="#platforms" class="btn btn-ghost">See screenshots</a>
+        </div>
+
+        <div class="platform-pills">
+          <span class="pill">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.536c-.03-3.06 2.5-4.53 2.61-4.6-1.42-2.08-3.63-2.37-4.42-2.4-1.88-.19-3.68 1.11-4.63 1.11-.96 0-2.42-1.09-3.98-1.06-2.05.03-3.94 1.19-5 3.02-2.13 3.7-.55 9.18 1.53 12.18 1.02 1.47 2.23 3.11 3.82 3.05 1.53-.06 2.11-.99 3.96-.99 1.84 0 2.37.99 3.98.96 1.65-.03 2.69-1.5 3.7-2.98 1.17-1.71 1.65-3.37 1.67-3.45-.04-.02-3.2-1.23-3.24-4.84zM14.15 3.6c.84-1.02 1.41-2.43 1.25-3.6-1.22.06-2.69.84-3.55 1.85-.78.9-1.46 2.34-1.28 3.57 1.2.09 2.75-.61 3.58-1.82z"/></svg>
+            iOS
+          </span>
+          <span class="pill">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.536c-.03-3.06 2.5-4.53 2.61-4.6-1.42-2.08-3.63-2.37-4.42-2.4-1.88-.19-3.68 1.11-4.63 1.11-.96 0-2.42-1.09-3.98-1.06-2.05.03-3.94 1.19-5 3.02-2.13 3.7-.55 9.18 1.53 12.18 1.02 1.47 2.23 3.11 3.82 3.05 1.53-.06 2.11-.99 3.96-.99 1.84 0 2.37.99 3.98.96 1.65-.03 2.69-1.5 3.7-2.98 1.17-1.71 1.65-3.37 1.67-3.45-.04-.02-3.2-1.23-3.24-4.84zM14.15 3.6c.84-1.02 1.41-2.43 1.25-3.6-1.22.06-2.69.84-3.55 1.85-.78.9-1.46 2.34-1.28 3.57 1.2.09 2.75-.61 3.58-1.82z"/></svg>
+            macOS
+          </span>
+          <span class="pill">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24a11.43 11.43 0 0 0-8.94 0L5.65 5.67c-.18-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+            Android
+          </span>
+        </div>
+
+        <div class="trust-row">
+          <span>Free forever</span>
+          <span>Open source (GPL‑3.0)</span>
+          <span>No account required</span>
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="hero-blob"></div>
+        <div class="phone-frame">
+          <img src="assets/screenshots/iphone/iphone-1.png" alt="SatsPrice app showing BTC to USD price, sats conversion, and a list of currencies" loading="eager" />
+        </div>
+
+        <div class="float-card ticker">
+          <div class="tk-label"><span class="dot"></span>Live‑style price</div>
+          <div class="tk-value">$77,300</div>
+          <div class="tk-sub">1 USD ≈ 1,294 sats</div>
+        </div>
+
+        <div class="float-card sources">
+          <div class="ic">⇄</div>
+          <div class="tx">Coinbase &amp; CoinGecko<small>or set your own rate</small></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGO / VALUE STRIP -->
+  <section class="logo-strip">
+    <div class="container">
+      <span class="item">🔄 Multi‑source pricing</span>
+      <span class="item">🌍 150+ currencies</span>
+      <span class="item">🥇 Precious metals</span>
+      <span class="item">🔓 No ads, no accounts</span>
+      <span class="item">💻 Native on every platform</span>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow" style="justify-content:center">Capabilities</p>
+        <h2>Everything you need to think in sats</h2>
+        <p>A focused calculator that does one job — Bitcoin, satoshis, and fiat conversion — and does it well on every device you own.</p>
+      </div>
+
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="icon">🔄</div>
+          <h3>Multi‑source pricing</h3>
+          <p>Live BTC/fiat rates from Coinbase and CoinGecko, refreshed with a tap — or enter your own exchange rate manually.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🧮</div>
+          <h3>Instant conversion</h3>
+          <p>Type into any field — Sats, BTC, or fiat — and watch every other value update immediately.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🌍</div>
+          <h3>150+ currencies</h3>
+          <p>Every major fiat currency with country flags, smart search, and a Priced / Unpriced split so you know what's live.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🥇</div>
+          <h3>Precious metals</h3>
+          <p>Track gold, silver, platinum, and palladium right alongside your fiat currencies.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">📌</div>
+          <h3>Personalized watchlist</h3>
+          <p>Reorder currencies, pin favorites to the top, and reset with confirmation — it all persists between launches.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🔢</div>
+          <h3>Locale‑aware formatting</h3>
+          <p>Digit grouping and "updated" timestamps that read naturally, no matter where you are.</p>
+        </div>
+
+        <div class="feature-card wide">
+          <div class="icon">💻</div>
+          <h3>Native on every platform</h3>
+          <p>SwiftUI on iOS and macOS, Compose Multiplatform on Android — built with Kotlin Multiplatform to feel right at home on each device, not like a port.</p>
+        </div>
+
+        <div class="feature-card">
+          <div class="icon">🔓</div>
+          <h3>Free &amp; open source</h3>
+          <p>GPL‑3.0 licensed, no ads, no accounts, no tracking. Inspect every line on GitHub.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PLATFORM SHOWCASE -->
+  <section class="showcase" id="platforms">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow" style="justify-content:center">See it in action</p>
+        <h2>One app, at home on every screen</h2>
+        <p>Real screenshots from Android, iPhone, iPad, and Mac — the same fast, focused experience everywhere.</p>
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="panel-android">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85-.29-.15-.65-.06-.83.22l-1.88 3.24a11.43 11.43 0 0 0-8.94 0L5.65 5.67c-.18-.28-.54-.37-.83-.22-.3.16-.42.54-.26.85L6.4 9.48C3.3 11.25 1.28 14.44 1 18h22c-.28-3.56-2.3-6.75-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+          Android
+        </button>
+        <button class="tab-btn" data-tab="panel-iphone">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.536c-.03-3.06 2.5-4.53 2.61-4.6-1.42-2.08-3.63-2.37-4.42-2.4-1.88-.19-3.68 1.11-4.63 1.11-.96 0-2.42-1.09-3.98-1.06-2.05.03-3.94 1.19-5 3.02-2.13 3.7-.55 9.18 1.53 12.18 1.02 1.47 2.23 3.11 3.82 3.05 1.53-.06 2.11-.99 3.96-.99 1.84 0 2.37.99 3.98.96 1.65-.03 2.69-1.5 3.7-2.98 1.17-1.71 1.65-3.37 1.67-3.45-.04-.02-3.2-1.23-3.24-4.84zM14.15 3.6c.84-1.02 1.41-2.43 1.25-3.6-1.22.06-2.69.84-3.55 1.85-.78.9-1.46 2.34-1.28 3.57 1.2.09 2.75-.61 3.58-1.82z"/></svg>
+          iPhone
+        </button>
+        <button class="tab-btn" data-tab="panel-ipad">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/></svg>
+          iPad
+        </button>
+        <button class="tab-btn" data-tab="panel-macos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="13" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Mac
+        </button>
+      </div>
+
+      <div class="tab-panel active" id="panel-android">
+        <div class="shot-scroll h-phone">
+          <div class="shot"><img src="assets/screenshots/android/android-1.png" alt="SatsPrice on Android — price source and conversion" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/android/android-2.png" alt="SatsPrice on Android — currency list" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/android/android-3.png" alt="SatsPrice on Android — reorder currency menu" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/android/android-4.png" alt="SatsPrice on Android" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/android/android-5.png" alt="SatsPrice on Android" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/android/android-6.png" alt="SatsPrice on Android — searching currencies by name" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/android/android-7.png" alt="SatsPrice on Android — reset confirmation dialog" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/android/android-8.png" alt="SatsPrice on Android" loading="lazy" /></div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-iphone">
+        <div class="shot-scroll h-phone">
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-1.png" alt="SatsPrice on iPhone — price source and conversion" loading="lazy" /></div>
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-2.png" alt="SatsPrice on iPhone" loading="lazy" /></div>
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-3.png" alt="SatsPrice on iPhone — editing currency list" loading="lazy" /></div>
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-4.png" alt="SatsPrice on iPhone" loading="lazy" /></div>
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-5.png" alt="SatsPrice on iPhone" loading="lazy" /></div>
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-6.png" alt="SatsPrice on iPhone" loading="lazy" /></div>
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-7.png" alt="SatsPrice on iPhone" loading="lazy" /></div>
+          <div class="shot framed-phone"><img src="assets/screenshots/iphone/iphone-8.png" alt="SatsPrice on iPhone" loading="lazy" /></div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-ipad">
+        <div class="shot-scroll h-tablet">
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-1.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-2.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-3.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-4.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-5.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-6.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-7.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+          <div class="shot framed-tablet"><img src="assets/screenshots/ipad/ipad-8.png" alt="SatsPrice on iPad" loading="lazy" /></div>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="panel-macos">
+        <div class="shot-scroll h-desktop">
+          <div class="shot"><img src="assets/screenshots/macos/macos-1.png" alt="SatsPrice on macOS — main window" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/macos/macos-2.png" alt="SatsPrice on macOS" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/macos/macos-3.png" alt="SatsPrice on macOS" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/macos/macos-4.png" alt="SatsPrice on macOS" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/macos/macos-5.png" alt="SatsPrice on macOS" loading="lazy" /></div>
+          <div class="shot"><img src="assets/screenshots/macos/macos-6.png" alt="SatsPrice on macOS" loading="lazy" /></div>
+        </div>
+      </div>
+
+      <p class="showcase-caption">Scroll or swipe to see more →</p>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section class="download" id="download">
+    <div class="container">
+      <div class="download-card">
+        <p class="eyebrow" style="justify-content:center">Get the app</p>
+        <h2>Download SatsPrice</h2>
+        <p>Pick the option that fits your platform. Every build is free, with no in‑app purchases.</p>
+
+        <div class="badge-row">
+          <a class="badge-link apple" href="https://apps.apple.com/app/satsprice/id6478230475" target="_blank" rel="noopener" aria-label="Download on the App Store">
+            <img src="assets/badges/download_on_apple.svg" alt="Download on the App Store" />
+          </a>
+          <a class="badge-link zapstore" href="https://zapstore.dev/apps/xyz.tyiu.SatsPrice" target="_blank" rel="noopener" aria-label="Get it on Zap Store">
+            <img src="assets/badges/get-it-on-zapstore.svg" alt="Get it on Zap Store" />
+          </a>
+          <a class="badge-link obtainium" href="https://github.com/ImranR98/Obtainium" target="_blank" rel="noopener" aria-label="Get it on Obtainium">
+            <img src="assets/badges/download_on_obtainium.png" alt="Get it on Obtainium" />
+          </a>
+          <a class="badge-link github" href="https://github.com/tyiu/sats-price/releases" target="_blank" rel="noopener" aria-label="Get it on GitHub">
+            <img src="assets/badges/badge_github.png" alt="Get it on GitHub" />
+          </a>
+        </div>
+
+        <div class="version-row">
+          <span class="pill">🍎 iOS 16.0+</span>
+          <span class="pill">🖥️ macOS 13.0+</span>
+          <span class="pill">🤖 Android 7.0+</span>
+        </div>
+
+        <p class="oss-note">
+          100% open source under GPL‑3.0 —
+          <a href="https://github.com/tyiu/sats-price" target="_blank" rel="noopener">view the code</a>.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <a href="#top" class="footer-brand">
+        <img src="assets/logo.png" alt="SatsPrice icon" />
+        SatsPrice
+      </a>
+
+      <nav class="footer-links">
+        <a href="https://github.com/tyiu/sats-price" target="_blank" rel="noopener">Code</a>
+        <a href="https://github.com/tyiu/sats-price/releases" target="_blank" rel="noopener">Releases</a>
+        <a href="https://github.com/tyiu/sats-price/blob/main/LICENSE.GPL" target="_blank" rel="noopener">License</a>
+        <a href="https://github.com/tyiu/sats-price/blob/main/PRIVACY.md" target="_blank" rel="noopener">Privacy</a>
+      </nav>
+    </div>
+
+    <div class="footer-meta">
+      <span>© <span id="year">2026</span> SatsPrice. Licensed under GPL‑3.0.</span>
+      <span>Built with Kotlin Multiplatform &amp; Compose Multiplatform.</span>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
