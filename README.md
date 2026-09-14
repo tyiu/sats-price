@@ -89,7 +89,14 @@ Use the run button in your IDE's editor gutter, or run tests using Gradle tasks:
 
 This project uses [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html),
 [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform/#compose-multiplatform), and
-[Kotlin/Wasm](https://kotl.in/wasm/).
+[Kotlin/Wasm](https://kotl.in/wasm/), along with the following libraries:
+
+- [Ktor](https://github.com/ktorio/ktor) for networking
+- [SQLDelight](https://github.com/cashapp/sqldelight) for local persistence
+- [moko-resources](https://github.com/icerockdev/moko-resources) for multiplatform string/resource handling
+- [kotlinx.coroutines](https://github.com/Kotlin/kotlinx.coroutines), [kotlinx.serialization](https://github.com/Kotlin/kotlinx.serialization), and [kotlinx.datetime](https://github.com/Kotlin/kotlinx-datetime)
+- [kotlin-wrappers](https://github.com/JetBrains/kotlin-wrappers) for browser/JS interop on the Web target
+- [kotlin-multiplatform-bignum](https://github.com/ionspin/kotlin-multiplatform-bignum) for arbitrary-precision arithmetic
 
 The [Bitcoin Calculator](https://www.flaticon.com/free-icons/bitcoin-calculator) icon was created by Icon home and licensed as free for personal and commercial use with attribution.
 
