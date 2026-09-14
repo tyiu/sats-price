@@ -1,0 +1,16 @@
+Rewritten from the ground up as a Kotlin Multiplatform app - same features, now with a shared codebase across platforms.
+
+New:
+- Country flag emoji next to each currency code, where available
+- Support for precious metals (gold, silver, platinum, palladium) alongside fiat currencies
+- Search in the currency picker, with results also matching issuing country names
+- Currency picker now splits selections into Priced/Unpriced
+- Reset button to clear all selected currencies (with confirmation)
+- "1 currency to Sats" field, editable directly for Manual price sources
+- Move currencies to the top or bottom of the list
+
+Improved:
+- Manual price source: simplified UI, seeded from another source, editable rate
+- Selected currencies, exchange rates, and price source now persist between launches
+- Locale-aware number formatting (digit grouping) and human-readable "updated" timestamps
+- More accurate currency list: withdrawn/superseded currency codes filtered out

@@ -91,8 +91,11 @@ Dependencies/
 **/fastlane/README.md
 **/fastlane/Preview.html
 **/fastlane/screenshots/**/*.png
-**/fastlane/metadata/android/*/images/**/*.png
 **/fastlane/test_output
+
+# Unlike Play Store metadata, F-Droid reads screenshots straight from fastlane/metadata/ in the
+# repo -- there's no separate regeneration step, so those (unlike fastlane/screenshots/ above)
+# are meant to be committed, not ignored.
 
 # Code Injection
 #

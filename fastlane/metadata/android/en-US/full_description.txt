@@ -1,0 +1,3 @@
+SatsPrice fetches the price of Bitcoin relative to common fiat currencies from multiple sources, and converts inputted amounts between Sats, BTC, and the selected fiat currency.
+
+Price sources include Coinbase and CoinGecko, or you can enter your own exchange rate manually.
