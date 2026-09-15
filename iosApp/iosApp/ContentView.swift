@@ -460,6 +460,7 @@ struct ContentView: View {
     ) -> some View {
         HStack {
             Text(label)
+                .accessibilityHidden(true)
             Spacer()
             NumericField(
                 placeholder: "",
@@ -469,6 +470,7 @@ struct ContentView: View {
                 onChange: onChange,
                 alignment: .trailing
             )
+            .accessibilityLabel(label)
         }
     }
 }
@@ -485,7 +487,10 @@ private extension Array {
 }
 
 private extension UTType {
-    static let satsPriceCurrencyCode = UTType(exportedAs: "xyz.tyiu.satsprice.currency-code")
+    static let satsPriceCurrencyCode = UTType(
+        exportedAs: "xyz.tyiu.SatsPrice.currency-code",
+        conformingTo: .data
+    )
 }
 
 private struct CurrencyCodeTransfer: Codable, Transferable {
@@ -530,9 +535,7 @@ private struct CurrencyDropCell<Content: View>: View {
                         .preference(key: CurrencyCellSizePreferenceKey.self, value: geometry.size)
                 }
             }
-            .onPreferenceChange(CurrencyCellSizePreferenceKey.self) { size in
-                Task { @MainActor in measuredSize = size }
-            }
+            .onPreferenceChange(CurrencyCellSizePreferenceKey.self) { measuredSize = $0 }
             .overlay {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(isTargeted ? Color.accentColor : Color.clear, lineWidth: 2)
