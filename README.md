@@ -4,6 +4,8 @@
 
 This app fetches the price of Bitcoin relative to common fiat currencies from multiple sources, and converts inputted amounts between Sats, BTC, and the selected fiat currency.
 
+**[satsprice.app Website](https://satsprice.app)**
+
 [![GitHub downloads](https://img.shields.io/github/downloads/tyiu/sats-price/total?label=Downloads&labelColor=27303D&color=0D1117&logo=github&logoColor=FFFFFF&style=flat)](https://github.com/tyiu/sats-price/releases)
 
 [![Last Version](https://img.shields.io/github/release/tyiu/sats-price?maxAge=3600&label=Stable&labelColor=06599d&color=043b69)](https://github.com/tyiu/sats-price)

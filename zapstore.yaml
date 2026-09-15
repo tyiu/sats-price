@@ -4,7 +4,7 @@ summary: Bitcoin price calculator app
 tags:
     - Bitcoin,BTC,sats,satoshi,satoshis,calculator,price,exchange,fiat,currency
 license: GPL-3.0
-website: https://github.com/tyiu/sats-price
+website: https://satsprice.app
 images:
     - docs/assets/screenshots/android/android-1.png
     - docs/assets/screenshots/android/android-2.png
