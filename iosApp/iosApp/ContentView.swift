@@ -108,7 +108,6 @@ struct ContentView: View {
                             args: [state.defaultCurrencyCode]
                         ))
                         HStack {
-                            Spacer(minLength: 0)
                             if state.isManualSource {
                                 NumericField(
                                     placeholder: "",
@@ -119,12 +118,13 @@ struct ContentView: View {
                                     alignment: .trailing
                                 )
                                 .textFieldStyle(.roundedBorder)
-                            } else if !state.defaultCurrencyRate.isEmpty {
-                                Text(NumberFormatKt.groupDigits(value: state.defaultCurrencyRate))
-                                    .lineLimit(1)
-                                    .minimumScaleFactor(0.7)
-                            }
-                            if !state.isManualSource {
+                            } else {
+                                Spacer(minLength: 0)
+                                if !state.defaultCurrencyRate.isEmpty {
+                                    Text(NumberFormatKt.groupDigits(value: state.defaultCurrencyRate))
+                                        .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
+                                }
                                 if state.isLoading {
                                     ProgressView()
                                 } else {
@@ -198,8 +198,22 @@ struct ContentView: View {
                     spacing: 12
                 ) {
                     ForEach(displayedRows, id: \.code) { row in
+                        let index = displayedRows.firstIndex { $0.code == row.code } ?? 0
                         let isPriced = state.pricedCurrencyCodes.contains(row.code)
-                        GeometryReader { geometry in
+                        CurrencyDropCell { draggedCode, placeAfter in
+                            let codes = displayedRows.map(\.code)
+                            guard codes.contains(draggedCode) else { return false }
+                            let reordered = reorderedCodes(
+                                codes,
+                                moving: draggedCode,
+                                relativeTo: row.code,
+                                placeAfter: placeAfter
+                            )
+                            if reordered != codes {
+                                viewModel.onFiatCurrenciesReordered(reordered)
+                            }
+                            return true
+                        } content: {
                             currencyAmountCell(
                                 row: row,
                                 isPriced: isPriced,
@@ -207,25 +221,58 @@ struct ContentView: View {
                                 canReorder: displayedRows.count > 1,
                                 onRemove: { viewModel.onFiatCurrencyToggled(row.code) }
                             )
-                            .dropDestination(for: String.self) { draggedCodes, location in
-                                guard draggedCodes.count == 1, let draggedCode = draggedCodes.first else {
-                                    return false
+                            .accessibilityActions {
+                                if index > 0 {
+                                    Button(IosLocalizationKt.localizedString(
+                                        resource: MR.strings.shared.move_currency_to_top_content_description
+                                    )) {
+                                        viewModel.onFiatCurrenciesReordered(
+                                            displayedRows.map(\.code).moving(from: index, to: 0)
+                                        )
+                                    }
+                                    Button(IosLocalizationKt.localizedString(
+                                        resource: MR.strings.shared.move_currency_up_content_description
+                                    )) {
+                                        viewModel.onFiatCurrenciesReordered(
+                                            displayedRows.map(\.code).moving(from: index, to: index - 1)
+                                        )
+                                    }
                                 }
-                                let codes = displayedRows.map(\.code)
-                                guard codes.contains(draggedCode) else { return false }
-                                let reordered = reorderedCodes(
-                                    codes,
-                                    moving: draggedCode,
-                                    relativeTo: row.code,
-                                    placeAfter: location.x >= geometry.size.width / 2
-                                )
-                                if reordered != codes {
-                                    viewModel.onFiatCurrenciesReordered(reordered)
+                                if index < displayedRows.count - 1 {
+                                    Button(IosLocalizationKt.localizedString(
+                                        resource: MR.strings.shared.move_currency_down_content_description
+                                    )) {
+                                        viewModel.onFiatCurrenciesReordered(
+                                            displayedRows.map(\.code).moving(from: index, to: index + 1)
+                                        )
+                                    }
+                                    Button(IosLocalizationKt.localizedString(
+                                        resource: MR.strings.shared.move_currency_to_bottom_content_description
+                                    )) {
+                                        viewModel.onFiatCurrenciesReordered(
+                                            displayedRows.map(\.code).moving(from: index, to: displayedRows.count - 1)
+                                        )
+                                    }
                                 }
-                                return true
                             }
                         }
-                        .frame(height: (!isPriced && !state.isManualSource) ? 112 : 84)
+                    }
+
+                    if displayedRows.count > 1 && displayedRows.count % 2 == 1 {
+                        CurrencyDropCell { draggedCode, _ in
+                            let codes = displayedRows.map(\.code)
+                            guard let sourceIndex = codes.firstIndex(of: draggedCode) else { return false }
+                            let reordered = codes.moving(from: sourceIndex, to: codes.count - 1)
+                            if reordered != codes {
+                                viewModel.onFiatCurrenciesReordered(reordered)
+                            }
+                            return true
+                        } content: {
+                            Color.clear
+                                .frame(minHeight: 44)
+                                .contentShape(Rectangle())
+                                .accessibilityHidden(true)
+                        }
                     }
                 }
             }
@@ -290,9 +337,12 @@ struct ContentView: View {
                 Spacer(minLength: 2)
                 if canReorder {
                     Image(systemName: "line.3.horizontal")
-                        .frame(width: 32, height: 32)
+                        .frame(width: 44, height: 44)
                         .contentShape(Rectangle())
                         .draggable(row.code)
+                        #if os(macOS)
+                        .focusable()
+                        #endif
                         .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
                             resource: MR.strings.shared.reorder_currency_content_description,
                             args: [row.code]
@@ -303,7 +353,7 @@ struct ContentView: View {
                         Image(systemName: "xmark")
                     }
                     .buttonStyle(.borderless)
-                    .frame(width: 32, height: 32)
+                    .frame(width: 44, height: 44)
                     .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
                         resource: MR.strings.shared.remove_currency_named_content_description,
                         args: [row.code]
@@ -334,18 +384,6 @@ struct ContentView: View {
         }
         .padding(8)
         .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
-        .contextMenu {
-            if row.code != state.defaultCurrencyCode {
-                Button(role: .destructive, action: onRemove) {
-                    Label(
-                        IosLocalizationKt.localizedString(
-                            resource: MR.strings.shared.remove_currency_content_description
-                        ),
-                        systemImage: "trash"
-                    )
-                }
-            }
-        }
     }
 
     // `maxSupplyBtcAmount` is the sanitized digit-only form CurrencyConverter.MAX_BTC_SUPPLY
@@ -380,34 +418,61 @@ struct ContentView: View {
         value: String,
         keyboardType: NumericFieldKeyboard,
         sanitize: @escaping (String) -> String,
-        onChange: @escaping (String) -> Void,
-        isPriced: Bool = true,
-        sourceName: String = "",
-        isManualSource: Bool = false
+        onChange: @escaping (String) -> Void
     ) -> some View {
         HStack {
-            VStack(alignment: .leading) {
-                Text(label)
-                if !isPriced && !isManualSource {
-                    Text(IosLocalizationKt.localizedFormattedString(
-                        resource: MR.strings.shared.currency_not_priced,
-                        args: [sourceName]
-                    ))
-                    .font(.caption2)
-                    .foregroundColor(.red)
-                }
-            }
+            Text(label)
             Spacer()
             NumericField(
                 placeholder: "",
-                value: isPriced ? value : "",
+                value: value,
                 keyboardType: keyboardType,
                 sanitize: sanitize,
                 onChange: onChange,
                 alignment: .trailing
             )
-            .disabled(!isPriced)
         }
+    }
+}
+
+private extension Array {
+    func moving(from sourceIndex: Int, to destinationIndex: Int) -> [Element] {
+        guard indices.contains(sourceIndex), indices.contains(destinationIndex) else { return self }
+        var result = self
+        result.insert(result.remove(at: sourceIndex), at: destinationIndex)
+        return result
+    }
+}
+
+private struct CurrencyDropCell<Content: View>: View {
+    let onDrop: (String, Bool) -> Bool
+    let content: Content
+
+    @State private var measuredWidth: CGFloat = 0
+
+    init(
+        onDrop: @escaping (String, Bool) -> Bool,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.onDrop = onDrop
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .background {
+                GeometryReader { geometry in
+                    Color.clear
+                        .onAppear { measuredWidth = geometry.size.width }
+                        .onChange(of: geometry.size.width) { measuredWidth = $0 }
+                }
+            }
+            .dropDestination(for: String.self) { draggedCodes, location in
+                guard draggedCodes.count == 1, let draggedCode = draggedCodes.first, measuredWidth > 0 else {
+                    return false
+                }
+                return onDrop(draggedCode, location.x >= measuredWidth / 2)
+            }
     }
 }
 
