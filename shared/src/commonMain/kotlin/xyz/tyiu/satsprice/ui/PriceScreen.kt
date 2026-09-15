@@ -1,7 +1,9 @@
 package xyz.tyiu.satsprice.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,11 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -42,13 +40,22 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -62,6 +69,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.icerock.moko.resources.compose.stringResource
@@ -167,66 +175,56 @@ fun PriceScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.Top,
                     ) {
-                        if (state.isManualSource) {
-                            OutlinedTextField(
-                                value = state.manualRateInput,
-                                onValueChange = viewModel::onManualRateChanged,
-                                label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                visualTransformation = DigitGroupingTransformation,
-                                modifier = Modifier.weight(1f),
-                            )
-                        } else {
-                            val rate = state.defaultCurrencyRate()
-                            OutlinedTextField(
-                                value = rate,
-                                onValueChange = {},
-                                readOnly = true,
-                                enabled = rate.isNotEmpty(),
-                                label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
-                                singleLine = true,
-                                visualTransformation = DigitGroupingTransformation,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                        if (!state.isManualSource) {
-                            if (state.isLoading) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                            } else {
-                                IconButton(onClick = { viewModel.refresh() }) {
-                                    Icon(
-                                        Icons.Default.Refresh,
-                                        contentDescription = stringResource(MR.strings.refresh_content_description),
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    if (state.isManualSource) {
+                        val rate = if (state.isManualSource) state.manualRateInput else state.defaultCurrencyRate()
                         OutlinedTextField(
-                            value = state.manualSatsPerCurrencyInput,
-                            onValueChange = viewModel::onManualSatsPerCurrencyChanged,
+                            value = rate,
+                            onValueChange = if (state.isManualSource) viewModel::onManualRateChanged else { _ -> },
+                            readOnly = !state.isManualSource,
+                            enabled = state.isManualSource || rate.isNotEmpty(),
+                            label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true,
+                            visualTransformation = DigitGroupingTransformation,
+                            trailingIcon = if (state.isManualSource) {
+                                null
+                            } else {
+                                {
+                                    if (state.isLoading) {
+                                        CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                                    } else {
+                                        IconButton(onClick = viewModel::refresh) {
+                                            Icon(
+                                                Icons.Default.Refresh,
+                                                contentDescription = stringResource(MR.strings.refresh_content_description),
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                        )
+
+                        val oneCurrencyToSats = if (state.isManualSource) {
+                            state.manualSatsPerCurrencyInput
+                        } else {
+                            state.oneCurrencyToSats()
+                        }
+                        OutlinedTextField(
+                            value = oneCurrencyToSats,
+                            onValueChange = if (state.isManualSource) {
+                                viewModel::onManualSatsPerCurrencyChanged
+                            } else {
+                                { _ -> }
+                            },
+                            readOnly = !state.isManualSource,
+                            enabled = state.isManualSource || oneCurrencyToSats.isNotEmpty(),
                             label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             visualTransformation = DigitGroupingTransformation,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    } else {
-                        val oneCurrencyToSats = state.oneCurrencyToSats()
-                        OutlinedTextField(
-                            value = oneCurrencyToSats,
-                            onValueChange = {},
-                            readOnly = true,
-                            enabled = oneCurrencyToSats.isNotEmpty(),
-                            label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
-                            singleLine = true,
-                            visualTransformation = DigitGroupingTransformation,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.weight(1f),
                         )
                     }
 
@@ -255,84 +253,6 @@ fun PriceScreen(
                     ) {
                         Text(message, color = MaterialTheme.colorScheme.onErrorContainer)
                         TextButton(onClick = { viewModel.refresh() }) { Text(stringResource(MR.strings.retry)) }
-                    }
-                }
-            }
-
-            val exceedsMaxSupply = state.exceedsMaxSupply()
-
-            Card(modifier = Modifier.fillMaxWidth(), colors = SectionColors) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                ) {
-                    Text(stringResource(MR.strings.bitcoin_section_title), style = MaterialTheme.typography.titleMedium)
-
-                    OutlinedTextField(
-                        value = state.satsAmount,
-                        onValueChange = viewModel::onSatsAmountChanged,
-                        label = { Text(stringResource(MR.strings.sats_label)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        isError = exceedsMaxSupply,
-                        visualTransformation = DigitGroupingTransformation,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-
-                    OutlinedTextField(
-                        value = state.btcAmount,
-                        onValueChange = viewModel::onBtcAmountChanged,
-                        label = { Text(stringResource(MR.strings.btc_label)) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        isError = exceedsMaxSupply,
-                        visualTransformation = DigitGroupingTransformation,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-
-                    if (exceedsMaxSupply) {
-                        // Locale-grouped (e.g. "21,000,000 BTC" in en-US, "21.000.000 BTC" in
-                        // de-DE) since it's substituted into the string, then searched for
-                        // verbatim below to turn it into a link — the two always match exactly.
-                        val maxSupplyText = groupDigits(formatAmount(CurrencyConverter.MAX_BTC_SUPPLY, 0)) + " BTC"
-                        val warning = stringResource(MR.strings.exceeds_max_supply, maxSupplyText)
-                        val linkStart = warning.indexOf(maxSupplyText)
-                        val annotatedWarning = if (linkStart < 0) {
-                            AnnotatedString(warning)
-                        } else {
-                            // Set explicitly (and identically) for every interaction state, since
-                            // LinkAnnotation otherwise renders in the theme's link/accent color
-                            // rather than inheriting the surrounding warning text's color.
-                            val linkStyle = SpanStyle(
-                                color = MaterialTheme.colorScheme.error,
-                                textDecoration = TextDecoration.Underline,
-                            )
-                            buildAnnotatedString {
-                                append(warning.substring(0, linkStart))
-                                withLink(
-                                    LinkAnnotation.Clickable(
-                                        tag = "max_supply",
-                                        styles = TextLinkStyles(
-                                            style = linkStyle,
-                                            focusedStyle = linkStyle,
-                                            hoveredStyle = linkStyle,
-                                            pressedStyle = linkStyle,
-                                        ),
-                                    ) {
-                                        viewModel.onBtcAmountChanged(formatAmount(CurrencyConverter.MAX_BTC_SUPPLY, 0))
-                                    },
-                                ) {
-                                    append(maxSupplyText)
-                                }
-                                append(warning.substring(linkStart + maxSupplyText.length))
-                            }
-                        }
-                        Text(
-                            text = annotatedWarning,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        )
                     }
                 }
             }
@@ -366,62 +286,83 @@ fun PriceScreen(
                     } else {
                         state.selectedFiatCurrencies
                     }
-                    displayedCurrencies.forEachIndexed { index, code ->
-                        key(code) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                val isPriced = state.isPriced(code)
-                                val fieldLabel = currencyFlagEmoji(code)?.let { flag -> "$flag $code" } ?: code
-                                OutlinedTextField(
-                                    value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
-                                    onValueChange = { viewModel.onFiatAmountChanged(code, it) },
-                                    label = { Text(fieldLabel) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                    singleLine = true,
-                                    enabled = isPriced,
-                                    isError = !isPriced && !state.isManualSource,
-                                    supportingText = if (isPriced || state.isManualSource) {
-                                        null
-                                    } else {
-                                        { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
+                    CurrencyAmountGrid(
+                        state = state,
+                        displayedCurrencies = displayedCurrencies,
+                        onAmountChanged = viewModel::onFiatAmountChanged,
+                        onReordered = viewModel::onFiatCurrenciesReordered,
+                        onRemove = viewModel::onFiatCurrencyToggled,
+                    )
+                }
+            }
+
+            val exceedsMaxSupply = state.exceedsMaxSupply()
+            Card(modifier = Modifier.fillMaxWidth(), colors = SectionColors) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Text(stringResource(MR.strings.bitcoin_section_title), style = MaterialTheme.typography.titleMedium)
+
+                    OutlinedTextField(
+                        value = state.satsAmount,
+                        onValueChange = viewModel::onSatsAmountChanged,
+                        label = { Text(stringResource(MR.strings.sats_label)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        singleLine = true,
+                        isError = exceedsMaxSupply,
+                        visualTransformation = DigitGroupingTransformation,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    OutlinedTextField(
+                        value = state.btcAmount,
+                        onValueChange = viewModel::onBtcAmountChanged,
+                        label = { Text(stringResource(MR.strings.btc_label)) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        isError = exceedsMaxSupply,
+                        visualTransformation = DigitGroupingTransformation,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+
+                    if (exceedsMaxSupply) {
+                        val maxSupplyText = groupDigits(formatAmount(CurrencyConverter.MAX_BTC_SUPPLY, 0)) + " BTC"
+                        val warning = stringResource(MR.strings.exceeds_max_supply, maxSupplyText)
+                        val linkStart = warning.indexOf(maxSupplyText)
+                        val annotatedWarning = if (linkStart < 0) {
+                            AnnotatedString(warning)
+                        } else {
+                            val linkStyle = SpanStyle(
+                                color = MaterialTheme.colorScheme.error,
+                                textDecoration = TextDecoration.Underline,
+                            )
+                            buildAnnotatedString {
+                                append(warning.substring(0, linkStart))
+                                withLink(
+                                    LinkAnnotation.Clickable(
+                                        tag = "max_supply",
+                                        styles = TextLinkStyles(
+                                            style = linkStyle,
+                                            focusedStyle = linkStyle,
+                                            hoveredStyle = linkStyle,
+                                            pressedStyle = linkStyle,
+                                        ),
+                                    ) {
+                                        viewModel.onBtcAmountChanged(formatAmount(CurrencyConverter.MAX_BTC_SUPPLY, 0))
                                     },
-                                    visualTransformation = DigitGroupingTransformation,
-                                    modifier = Modifier.weight(1f),
-                                )
-                                if (displayedCurrencies.size > 1) {
-                                    CurrencyRowMenu(
-                                        code = code,
-                                        canMoveUp = index > 0,
-                                        canMoveDown = index < displayedCurrencies.lastIndex,
-                                        canRemove = code != state.defaultCurrencyCode,
-                                        onMoveUp = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, index - 1),
-                                            )
-                                        },
-                                        onMoveDown = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, index + 1),
-                                            )
-                                        },
-                                        onMoveToTop = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, 0),
-                                            )
-                                        },
-                                        onMoveToBottom = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, state.selectedFiatCurrencies.lastIndex),
-                                            )
-                                        },
-                                        onRemove = { viewModel.onFiatCurrencyToggled(code) },
-                                    )
+                                ) {
+                                    append(maxSupplyText)
                                 }
+                                append(warning.substring(linkStart + maxSupplyText.length))
                             }
                         }
+                        Text(
+                            text = annotatedWarning,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(horizontal = 16.dp),
+                        )
                     }
                 }
             }
@@ -429,75 +370,184 @@ fun PriceScreen(
     }
 }
 
-private fun List<String>.moved(fromIndex: Int, toIndex: Int): List<String> =
-    toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+private data class CurrencyDragSession(
+    val code: String,
+    val baselineOrder: List<String>,
+    val origin: Offset,
+    val offset: Offset = Offset.Zero,
+    val targetGap: Int,
+)
 
 @Composable
-private fun CurrencyRowMenu(
-    code: String,
-    canMoveUp: Boolean,
-    canMoveDown: Boolean,
-    canRemove: Boolean,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveToTop: () -> Unit,
-    onMoveToBottom: () -> Unit,
-    onRemove: () -> Unit,
+private fun CurrencyAmountGrid(
+    state: ConverterUiState,
+    displayedCurrencies: List<String>,
+    onAmountChanged: (String, String) -> Unit,
+    onReordered: (List<String>) -> Unit,
+    onRemove: (String) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                Icons.Default.MoreVert,
-                contentDescription = stringResource(MR.strings.currency_options_content_description, code),
-            )
+    val boundsByCode = remember { mutableStateMapOf<String, CurrencyGridCellBounds>() }
+    var dragSession by remember { mutableStateOf<CurrencyDragSession?>(null) }
+
+    LaunchedEffect(displayedCurrencies) {
+        boundsByCode.keys.retainAll(displayedCurrencies.toSet())
+        if (dragSession?.baselineOrder != displayedCurrencies) dragSession = null
+    }
+
+    CurrencyGrid(modifier = Modifier.fillMaxWidth()) {
+        displayedCurrencies.forEachIndexed { index, code ->
+            key(code) {
+                val session = dragSession
+                val isDragged = session?.code == code
+                val targetIndex = session?.targetGap?.let { gap ->
+                    if (gap >= displayedCurrencies.size) displayedCurrencies.lastIndex else gap
+                }
+                val isDropTarget = session != null && targetIndex == index && !isDragged
+                val isPriced = state.isPriced(code)
+                val fieldLabel = currencyFlagEmoji(code)?.let { flag -> "$flag $code" } ?: code
+
+                Column(
+                    modifier = Modifier
+                        .onGloballyPositioned { coordinates ->
+                            val bounds = coordinates.boundsInParent()
+                            boundsByCode[code] = CurrencyGridCellBounds(
+                                left = bounds.left,
+                                top = bounds.top,
+                                right = bounds.right,
+                                bottom = bounds.bottom,
+                            )
+                        }
+                        .zIndex(if (isDragged) 1f else 0f)
+                        .graphicsLayer {
+                            translationX = if (isDragged) session.offset.x else 0f
+                            translationY = if (isDragged) session.offset.y else 0f
+                            alpha = if (isDragged) 0.82f else 1f
+                            shadowElevation = if (isDragged) 12.dp.toPx() else 0f
+                        }
+                        .let { modifier ->
+                            if (isDropTarget) {
+                                modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
+                            } else {
+                                modifier
+                            }
+                        },
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(fieldLabel, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
+                        if (displayedCurrencies.size > 1) {
+                            Box(
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .pointerInput(code, displayedCurrencies) {
+                                        detectDragGestures(
+                                            onDragStart = {
+                                                val bounds = boundsByCode[code] ?: return@detectDragGestures
+                                                dragSession = CurrencyDragSession(
+                                                    code = code,
+                                                    baselineOrder = displayedCurrencies,
+                                                    origin = Offset(bounds.centerX, (bounds.top + bounds.bottom) / 2f),
+                                                    targetGap = index,
+                                                )
+                                            },
+                                            onDragCancel = { dragSession = null },
+                                            onDragEnd = {
+                                                val completed = dragSession
+                                                dragSession = null
+                                                if (completed != null && completed.baselineOrder == displayedCurrencies) {
+                                                    val reordered = moveCurrencyToGap(
+                                                        completed.baselineOrder,
+                                                        completed.code,
+                                                        completed.targetGap,
+                                                    )
+                                                    if (reordered != completed.baselineOrder) onReordered(reordered)
+                                                }
+                                            },
+                                        ) { change, dragAmount ->
+                                            change.consume()
+                                            val current = dragSession ?: return@detectDragGestures
+                                            val newOffset = current.offset + dragAmount
+                                            dragSession = current.copy(
+                                                offset = newOffset,
+                                                targetGap = currencyDropGap(
+                                                    current.baselineOrder,
+                                                    boundsByCode,
+                                                    current.origin.x + newOffset.x,
+                                                    current.origin.y + newOffset.y,
+                                                ),
+                                            )
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Default.DragHandle,
+                                    contentDescription = stringResource(MR.strings.reorder_currency_content_description, code),
+                                )
+                            }
+                        }
+                        if (displayedCurrencies.size > 1 && code != state.defaultCurrencyCode) {
+                            IconButton(onClick = { onRemove(code) }, modifier = Modifier.size(36.dp)) {
+                                Icon(
+                                    Icons.Default.Close,
+                                    contentDescription = stringResource(
+                                        MR.strings.remove_currency_named_content_description,
+                                        code,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                    OutlinedTextField(
+                        value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
+                        onValueChange = { onAmountChanged(code, it) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        enabled = isPriced,
+                        isError = !isPriced && !state.isManualSource,
+                        supportingText = if (isPriced || state.isManualSource) {
+                            null
+                        } else {
+                            { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
+                        },
+                        visualTransformation = DigitGroupingTransformation,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+            }
         }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_to_top_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardDoubleArrowUp, contentDescription = null) },
-                enabled = canMoveUp,
-                onClick = {
-                    expanded = false
-                    onMoveToTop()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_up_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardArrowUp, contentDescription = null) },
-                enabled = canMoveUp,
-                onClick = {
-                    expanded = false
-                    onMoveUp()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_down_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardArrowDown, contentDescription = null) },
-                enabled = canMoveDown,
-                onClick = {
-                    expanded = false
-                    onMoveDown()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_to_bottom_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardDoubleArrowDown, contentDescription = null) },
-                enabled = canMoveDown,
-                onClick = {
-                    expanded = false
-                    onMoveToBottom()
-                },
-            )
-            if (canRemove) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(MR.strings.remove_currency_content_description)) },
-                    leadingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
-                    onClick = {
-                        expanded = false
-                        onRemove()
-                    },
-                )
+    }
+}
+
+@Composable
+private fun CurrencyGrid(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
+) {
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        val spacing = 8.dp.roundToPx()
+        val columnWidth = ((constraints.maxWidth - spacing) / 2).coerceAtLeast(0)
+        val childConstraints = Constraints(
+            minWidth = columnWidth,
+            maxWidth = columnWidth,
+            minHeight = 0,
+            maxHeight = constraints.maxHeight,
+        )
+        val placeables = measurables.map { it.measure(childConstraints) }
+        val rowHeights = placeables.chunked(2).map { row -> row.maxOf { it.height } }
+        val height = (rowHeights.sum() + spacing * (rowHeights.size - 1).coerceAtLeast(0))
+            .coerceIn(constraints.minHeight, constraints.maxHeight)
+
+        layout(constraints.maxWidth, height) {
+            var y = 0
+            placeables.chunked(2).forEachIndexed { rowIndex, row ->
+                row.forEachIndexed { columnIndex, placeable ->
+                    placeable.placeRelative(x = columnIndex * (columnWidth + spacing), y = y)
+                }
+                y += rowHeights[rowIndex] + spacing
             }
         }
     }
