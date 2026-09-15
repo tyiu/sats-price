@@ -268,6 +268,20 @@ h1, h2, h3, h4 {
   margin-top: 32px;
 }
 
+.hero-webapp {
+  margin-top: 18px;
+  font-size: 14px;
+  color: var(--text-faint);
+}
+
+.hero-webapp a {
+  color: var(--gold);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.hero-webapp a:hover { text-decoration: underline; }
+
 .platform-pills {
   display: flex;
   flex-wrap: wrap;
@@ -651,6 +665,26 @@ h1, h2, h3, h4 {
 
 .badge-link.obtainium img,
 .badge-link.github img { height: 56px; }
+
+.webapp-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 30px;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.webapp-divider::before,
+.webapp-divider::after {
+  content: "";
+  height: 1px;
+  width: 80px;
+  background: var(--border);
+}
+
+.webapp-cta { margin-top: 18px; }
 
 .version-row {
   margin-top: 38px;

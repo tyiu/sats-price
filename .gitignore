@@ -5,6 +5,7 @@ xcodebuild*.log
 
 .gradle/
 .idea/
+/website/app/
 .*.swp
 .*.swo
 .DS_Store

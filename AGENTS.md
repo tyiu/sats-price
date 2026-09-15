@@ -8,11 +8,14 @@ real trial-and-error to get right.
 ## What this is
 
 SatsPrice is a Kotlin Multiplatform app, currently released on iOS, macOS,
-and Android (see README's Supported Platforms/Download and Install). Web and
-Desktop/JVM are real future release targets too — `desktopApp` already has
-full native packaging configured (DMG/MSI/DEB, see its `build.gradle.kts`) —
-but neither has a release/CI pipeline set up yet, so treat them as
-not-yet-shipped rather than dev-only. The app converts between BTC, Sats,
+and Android (see README's Supported Platforms/Download and Install).
+Desktop/JVM is a real future release target — `desktopApp` already has full
+native packaging configured (DMG/MSI/DEB, see its `build.gradle.kts`) — but
+has no release/CI pipeline set up yet, so treat it as not-yet-shipped rather
+than dev-only. Web is a step ahead of Desktop: `.github/workflows/pages.yml`
+builds `:webApp:wasmJsBrowserDistribution` and publishes it alongside the
+marketing site to `satsprice.app/app/` on every push to `main` — see
+"Website and web app deployment" below. The app converts between BTC, Sats,
 and fiat currencies using live exchange rates (Coinbase, CoinGecko, or a
 manually typed-in rate).
 
@@ -148,6 +151,27 @@ worker plus a wasm sqlite binary — so it gets a `localStorage`-backed
 fallback instead (`data/db/LocalStorageStores.kt`), which does survive page
 reloads, just scoped to the browser profile/origin (cleared by clearing
 site data, not shared across browsers/devices).
+
+## Website and web app deployment
+
+`website/` is a static marketing site (plain HTML/CSS/JS, no build step of
+its own) deployed to `satsprice.app` via GitHub Pages
+(`.github/workflows/pages.yml`). That workflow does more than upload
+`website/` as-is: it also runs `./gradlew :webApp:wasmJsBrowserDistribution`
+and copies the result into `website/app/` before publishing, so the live
+Compose web app is reachable at `satsprice.app/app/` and linked from the
+site (nav, hero, download section) via `/app/`.
+
+- `website/app/` is git-ignored — it's build output, generated fresh by CI
+  (and locally by the script below), never committed.
+- To reproduce the production layout locally (site + web app together,
+  `/app/` links working): `./website/serve-local.sh [port]`. It builds the
+  wasmJs distribution, copies it into `website/app/`, and serves
+  `website/` with `python3 -m http.server`.
+- If you change the Pages workflow, remember `paths:` in the trigger
+  includes `webApp/**`/`shared/**`/Gradle files, not just `website/**` —
+  a shared-code change that affects the web app should also redeploy the
+  site.
 
 ## Testing and verification
 

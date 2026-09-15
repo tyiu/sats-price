@@ -27,7 +27,7 @@ height="70">](https://github.com/tyiu/sats-price/releases)
 
 ## Supported Platforms
 
-iOS 16.0+ • macOS 13.0+ • Android 7.0+
+iOS 16.0+ • macOS 13.0+ • Android 7.0+ • [Web](https://satsprice.app/app/) (any modern browser)
 
 ## Screenshots
 
@@ -75,6 +75,9 @@ options:
     - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
     - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
 - iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+- [Website](./website) (with the web app built and served at `/app/`, matching production):
+  `./website/serve-local.sh` (serves at http://localhost:8000 by default; pass a port number to
+  override)
 
 ### Running tests
 
