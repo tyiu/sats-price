@@ -1,7 +1,7 @@
 package xyz.tyiu.satsprice.ui
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -43,19 +43,33 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -68,6 +82,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -124,6 +139,7 @@ fun PriceScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    val pageScrollState = rememberScrollState()
 
     if (showCurrencyPicker) {
         CurrencyPickerScreen(
@@ -143,7 +159,7 @@ fun PriceScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(pageScrollState)
                 .padding(horizontal = screenHorizontalPadding, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -182,7 +198,7 @@ fun PriceScreen(
                             value = rate,
                             onValueChange = if (state.isManualSource) viewModel::onManualRateChanged else { _ -> },
                             readOnly = !state.isManualSource,
-                            enabled = state.isManualSource || rate.isNotEmpty(),
+                            enabled = true,
                             label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                             singleLine = true,
@@ -292,6 +308,7 @@ fun PriceScreen(
                         onAmountChanged = viewModel::onFiatAmountChanged,
                         onReordered = viewModel::onFiatCurrenciesReordered,
                         onRemove = viewModel::onFiatCurrencyToggled,
+                        pageScrollState = pageScrollState,
                     )
                 }
             }
@@ -385,16 +402,27 @@ private fun CurrencyAmountGrid(
     onAmountChanged: (String, String) -> Unit,
     onReordered: (List<String>) -> Unit,
     onRemove: (String) -> Unit,
+    pageScrollState: androidx.compose.foundation.ScrollState,
 ) {
     val boundsByCode = remember { mutableStateMapOf<String, CurrencyGridCellBounds>() }
     var dragSession by remember { mutableStateOf<CurrencyDragSession?>(null) }
+    var gridTopInWindow by remember { mutableFloatStateOf(0f) }
+    var rootHeight by remember { mutableIntStateOf(0) }
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     LaunchedEffect(displayedCurrencies) {
         boundsByCode.keys.retainAll(displayedCurrencies.toSet())
         if (dragSession?.baselineOrder != displayedCurrencies) dragSession = null
     }
 
-    CurrencyGrid(modifier = Modifier.fillMaxWidth()) {
+    CurrencyGrid(
+        modifier = Modifier
+            .fillMaxWidth()
+            .onGloballyPositioned { coordinates ->
+                gridTopInWindow = coordinates.boundsInWindow().top
+                rootHeight = coordinates.findRootCoordinates().size.height
+            },
+    ) {
         displayedCurrencies.forEachIndexed { index, code ->
             key(code) {
                 val session = dragSession
@@ -403,19 +431,22 @@ private fun CurrencyAmountGrid(
                     if (gap >= displayedCurrencies.size) displayedCurrencies.lastIndex else gap
                 }
                 val isDropTarget = session != null && targetIndex == index && !isDragged
+                val dropIsAfterTarget = session?.targetGap == displayedCurrencies.size
                 val isPriced = state.isPriced(code)
                 val fieldLabel = currencyFlagEmoji(code)?.let { flag -> "$flag $code" } ?: code
+                val dropIndicatorColor = MaterialTheme.colorScheme.primary
 
                 Column(
                     modifier = Modifier
                         .onGloballyPositioned { coordinates ->
                             val bounds = coordinates.boundsInParent()
-                            boundsByCode[code] = CurrencyGridCellBounds(
+                            val newBounds = CurrencyGridCellBounds(
                                 left = bounds.left,
                                 top = bounds.top,
                                 right = bounds.right,
                                 bottom = bounds.bottom,
                             )
+                            if (boundsByCode[code] != newBounds) boundsByCode[code] = newBounds
                         }
                         .zIndex(if (isDragged) 1f else 0f)
                         .graphicsLayer {
@@ -424,11 +455,17 @@ private fun CurrencyAmountGrid(
                             alpha = if (isDragged) 0.82f else 1f
                             shadowElevation = if (isDragged) 12.dp.toPx() else 0f
                         }
-                        .let { modifier ->
+                        .drawBehind {
                             if (isDropTarget) {
-                                modifier.border(2.dp, MaterialTheme.colorScheme.primary, MaterialTheme.shapes.medium)
-                            } else {
-                                modifier
+                                val beforeOnLeft = !isRtl
+                                val drawOnLeft = if (dropIsAfterTarget) !beforeOnLeft else beforeOnLeft
+                                val x = if (drawOnLeft) 0f else size.width
+                                drawLine(
+                                    color = dropIndicatorColor,
+                                    start = Offset(x, 0f),
+                                    end = Offset(x, size.height),
+                                    strokeWidth = 4.dp.toPx(),
+                                )
                             }
                         },
                     verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -439,9 +476,48 @@ private fun CurrencyAmountGrid(
                     ) {
                         Text(fieldLabel, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
                         if (displayedCurrencies.size > 1) {
+                            val moveToTopLabel = stringResource(MR.strings.move_currency_to_top_content_description)
+                            val moveUpLabel = stringResource(MR.strings.move_currency_up_content_description)
+                            val moveDownLabel = stringResource(MR.strings.move_currency_down_content_description)
+                            val moveToBottomLabel = stringResource(MR.strings.move_currency_to_bottom_content_description)
+                            val accessibilityActions = buildList {
+                                if (index > 0) {
+                                    add(CustomAccessibilityAction(moveToTopLabel) {
+                                        onReordered(displayedCurrencies.moved(index, 0))
+                                        true
+                                    })
+                                    add(CustomAccessibilityAction(moveUpLabel) {
+                                        onReordered(displayedCurrencies.moved(index, index - 1))
+                                        true
+                                    })
+                                }
+                                if (index < displayedCurrencies.lastIndex) {
+                                    add(CustomAccessibilityAction(moveDownLabel) {
+                                        onReordered(displayedCurrencies.moved(index, index + 1))
+                                        true
+                                    })
+                                    add(CustomAccessibilityAction(moveToBottomLabel) {
+                                        onReordered(displayedCurrencies.moved(index, displayedCurrencies.lastIndex))
+                                        true
+                                    })
+                                }
+                            }
                             Box(
                                 modifier = Modifier
-                                    .size(36.dp)
+                                    .size(48.dp)
+                                    .semantics(mergeDescendants = true) { customActions = accessibilityActions }
+                                    .focusable()
+                                    .onPreviewKeyEvent { event ->
+                                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                                        val destination = when (event.key) {
+                                            Key.DirectionLeft, Key.DirectionUp -> index - 1
+                                            Key.DirectionRight, Key.DirectionDown -> index + 1
+                                            else -> return@onPreviewKeyEvent false
+                                        }
+                                        if (destination !in displayedCurrencies.indices) return@onPreviewKeyEvent false
+                                        onReordered(displayedCurrencies.moved(index, destination))
+                                        true
+                                    }
                                     .pointerInput(code, displayedCurrencies) {
                                         detectDragGestures(
                                             onDragStart = {
@@ -469,7 +545,18 @@ private fun CurrencyAmountGrid(
                                         ) { change, dragAmount ->
                                             change.consume()
                                             val current = dragSession ?: return@detectDragGestures
-                                            val newOffset = current.offset + dragAmount
+                                            var newOffset = current.offset + dragAmount
+                                            val pointerInWindow = gridTopInWindow + current.origin.y + newOffset.y
+                                            val edge = 72.dp.toPx()
+                                            val scrollDelta = when {
+                                                pointerInWindow < edge -> -20f
+                                                pointerInWindow > rootHeight - edge -> 20f
+                                                else -> 0f
+                                            }
+                                            if (scrollDelta != 0f) {
+                                                val consumed = pageScrollState.dispatchRawDelta(scrollDelta)
+                                                newOffset += Offset(0f, consumed)
+                                            }
                                             dragSession = current.copy(
                                                 offset = newOffset,
                                                 targetGap = currencyDropGap(
@@ -477,6 +564,7 @@ private fun CurrencyAmountGrid(
                                                     boundsByCode,
                                                     current.origin.x + newOffset.x,
                                                     current.origin.y + newOffset.y,
+                                                    isRtl,
                                                 ),
                                             )
                                         }
@@ -490,7 +578,7 @@ private fun CurrencyAmountGrid(
                             }
                         }
                         if (displayedCurrencies.size > 1 && code != state.defaultCurrencyCode) {
-                            IconButton(onClick = { onRemove(code) }, modifier = Modifier.size(36.dp)) {
+                            IconButton(onClick = { onRemove(code) }, modifier = Modifier.size(48.dp)) {
                                 Icon(
                                     Icons.Default.Close,
                                     contentDescription = stringResource(
@@ -514,7 +602,9 @@ private fun CurrencyAmountGrid(
                             { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
                         },
                         visualTransformation = DigitGroupingTransformation,
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .semantics { contentDescription = fieldLabel },
                     )
                 }
             }
@@ -528,9 +618,10 @@ private fun CurrencyGrid(
     content: @Composable () -> Unit,
 ) {
     Layout(content = content, modifier = modifier) { measurables, constraints ->
+        require(constraints.hasBoundedWidth) { "CurrencyGrid requires bounded width" }
         val spacing = 8.dp.roundToPx()
         val columnWidth = ((constraints.maxWidth - spacing) / 2).coerceAtLeast(0)
-        val childConstraints = Constraints(
+        val childConstraints = androidx.compose.ui.unit.Constraints(
             minWidth = columnWidth,
             maxWidth = columnWidth,
             minHeight = 0,
@@ -552,6 +643,9 @@ private fun CurrencyGrid(
         }
     }
 }
+
+private fun List<String>.moved(fromIndex: Int, toIndex: Int): List<String> =
+    toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
 
 /**
  * A full-screen takeover (rather than a dropdown) matching the previous Skip-based app's

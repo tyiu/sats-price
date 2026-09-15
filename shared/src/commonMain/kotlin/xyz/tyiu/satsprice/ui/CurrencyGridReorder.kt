@@ -18,15 +18,16 @@ internal fun currencyDropGap(
     boundsByCode: Map<String, CurrencyGridCellBounds>,
     pointerX: Float,
     pointerY: Float,
+    isRtl: Boolean = false,
 ): Int {
     val measured = order.mapIndexedNotNull { index, code ->
         boundsByCode[code]?.let { bounds -> Triple(index, code, bounds) }
     }
     if (measured.isEmpty()) return order.size
-    if (pointerY <= measured.minOf { it.third.top }) return 0
-    if (pointerY >= measured.maxOf { it.third.bottom }) return order.size
-    val lastBounds = measured.last().third
-    if (order.size % 2 == 1 && pointerY >= lastBounds.top && pointerX > lastBounds.right) {
+    val lastBounds = boundsByCode[order.last()]
+    val isInOddTrailingSlot = lastBounds != null && order.size % 2 == 1 && pointerY >= lastBounds.top &&
+        if (isRtl) pointerX < lastBounds.left else pointerX > lastBounds.right
+    if (isInOddTrailingSlot) {
         return order.size
     }
 
@@ -43,7 +44,8 @@ internal fun currencyDropGap(
         }
         dx * dx + dy * dy
     }
-    return nearest.first + if (pointerX < nearest.third.centerX) 0 else 1
+    val isBefore = if (isRtl) pointerX > nearest.third.centerX else pointerX < nearest.third.centerX
+    return nearest.first + if (isBefore) 0 else 1
 }
 
 /** Moves [code] to the requested gap, accounting for its removal shifting later gaps left. */
