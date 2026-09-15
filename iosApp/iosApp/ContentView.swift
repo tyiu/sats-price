@@ -10,7 +10,7 @@ struct ContentView: View {
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 44
 
-    private var boundedControlSize: CGFloat { min(controlSize, 64) }
+    private var boundedControlSize: CGFloat { min(max(controlSize, 44), 64) }
 
     private var usesSingleColumnCurrencyGrid: Bool {
         dynamicTypeSize >= .xxxLarge
