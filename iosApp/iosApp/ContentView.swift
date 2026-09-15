@@ -5,6 +5,15 @@ import SwiftUI
 struct ContentView: View {
     @StateObject private var viewModel = ConverterViewModel()
     @State private var showCurrencyPicker = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .body) private var controlSize = 44
+
+    private var currencyGridColumns: [GridItem] {
+        if dynamicTypeSize.isAccessibilitySize {
+            return [GridItem(.flexible())]
+        }
+        return [GridItem(.flexible(), spacing: 12), GridItem(.flexible())]
+    }
 
     var body: some View {
         NavigationStack {
@@ -134,6 +143,9 @@ struct ContentView: View {
                                         Image(systemName: "arrow.clockwise")
                                     }
                                     .buttonStyle(.borderless)
+                                    .accessibilityLabel(IosLocalizationKt.localizedString(
+                                        resource: MR.strings.shared.refresh_content_description
+                                    ))
                                 }
                             }
                         }
@@ -193,7 +205,7 @@ struct ContentView: View {
                 let displayedRows = displayedRows(for: state)
 
                 LazyVGrid(
-                    columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible())],
+                    columns: currencyGridColumns,
                     alignment: .leading,
                     spacing: 12
                 ) {
@@ -221,6 +233,7 @@ struct ContentView: View {
                                 canReorder: displayedRows.count > 1,
                                 onRemove: { viewModel.onFiatCurrencyToggled(row.code) }
                             )
+                            .accessibilityElement(children: .contain)
                             .accessibilityActions {
                                 if index > 0 {
                                     Button(IosLocalizationKt.localizedString(
@@ -258,7 +271,7 @@ struct ContentView: View {
                         }
                     }
 
-                    if displayedRows.count > 1 && displayedRows.count % 2 == 1 {
+                    if !dynamicTypeSize.isAccessibilitySize && displayedRows.count > 1 && displayedRows.count % 2 == 1 {
                         CurrencyDropCell { draggedCode, _ in
                             let codes = displayedRows.map(\.code)
                             guard let sourceIndex = codes.firstIndex(of: draggedCode) else { return false }
@@ -331,13 +344,15 @@ struct ContentView: View {
         onRemove: @escaping () -> Void
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
-            HStack(spacing: 4) {
-                Text(currencyFieldLabel(for: row.code))
-                    .lineLimit(1)
-                Spacer(minLength: 2)
-                if canReorder {
+            Text(currencyFieldLabel(for: row.code))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+
+            if canReorder {
+                HStack(spacing: 4) {
+                    Spacer(minLength: 0)
                     Image(systemName: "line.3.horizontal")
-                        .frame(width: 44, height: 44)
+                        .frame(width: controlSize, height: controlSize)
                         .contentShape(Rectangle())
                         .draggable(row.code)
                         #if os(macOS)
@@ -347,17 +362,18 @@ struct ContentView: View {
                             resource: MR.strings.shared.reorder_currency_content_description,
                             args: [row.code]
                         ))
-                }
-                if canReorder && row.code != state.defaultCurrencyCode {
-                    Button(role: .destructive, action: onRemove) {
-                        Image(systemName: "xmark")
+                    if row.code != state.defaultCurrencyCode {
+                        Button(role: .destructive, action: onRemove) {
+                            Image(systemName: "xmark")
+                                .frame(width: controlSize, height: controlSize)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
+                            resource: MR.strings.shared.remove_currency_named_content_description,
+                            args: [row.code]
+                        ))
                     }
-                    .buttonStyle(.borderless)
-                    .frame(width: 44, height: 44)
-                    .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
-                        resource: MR.strings.shared.remove_currency_named_content_description,
-                        args: [row.code]
-                    ))
                 }
             }
 
@@ -438,9 +454,19 @@ struct ContentView: View {
 private extension Array {
     func moving(from sourceIndex: Int, to destinationIndex: Int) -> [Element] {
         guard indices.contains(sourceIndex), indices.contains(destinationIndex) else { return self }
+        guard sourceIndex != destinationIndex else { return self }
         var result = self
-        result.insert(result.remove(at: sourceIndex), at: destinationIndex)
+        let element = result.remove(at: sourceIndex)
+        result.insert(element, at: destinationIndex)
         return result
+    }
+}
+
+private struct CurrencyCellWidthPreferenceKey: PreferenceKey {
+    static var defaultValue: CGFloat = 0
+
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
     }
 }
 
@@ -449,6 +475,7 @@ private struct CurrencyDropCell<Content: View>: View {
     let content: Content
 
     @State private var measuredWidth: CGFloat = 0
+    @State private var isTargeted = false
 
     init(
         onDrop: @escaping (String, Bool) -> Bool,
@@ -463,15 +490,22 @@ private struct CurrencyDropCell<Content: View>: View {
             .background {
                 GeometryReader { geometry in
                     Color.clear
-                        .onAppear { measuredWidth = geometry.size.width }
-                        .onChange(of: geometry.size.width) { measuredWidth = $0 }
+                        .preference(key: CurrencyCellWidthPreferenceKey.self, value: geometry.size.width)
                 }
             }
+            .onPreferenceChange(CurrencyCellWidthPreferenceKey.self) { measuredWidth = $0 }
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(isTargeted ? Color.accentColor : Color.clear, lineWidth: 2)
+            }
             .dropDestination(for: String.self) { draggedCodes, location in
-                guard draggedCodes.count == 1, let draggedCode = draggedCodes.first, measuredWidth > 0 else {
+                guard draggedCodes.count == 1, let draggedCode = draggedCodes.first else {
                     return false
                 }
-                return onDrop(draggedCode, location.x >= measuredWidth / 2)
+                let placeAfter = measuredWidth > 0 && location.x >= measuredWidth / 2
+                return onDrop(draggedCode, placeAfter)
+            } isTargeted: {
+                isTargeted = $0
             }
     }
 }
