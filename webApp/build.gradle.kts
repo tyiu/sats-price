@@ -53,6 +53,27 @@ mapOf(
             if (src.exists()) {
                 src.copyRecursively(outputs.files.singleFile.resolve("localization"), overwrite = true)
             }
+
+            // Compose Multiplatform renders via Skia compiled to WebAssembly (several MB), which is
+            // loaded through a dynamic import() from inside webApp.js. Without a hint, the browser only
+            // discovers those .wasm files after it has downloaded, parsed, and started executing the JS
+            // bundle — a fully serial waterfall. Preloading lets the browser fetch the .wasm in parallel
+            // with the JS instead. The filenames are content-hashed by webpack, so they're discovered
+            // here rather than hardcoded in the static index.html source.
+            val distDir = outputs.files.singleFile
+            val indexHtml = distDir.resolve("index.html")
+            if (indexHtml.exists()) {
+                val wasmFiles = distDir.listFiles { f -> f.extension == "wasm" }.orEmpty().sortedBy { it.name }
+                if (wasmFiles.isNotEmpty()) {
+                    val preloadLinks = wasmFiles.joinToString("\n") { f ->
+                        """    <link rel="preload" href="${f.name}" as="fetch" type="application/wasm" crossorigin>"""
+                    }
+                    val html = indexHtml.readText()
+                    if ("rel=\"preload\"" !in html) {
+                        indexHtml.writeText(html.replaceFirst("</head>", "$preloadLinks\n</head>"))
+                    }
+                }
+            }
         }
     }
 }
