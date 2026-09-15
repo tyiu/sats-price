@@ -69,7 +69,13 @@ class CurrencyGridReorderTest {
     @Test
     fun partialMeasurementsStillReturnAValidGap() {
         val partial = bounds - "CAD" - "GBP"
-        val gap = currencyDropGap(order, partial, 180f, 170f)
-        assertEquals(true, gap in 0..order.size)
+        assertEquals(3, currencyDropGap(order, partial, 180f, 170f))
+    }
+
+    @Test
+    fun evenAndEmptyMeasurementsResolveSafely() {
+        val evenOrder = order.dropLast(1)
+        assertEquals(4, currencyDropGap(evenOrder, bounds - "CAD", 180f, 170f))
+        assertEquals(order.size, currencyDropGap(order, emptyMap(), 10f, 10f))
     }
 }

@@ -43,8 +43,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,18 +54,16 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.boundsInParent
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.CustomAccessibilityAction
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
@@ -308,7 +304,6 @@ fun PriceScreen(
                         onAmountChanged = viewModel::onFiatAmountChanged,
                         onReordered = viewModel::onFiatCurrenciesReordered,
                         onRemove = viewModel::onFiatCurrencyToggled,
-                        pageScrollState = pageScrollState,
                     )
                 }
             }
@@ -344,12 +339,18 @@ fun PriceScreen(
                     )
 
                     if (exceedsMaxSupply) {
+                        // Locale-grouped (e.g. "21,000,000 BTC" in en-US, "21.000.000 BTC" in
+                        // de-DE) since it's substituted into the string, then searched for
+                        // verbatim below to turn it into a link — the two always match exactly.
                         val maxSupplyText = groupDigits(formatAmount(CurrencyConverter.MAX_BTC_SUPPLY, 0)) + " BTC"
                         val warning = stringResource(MR.strings.exceeds_max_supply, maxSupplyText)
                         val linkStart = warning.indexOf(maxSupplyText)
                         val annotatedWarning = if (linkStart < 0) {
                             AnnotatedString(warning)
                         } else {
+                            // Set explicitly (and identically) for every interaction state, since
+                            // LinkAnnotation otherwise renders in the theme's link/accent color
+                            // rather than inheriting the surrounding warning text's color.
                             val linkStyle = SpanStyle(
                                 color = MaterialTheme.colorScheme.error,
                                 textDecoration = TextDecoration.Underline,
@@ -402,12 +403,9 @@ private fun CurrencyAmountGrid(
     onAmountChanged: (String, String) -> Unit,
     onReordered: (List<String>) -> Unit,
     onRemove: (String) -> Unit,
-    pageScrollState: androidx.compose.foundation.ScrollState,
 ) {
     val boundsByCode = remember { mutableStateMapOf<String, CurrencyGridCellBounds>() }
     var dragSession by remember { mutableStateOf<CurrencyDragSession?>(null) }
-    var gridTopInWindow by remember { mutableFloatStateOf(0f) }
-    var rootHeight by remember { mutableIntStateOf(0) }
     val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     LaunchedEffect(displayedCurrencies) {
@@ -415,26 +413,57 @@ private fun CurrencyAmountGrid(
         if (dragSession?.baselineOrder != displayedCurrencies) dragSession = null
     }
 
-    CurrencyGrid(
-        modifier = Modifier
-            .fillMaxWidth()
-            .onGloballyPositioned { coordinates ->
-                gridTopInWindow = coordinates.boundsInWindow().top
-                rootHeight = coordinates.findRootCoordinates().size.height
-            },
-    ) {
+    CurrencyGrid(modifier = Modifier.fillMaxWidth()) {
         displayedCurrencies.forEachIndexed { index, code ->
             key(code) {
                 val session = dragSession
                 val isDragged = session?.code == code
+                val draggedIndex = session?.baselineOrder?.indexOf(session.code) ?: -1
+                val isNoOpGap = session?.targetGap == draggedIndex || session?.targetGap == draggedIndex + 1
                 val targetIndex = session?.targetGap?.let { gap ->
                     if (gap >= displayedCurrencies.size) displayedCurrencies.lastIndex else gap
                 }
-                val isDropTarget = session != null && targetIndex == index && !isDragged
+                val isDropTarget = session != null && !isNoOpGap && targetIndex == index && !isDragged
                 val dropIsAfterTarget = session?.targetGap == displayedCurrencies.size
                 val isPriced = state.isPriced(code)
                 val fieldLabel = currencyFlagEmoji(code)?.let { flag -> "$flag $code" } ?: code
                 val dropIndicatorColor = MaterialTheme.colorScheme.primary
+                val moveToTopLabel = stringResource(MR.strings.move_currency_to_top_content_description)
+                val moveUpLabel = stringResource(MR.strings.move_currency_up_content_description)
+                val moveDownLabel = stringResource(MR.strings.move_currency_down_content_description)
+                val moveToBottomLabel = stringResource(MR.strings.move_currency_to_bottom_content_description)
+                val accessibilityActions = remember(
+                    index,
+                    displayedCurrencies,
+                    moveToTopLabel,
+                    moveUpLabel,
+                    moveDownLabel,
+                    moveToBottomLabel,
+                    onReordered,
+                ) {
+                    buildList {
+                        if (index > 0) {
+                            add(CustomAccessibilityAction(moveToTopLabel) {
+                                onReordered(displayedCurrencies.moved(index, 0))
+                                true
+                            })
+                            add(CustomAccessibilityAction(moveUpLabel) {
+                                onReordered(displayedCurrencies.moved(index, index - 1))
+                                true
+                            })
+                        }
+                        if (index < displayedCurrencies.lastIndex) {
+                            add(CustomAccessibilityAction(moveDownLabel) {
+                                onReordered(displayedCurrencies.moved(index, index + 1))
+                                true
+                            })
+                            add(CustomAccessibilityAction(moveToBottomLabel) {
+                                onReordered(displayedCurrencies.moved(index, displayedCurrencies.lastIndex))
+                                true
+                            })
+                        }
+                    }
+                }
 
                 Column(
                     modifier = Modifier
@@ -459,7 +488,8 @@ private fun CurrencyAmountGrid(
                             if (isDropTarget) {
                                 val beforeOnLeft = !isRtl
                                 val drawOnLeft = if (dropIsAfterTarget) !beforeOnLeft else beforeOnLeft
-                                val x = if (drawOnLeft) 0f else size.width
+                                val inset = 2.dp.toPx()
+                                val x = if (drawOnLeft) inset else size.width - inset
                                 drawLine(
                                     color = dropIndicatorColor,
                                     start = Offset(x, 0f),
@@ -470,51 +500,47 @@ private fun CurrencyAmountGrid(
                         },
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Row(
+                    OutlinedTextField(
+                        value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
+                        onValueChange = { onAmountChanged(code, it) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        enabled = isPriced,
+                        isError = !isPriced && !state.isManualSource,
+                        label = { Text(fieldLabel) },
+                        supportingText = if (isPriced || state.isManualSource) {
+                            null
+                        } else {
+                            { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
+                        },
+                        visualTransformation = DigitGroupingTransformation,
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(fieldLabel, style = MaterialTheme.typography.labelMedium, modifier = Modifier.weight(1f))
-                        if (displayedCurrencies.size > 1) {
-                            val moveToTopLabel = stringResource(MR.strings.move_currency_to_top_content_description)
-                            val moveUpLabel = stringResource(MR.strings.move_currency_up_content_description)
-                            val moveDownLabel = stringResource(MR.strings.move_currency_down_content_description)
-                            val moveToBottomLabel = stringResource(MR.strings.move_currency_to_bottom_content_description)
-                            val accessibilityActions = buildList {
-                                if (index > 0) {
-                                    add(CustomAccessibilityAction(moveToTopLabel) {
-                                        onReordered(displayedCurrencies.moved(index, 0))
-                                        true
-                                    })
-                                    add(CustomAccessibilityAction(moveUpLabel) {
-                                        onReordered(displayedCurrencies.moved(index, index - 1))
-                                        true
-                                    })
-                                }
-                                if (index < displayedCurrencies.lastIndex) {
-                                    add(CustomAccessibilityAction(moveDownLabel) {
-                                        onReordered(displayedCurrencies.moved(index, index + 1))
-                                        true
-                                    })
-                                    add(CustomAccessibilityAction(moveToBottomLabel) {
-                                        onReordered(displayedCurrencies.moved(index, displayedCurrencies.lastIndex))
-                                        true
-                                    })
-                                }
-                            }
+                    )
+                    if (displayedCurrencies.size > 1) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
                             Box(
                                 modifier = Modifier
                                     .size(48.dp)
                                     .semantics(mergeDescendants = true) { customActions = accessibilityActions }
                                     .focusable()
                                     .onPreviewKeyEvent { event ->
-                                        if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                                        if (event.type != KeyEventType.KeyDown || !event.isCtrlPressed) {
+                                            return@onPreviewKeyEvent false
+                                        }
                                         val destination = when (event.key) {
-                                            Key.DirectionLeft, Key.DirectionUp -> index - 1
-                                            Key.DirectionRight, Key.DirectionDown -> index + 1
+                                            Key.DirectionLeft -> index + if (isRtl) 1 else -1
+                                            Key.DirectionRight -> index + if (isRtl) -1 else 1
+                                            Key.DirectionUp -> (index - 2).coerceAtLeast(0)
+                                            Key.DirectionDown -> (index + 2).coerceAtMost(displayedCurrencies.lastIndex)
                                             else -> return@onPreviewKeyEvent false
                                         }
-                                        if (destination !in displayedCurrencies.indices) return@onPreviewKeyEvent false
+                                        if (destination !in displayedCurrencies.indices || destination == index) {
+                                            return@onPreviewKeyEvent false
+                                        }
                                         onReordered(displayedCurrencies.moved(index, destination))
                                         true
                                     }
@@ -545,18 +571,7 @@ private fun CurrencyAmountGrid(
                                         ) { change, dragAmount ->
                                             change.consume()
                                             val current = dragSession ?: return@detectDragGestures
-                                            var newOffset = current.offset + dragAmount
-                                            val pointerInWindow = gridTopInWindow + current.origin.y + newOffset.y
-                                            val edge = 72.dp.toPx()
-                                            val scrollDelta = when {
-                                                pointerInWindow < edge -> -20f
-                                                pointerInWindow > rootHeight - edge -> 20f
-                                                else -> 0f
-                                            }
-                                            if (scrollDelta != 0f) {
-                                                val consumed = pageScrollState.dispatchRawDelta(scrollDelta)
-                                                newOffset += Offset(0f, consumed)
-                                            }
+                                            val newOffset = current.offset + dragAmount
                                             dragSession = current.copy(
                                                 offset = newOffset,
                                                 targetGap = currencyDropGap(
@@ -576,36 +591,19 @@ private fun CurrencyAmountGrid(
                                     contentDescription = stringResource(MR.strings.reorder_currency_content_description, code),
                                 )
                             }
-                        }
-                        if (displayedCurrencies.size > 1 && code != state.defaultCurrencyCode) {
-                            IconButton(onClick = { onRemove(code) }, modifier = Modifier.size(48.dp)) {
-                                Icon(
-                                    Icons.Default.Close,
-                                    contentDescription = stringResource(
-                                        MR.strings.remove_currency_named_content_description,
-                                        code,
-                                    ),
-                                )
+                            if (code != state.defaultCurrencyCode) {
+                                IconButton(onClick = { onRemove(code) }, modifier = Modifier.size(48.dp)) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = stringResource(
+                                            MR.strings.remove_currency_named_content_description,
+                                            code,
+                                        ),
+                                    )
+                                }
                             }
                         }
                     }
-                    OutlinedTextField(
-                        value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
-                        onValueChange = { onAmountChanged(code, it) },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                        singleLine = true,
-                        enabled = isPriced,
-                        isError = !isPriced && !state.isManualSource,
-                        supportingText = if (isPriced || state.isManualSource) {
-                            null
-                        } else {
-                            { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
-                        },
-                        visualTransformation = DigitGroupingTransformation,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .semantics { contentDescription = fieldLabel },
-                    )
                 }
             }
         }
