@@ -1,12 +1,16 @@
+import CoreTransferable
 import Foundation
 import Shared
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @StateObject private var viewModel = ConverterViewModel()
     @State private var showCurrencyPicker = false
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
     @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 44
+
+    private var boundedControlSize: CGFloat { min(controlSize, 64) }
 
     private var usesSingleColumnCurrencyGrid: Bool {
         dynamicTypeSize >= .xxxLarge
@@ -114,12 +118,17 @@ struct ContentView: View {
                     }
                 }
 
-                HStack(alignment: .top, spacing: 12) {
+                let quoteLayout = usesSingleColumnCurrencyGrid
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                    : AnyLayout(HStackLayout(alignment: .top, spacing: 12))
+
+                quoteLayout {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(IosLocalizationKt.localizedFormattedString(
                             resource: MR.strings.shared.btc_to_currency,
                             args: [state.defaultCurrencyCode]
                         ))
+                        .accessibilityHidden(state.isManualSource)
                         HStack {
                             if state.isManualSource {
                                 NumericField(
@@ -139,8 +148,8 @@ struct ContentView: View {
                                 Spacer(minLength: 0)
                                 if !state.defaultCurrencyRate.isEmpty {
                                     Text(NumberFormatKt.groupDigits(value: state.defaultCurrencyRate))
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.7)
+                                        .lineLimit(usesSingleColumnCurrencyGrid ? nil : 1)
+                                        .minimumScaleFactor(usesSingleColumnCurrencyGrid ? 1 : 0.7)
                                 }
                                 if state.isLoading {
                                     ProgressView()
@@ -149,7 +158,7 @@ struct ContentView: View {
                                         viewModel.refresh()
                                     } label: {
                                         Image(systemName: "arrow.clockwise")
-                                            .frame(width: controlSize, height: controlSize)
+                                            .frame(width: boundedControlSize, height: boundedControlSize)
                                             .contentShape(Rectangle())
                                     }
                                     .buttonStyle(.borderless)
@@ -167,6 +176,7 @@ struct ContentView: View {
                             resource: MR.strings.shared.currency_to_sats,
                             args: [state.defaultCurrencyCode]
                         ))
+                        .accessibilityHidden(state.isManualSource)
                         if state.isManualSource {
                             NumericField(
                                 placeholder: "",
@@ -183,8 +193,8 @@ struct ContentView: View {
                             ))
                         } else if !state.oneCurrencyToSats.isEmpty {
                             Text(NumberFormatKt.groupDigits(value: state.oneCurrencyToSats))
-                                .lineLimit(1)
-                                .minimumScaleFactor(0.7)
+                                .lineLimit(usesSingleColumnCurrencyGrid ? nil : 1)
+                                .minimumScaleFactor(usesSingleColumnCurrencyGrid ? 1 : 0.7)
                                 .frame(maxWidth: .infinity, alignment: .trailing)
                         }
                     }
@@ -329,14 +339,15 @@ struct ContentView: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(currencyFieldLabel(for: row.code))
+                .accessibilityHidden(true)
 
             if canReorder {
-                HStack(spacing: 4) {
+                HStack(spacing: 12) {
                     Spacer(minLength: 0)
                     Image(systemName: "line.3.horizontal")
-                        .frame(width: controlSize, height: controlSize)
+                        .frame(width: boundedControlSize, height: boundedControlSize)
                         .contentShape(Rectangle())
-                        .draggable(row.code)
+                        .draggable(CurrencyCodeTransfer(code: row.code))
                         #if os(macOS)
                         .focusable()
                         #endif
@@ -344,7 +355,6 @@ struct ContentView: View {
                             resource: MR.strings.shared.reorder_currency_content_description,
                             args: [row.code]
                         ))
-                        .accessibilityAddTraits(.isButton)
                         .accessibilityActions {
                             if index > 0 {
                                 Button(IosLocalizationKt.localizedString(
@@ -376,7 +386,7 @@ struct ContentView: View {
                     if row.code != state.defaultCurrencyCode {
                         Button(role: .destructive, action: onRemove) {
                             Image(systemName: "xmark")
-                                .frame(width: controlSize, height: controlSize)
+                                .frame(width: boundedControlSize, height: boundedControlSize)
                                 .contentShape(Rectangle())
                         }
                         .buttonStyle(.borderless)
@@ -474,6 +484,18 @@ private extension Array {
     }
 }
 
+private extension UTType {
+    static let satsPriceCurrencyCode = UTType(exportedAs: "xyz.tyiu.satsprice.currency-code")
+}
+
+private struct CurrencyCodeTransfer: Codable, Transferable {
+    let code: String
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .satsPriceCurrencyCode)
+    }
+}
+
 private struct CurrencyCellSizePreferenceKey: PreferenceKey {
     static var defaultValue: CGSize { .zero }
 
@@ -508,19 +530,21 @@ private struct CurrencyDropCell<Content: View>: View {
                         .preference(key: CurrencyCellSizePreferenceKey.self, value: geometry.size)
                 }
             }
-            .onPreferenceChange(CurrencyCellSizePreferenceKey.self) { measuredSize = $0 }
+            .onPreferenceChange(CurrencyCellSizePreferenceKey.self) { size in
+                Task { @MainActor in measuredSize = size }
+            }
             .overlay {
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(isTargeted ? Color.accentColor : Color.clear, lineWidth: 2)
             }
-            .dropDestination(for: String.self) { draggedCodes, location in
-                guard draggedCodes.count == 1, let draggedCode = draggedCodes.first else {
+            .dropDestination(for: CurrencyCodeTransfer.self) { transfers, location in
+                guard transfers.count == 1, let transfer = transfers.first else {
                     return false
                 }
                 let placeAfter = usesVerticalDropAxis
                     ? measuredSize.height > 0 && location.y >= measuredSize.height / 2
                     : measuredSize.width > 0 && location.x >= measuredSize.width / 2
-                return onDrop(draggedCode, placeAfter)
+                return onDrop(transfer.code, placeAfter)
             } isTargeted: {
                 isTargeted = $0
             }
