@@ -4,5 +4,18 @@
     <dict>
         <key>CADisableMinimumFrameDurationOnPhone</key>
         <true/>
+        <key>UTExportedTypeDeclarations</key>
+        <array>
+            <dict>
+                <key>UTTypeConformsTo</key>
+                <array>
+                    <string>public.data</string>
+                </array>
+                <key>UTTypeDescription</key>
+                <string>SatsPrice Currency Code</string>
+                <key>UTTypeIdentifier</key>
+                <string>xyz.tyiu.SatsPrice.currency-code</string>
+            </dict>
+        </array>
     </dict>
 </plist>
