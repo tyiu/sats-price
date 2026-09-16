@@ -24,10 +24,28 @@ Kotlin) implementation — `main` is now this Kotlin Multiplatform project.
 
 ## Module layout
 
-- `shared/` — the actual app: UI, view models, data sources, domain logic.
-  Almost everything happens here.
+- `shared/` — view models, data sources, domain logic. No Compose UI
+  toolkit dependency (deliberately - see `sharedUi/` below). Almost all
+  business logic happens here.
+- `sharedUi/` — the Skia-based Compose Multiplatform UI (`App()`,
+  `ui/PriceScreen.kt`) that `androidApp`, `desktopApp`, and `webApp`
+  render. Split out from `shared` so a js/wasmJs consumer that doesn't
+  want Compose UI's several-MB Skia web runtime (see `webHtmlApp/`) can
+  depend on `shared` alone without pulling it in transitively - the
+  Compose Multiplatform Gradle plugin bundles that runtime into *any*
+  js/wasmJs target whose resolved dependencies contain
+  `org.jetbrains.compose.ui:ui` anywhere.
 - `androidApp/`, `desktopApp/`, `webApp/` — thin launcher shells around
-  `shared`'s Compose UI. Rarely need changes.
+  `sharedUi`'s Compose UI. Rarely need changes.
+- `webHtmlApp/` — an alternative web build rendering to real DOM via
+  Compose HTML instead of Compose Multiplatform UI's canvas/Skia. Depends
+  on `shared` directly, not `sharedUi`: Compose HTML and Compose
+  Multiplatform UI are different, incompatible composable sets, so its
+  screens (`HtmlApp.kt`, `HtmlCurrencyPicker.kt`) are a separate
+  hand-written port of `sharedUi/ui/PriceScreen.kt` rather than a shared
+  one. Not what's deployed to production (`webApp`'s wasmJs build is);
+  exists for comparing the two approaches and via
+  `website/serve-local.sh`.
 - `iosApp/` — a native SwiftUI app (shared across iOS and macOS via
   `#if os(macOS)`), **not** Compose. It talks to `shared` through a
   hand-written bridge (see "Core architecture" below), not by rendering
@@ -53,8 +71,10 @@ unused KMP-wizard scaffolding, not load-bearing.
   (`ConverterUiState.xyz()` extension functions) shared between Compose and
   the iOS bridge. **Read the localization note below before adding
   anything here that produces user-facing text.**
-- `ui/PriceScreen.kt` — the actual Compose UI. Used as-is by Android,
-  Desktop, and Web (same composable, three renderers).
+- `sharedUi/src/commonMain/.../ui/PriceScreen.kt` — the actual Compose UI.
+  Used as-is by Android, Desktop, and `webApp` (same composable, three
+  renderers). `webHtmlApp` has its own separate Compose HTML port of this
+  screen instead (see "Module layout" above).
 - iOS/macOS **doesn't** use Compose. The chain is:
   `PriceViewModel` (Kotlin) → `IosPriceViewModel`/`IosConverterState`
   (`shared/src/appleMain/.../IosPriceViewModel.kt`, a flattened Map-free
@@ -91,6 +111,13 @@ the pattern to copy: it returns a locale-formatted `String?` (using
 `domain/DateFormat.kt`, which *is* fine to call from shared code — it's
 locale-aware formatting via platform APIs, not translated text), and each
 UI layer wraps it with its own localized "Updated %1$s" string.
+
+`webHtmlApp` is the one UI layer that deliberately breaks this pattern: its
+`Strings.kt` hardcodes English rather than calling `stringResource()`,
+because moko-resources' Compose integration (`moko-resourcesCompose`) pulls
+in `compose.foundation`/`compose.ui` transitively - exactly the dependency
+`webHtmlApp` exists to avoid (see "Module layout" above). Not a template to
+follow elsewhere; a one-off tradeoff specific to that module.
 
 ## Locale-aware formatting
 
@@ -164,14 +191,17 @@ site (nav, hero, download section) via `/app/`.
 
 - `website/app/` is git-ignored — it's build output, generated fresh by CI
   (and locally by the script below), never committed.
-- To reproduce the production layout locally (site + web app together,
-  `/app/` links working): `./website/serve-local.sh [port]`. It builds the
-  wasmJs distribution, copies it into `website/app/`, and serves
-  `website/` with `python3 -m http.server`.
+- To try the site + web app together locally (`/app/` links working):
+  `./website/serve-local.sh [port]`. It builds `webHtmlApp`'s Compose
+  HTML (DOM) distribution, copies it into `website/app/`, and serves
+  `website/` with `python3 -m http.server` — note this no longer matches
+  what the Pages workflow actually deploys (still the Skia `webApp`
+  wasmJs build), so it's for trying the DOM build, not reproducing
+  production.
 - If you change the Pages workflow, remember `paths:` in the trigger
-  includes `webApp/**`/`shared/**`/Gradle files, not just `website/**` —
-  a shared-code change that affects the web app should also redeploy the
-  site.
+  includes `webApp/**`/`shared/**`/`sharedUi/**`/Gradle files, not just
+  `website/**` — a shared-code change that affects the web app should
+  also redeploy the site.
 
 ## Testing and verification
 
@@ -195,6 +225,10 @@ site (nav, hero, download section) via `/app/`.
   `--headless=new --disable-gpu-sandbox --use-gl=angle --use-angle=swiftshader --enable-unsafe-swiftshader --ignore-gpu-blocklist`.
   This is also the most practical way to verify a Compose UI change at
   all, since there's no headless Android/Desktop runner set up here.
+- `webHtmlApp` is the exception to the above: it renders real DOM, so
+  plain `--headless=new --dump-dom` (no WebGL/GPU flags needed) shows
+  actual inspectable HTML. Build/serve it with
+  `./gradlew :webHtmlApp:jsBrowserDistribution` and a static file server.
 - Interactive verification of the native macOS build via AppleScript/System
   Events GUI scripting works but is genuinely flaky — stale processes can
   linger across launches, the accessibility tree doesn't always reflect

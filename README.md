@@ -71,13 +71,15 @@ options:
 - Desktop app:
     - Hot reload: `./gradlew :desktopApp:hotRun --auto`
     - Standard run: `./gradlew :desktopApp:run`
-- Web app:
+- Web app (Compose Multiplatform UI, Skia-rendered - what's deployed to production):
     - Wasm target (faster, modern browsers): `./gradlew :webApp:wasmJsBrowserDevelopmentRun`
     - JS target (slower, supports older browsers): `./gradlew :webApp:jsBrowserDevelopmentRun`
+- Web app, DOM alternative (Compose HTML UI, renders real DOM instead of Skia/canvas - not what's
+  deployed to production): `./gradlew :webHtmlApp:jsBrowserDevelopmentRun`
 - iOS app: open the [/iosApp](./iosApp) directory in Xcode and run it from there.
-- [Website](./website) (with the web app built and served at `/app/`, matching production):
-  `./website/serve-local.sh` (serves at http://localhost:8000 by default; pass a port number to
-  override)
+- [Website](./website) with the web app built and served at `/app/` (the `webHtmlApp` DOM build,
+  not the one production actually deploys): `./website/serve-local.sh` (serves at
+  http://localhost:8000 by default; pass a port number to override)
 
 ### Running tests
 
