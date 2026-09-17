@@ -1,7 +1,10 @@
 package xyz.tyiu.satsprice.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -15,15 +18,13 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowDown
-import androidx.compose.material.icons.filled.KeyboardDoubleArrowUp
+import androidx.compose.material.icons.filled.DragHandle
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
@@ -42,13 +43,33 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.SpanStyle
@@ -61,7 +82,9 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withLink
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.icerock.moko.resources.compose.stringResource
@@ -116,6 +139,7 @@ fun PriceScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showCurrencyPicker by remember { mutableStateOf(false) }
+    val pageScrollState = rememberScrollState()
 
     if (showCurrencyPicker) {
         CurrencyPickerScreen(
@@ -135,7 +159,7 @@ fun PriceScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical))
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(pageScrollState)
                 .padding(horizontal = screenHorizontalPadding, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
@@ -167,66 +191,56 @@ fun PriceScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalAlignment = Alignment.Top,
                     ) {
-                        if (state.isManualSource) {
-                            OutlinedTextField(
-                                value = state.manualRateInput,
-                                onValueChange = viewModel::onManualRateChanged,
-                                label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
-                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                singleLine = true,
-                                visualTransformation = DigitGroupingTransformation,
-                                modifier = Modifier.weight(1f),
-                            )
-                        } else {
-                            val rate = state.defaultCurrencyRate()
-                            OutlinedTextField(
-                                value = rate,
-                                onValueChange = {},
-                                readOnly = true,
-                                enabled = rate.isNotEmpty(),
-                                label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
-                                singleLine = true,
-                                visualTransformation = DigitGroupingTransformation,
-                                modifier = Modifier.weight(1f),
-                            )
-                        }
-                        if (!state.isManualSource) {
-                            if (state.isLoading) {
-                                CircularProgressIndicator(modifier = Modifier.size(24.dp))
-                            } else {
-                                IconButton(onClick = { viewModel.refresh() }) {
-                                    Icon(
-                                        Icons.Default.Refresh,
-                                        contentDescription = stringResource(MR.strings.refresh_content_description),
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    if (state.isManualSource) {
+                        val rate = if (state.isManualSource) state.manualRateInput else state.defaultCurrencyRate()
                         OutlinedTextField(
-                            value = state.manualSatsPerCurrencyInput,
-                            onValueChange = viewModel::onManualSatsPerCurrencyChanged,
+                            value = rate,
+                            onValueChange = if (state.isManualSource) viewModel::onManualRateChanged else { _ -> },
+                            readOnly = !state.isManualSource,
+                            enabled = true,
+                            label = { Text(stringResource(MR.strings.btc_to_currency, state.defaultCurrencyCode)) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                            singleLine = true,
+                            visualTransformation = DigitGroupingTransformation,
+                            trailingIcon = if (state.isManualSource) {
+                                null
+                            } else {
+                                {
+                                    if (state.isLoading) {
+                                        CircularProgressIndicator(modifier = Modifier.size(20.dp))
+                                    } else {
+                                        IconButton(onClick = viewModel::refresh) {
+                                            Icon(
+                                                Icons.Default.Refresh,
+                                                contentDescription = stringResource(MR.strings.refresh_content_description),
+                                            )
+                                        }
+                                    }
+                                }
+                            },
+                            modifier = Modifier.weight(1f),
+                        )
+
+                        val oneCurrencyToSats = if (state.isManualSource) {
+                            state.manualSatsPerCurrencyInput
+                        } else {
+                            state.oneCurrencyToSats()
+                        }
+                        OutlinedTextField(
+                            value = oneCurrencyToSats,
+                            onValueChange = if (state.isManualSource) {
+                                viewModel::onManualSatsPerCurrencyChanged
+                            } else {
+                                { _ -> }
+                            },
+                            readOnly = !state.isManualSource,
+                            enabled = state.isManualSource || oneCurrencyToSats.isNotEmpty(),
                             label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             visualTransformation = DigitGroupingTransformation,
-                            modifier = Modifier.fillMaxWidth(),
-                        )
-                    } else {
-                        val oneCurrencyToSats = state.oneCurrencyToSats()
-                        OutlinedTextField(
-                            value = oneCurrencyToSats,
-                            onValueChange = {},
-                            readOnly = true,
-                            enabled = oneCurrencyToSats.isNotEmpty(),
-                            label = { Text(stringResource(MR.strings.currency_to_sats, state.defaultCurrencyCode)) },
-                            singleLine = true,
-                            visualTransformation = DigitGroupingTransformation,
-                            modifier = Modifier.fillMaxWidth(),
+                            modifier = Modifier.weight(1f),
                         )
                     }
 
@@ -259,8 +273,46 @@ fun PriceScreen(
                 }
             }
 
-            val exceedsMaxSupply = state.exceedsMaxSupply()
+            Card(modifier = Modifier.fillMaxWidth(), colors = SectionColors) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(stringResource(MR.strings.currencies_section_title), style = MaterialTheme.typography.titleMedium)
+                        if (!state.isManualSource) {
+                            OutlinedButton(onClick = { showCurrencyPicker = true }) {
+                                Text(
+                                    if (state.selectedFiatCurrencies.size <= 1) {
+                                        stringResource(MR.strings.add_currency)
+                                    } else {
+                                        stringResource(MR.strings.currencies_selected_count, state.selectedFiatCurrencies.size)
+                                    },
+                                )
+                            }
+                        }
+                    }
 
+                    val displayedCurrencies = if (state.isManualSource) {
+                        listOf(state.defaultCurrencyCode)
+                    } else {
+                        state.selectedFiatCurrencies
+                    }
+                    CurrencyAmountGrid(
+                        state = state,
+                        displayedCurrencies = displayedCurrencies,
+                        onAmountChanged = viewModel::onFiatAmountChanged,
+                        onReordered = viewModel::onFiatCurrenciesReordered,
+                        onRemove = viewModel::onFiatCurrencyToggled,
+                    )
+                }
+            }
+
+            val exceedsMaxSupply = state.exceedsMaxSupply()
             Card(modifier = Modifier.fillMaxWidth(), colors = SectionColors) {
                 Column(
                     modifier = Modifier.padding(16.dp),
@@ -336,88 +388,269 @@ fun PriceScreen(
                     }
                 }
             }
+        }
+    }
+}
 
-            Card(modifier = Modifier.fillMaxWidth(), colors = SectionColors) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+private data class CurrencyDragSession(
+    val code: String,
+    val baselineOrder: List<String>,
+    val origin: Offset,
+    val offset: Offset = Offset.Zero,
+    val targetGap: Int,
+)
+
+@Composable
+private fun CurrencyAmountGrid(
+    state: ConverterUiState,
+    displayedCurrencies: List<String>,
+    onAmountChanged: (String, String) -> Unit,
+    onReordered: (List<String>) -> Unit,
+    onRemove: (String) -> Unit,
+) {
+    val boundsByCode = remember { mutableStateMapOf<String, CurrencyGridCellBounds>() }
+    var dragSession by remember { mutableStateOf<CurrencyDragSession?>(null) }
+    val isRtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+
+    LaunchedEffect(displayedCurrencies) {
+        boundsByCode.keys.retainAll(displayedCurrencies.toSet())
+        if (dragSession?.baselineOrder != displayedCurrencies) dragSession = null
+    }
+
+    CurrencyGrid(modifier = Modifier.fillMaxWidth()) {
+        displayedCurrencies.forEachIndexed { index, code ->
+            key(code) {
+                val session = dragSession
+                val isDragged = session?.code == code
+                var isHandleFocused by remember(code) { mutableStateOf(false) }
+                var edgeMenuExpanded by remember(code) { mutableStateOf(false) }
+                val draggedIndex = session?.baselineOrder?.indexOf(session.code) ?: -1
+                val isNoOpGap = session?.targetGap == draggedIndex || session?.targetGap == draggedIndex + 1
+                val targetIndex = session?.targetGap?.let { gap ->
+                    if (gap >= displayedCurrencies.size) displayedCurrencies.lastIndex else gap
+                }
+                val isDropTarget = session != null && !isNoOpGap && targetIndex == index && !isDragged
+                val dropIsAfterTarget = session?.targetGap == displayedCurrencies.size
+                val isPriced = state.isPriced(code)
+                val fieldLabel = currencyFlagEmoji(code)?.let { flag -> "$flag $code" } ?: code
+                val dropIndicatorColor = MaterialTheme.colorScheme.primary
+                val moveToTopLabel = stringResource(MR.strings.move_currency_to_top_content_description)
+                val moveUpLabel = stringResource(MR.strings.move_currency_up_content_description)
+                val moveDownLabel = stringResource(MR.strings.move_currency_down_content_description)
+                val moveToBottomLabel = stringResource(MR.strings.move_currency_to_bottom_content_description)
+                val accessibilityActions = remember(
+                    index,
+                    displayedCurrencies,
+                    moveToTopLabel,
+                    moveUpLabel,
+                    moveDownLabel,
+                    moveToBottomLabel,
+                    onReordered,
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(stringResource(MR.strings.currencies_section_title), style = MaterialTheme.typography.titleMedium)
-                        if (!state.isManualSource) {
-                            OutlinedButton(onClick = { showCurrencyPicker = true }) {
-                                Text(
-                                    if (state.selectedFiatCurrencies.size <= 1) {
-                                        stringResource(MR.strings.add_currency)
-                                    } else {
-                                        stringResource(MR.strings.currencies_selected_count, state.selectedFiatCurrencies.size)
-                                    },
-                                )
-                            }
+                    buildList {
+                        if (index > 0) {
+                            add(CustomAccessibilityAction(moveToTopLabel) {
+                                onReordered(displayedCurrencies.moved(index, 0))
+                                true
+                            })
+                            add(CustomAccessibilityAction(moveUpLabel) {
+                                onReordered(displayedCurrencies.moved(index, index - 1))
+                                true
+                            })
+                        }
+                        if (index < displayedCurrencies.lastIndex) {
+                            add(CustomAccessibilityAction(moveDownLabel) {
+                                onReordered(displayedCurrencies.moved(index, index + 1))
+                                true
+                            })
+                            add(CustomAccessibilityAction(moveToBottomLabel) {
+                                onReordered(displayedCurrencies.moved(index, displayedCurrencies.lastIndex))
+                                true
+                            })
                         }
                     }
+                }
 
-                    val displayedCurrencies = if (state.isManualSource) {
-                        listOf(state.defaultCurrencyCode)
-                    } else {
-                        state.selectedFiatCurrencies
-                    }
-                    displayedCurrencies.forEachIndexed { index, code ->
-                        key(code) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                val isPriced = state.isPriced(code)
-                                val fieldLabel = currencyFlagEmoji(code)?.let { flag -> "$flag $code" } ?: code
-                                OutlinedTextField(
-                                    value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
-                                    onValueChange = { viewModel.onFiatAmountChanged(code, it) },
-                                    label = { Text(fieldLabel) },
-                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                                    singleLine = true,
-                                    enabled = isPriced,
-                                    isError = !isPriced && !state.isManualSource,
-                                    supportingText = if (isPriced || state.isManualSource) {
-                                        null
-                                    } else {
-                                        { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
-                                    },
-                                    visualTransformation = DigitGroupingTransformation,
-                                    modifier = Modifier.weight(1f),
+                Column(
+                    modifier = Modifier
+                        .onGloballyPositioned { coordinates ->
+                            val bounds = coordinates.boundsInParent()
+                            val newBounds = CurrencyGridCellBounds(
+                                left = bounds.left,
+                                top = bounds.top,
+                                right = bounds.right,
+                                bottom = bounds.bottom,
+                            )
+                            if (boundsByCode[code] != newBounds) boundsByCode[code] = newBounds
+                        }
+                        .zIndex(if (isDragged) 1f else 0f)
+                        .graphicsLayer {
+                            translationX = if (isDragged) session.offset.x else 0f
+                            translationY = if (isDragged) session.offset.y else 0f
+                            alpha = if (isDragged) 0.82f else 1f
+                            shadowElevation = if (isDragged) 12.dp.toPx() else 0f
+                        }
+                        .drawBehind {
+                            if (isDropTarget) {
+                                val beforeOnLeft = !isRtl
+                                val drawOnLeft = if (dropIsAfterTarget) !beforeOnLeft else beforeOnLeft
+                                val inset = 2.dp.toPx()
+                                val x = if (drawOnLeft) inset else size.width - inset
+                                drawLine(
+                                    color = dropIndicatorColor,
+                                    start = Offset(x, 0f),
+                                    end = Offset(x, size.height),
+                                    strokeWidth = 4.dp.toPx(),
                                 )
-                                if (displayedCurrencies.size > 1) {
-                                    CurrencyRowMenu(
-                                        code = code,
-                                        canMoveUp = index > 0,
-                                        canMoveDown = index < displayedCurrencies.lastIndex,
-                                        canRemove = code != state.defaultCurrencyCode,
-                                        onMoveUp = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, index - 1),
+                            }
+                        },
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    OutlinedTextField(
+                        value = if (isPriced) state.fiatAmounts[code].orEmpty() else "",
+                        onValueChange = { onAmountChanged(code, it) },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                        singleLine = true,
+                        enabled = isPriced,
+                        isError = !isPriced && !state.isManualSource,
+                        label = { Text(fieldLabel) },
+                        supportingText = if (isPriced || state.isManualSource) {
+                            null
+                        } else {
+                            { Text(stringResource(MR.strings.currency_not_priced, state.sourceName)) }
+                        },
+                        visualTransformation = DigitGroupingTransformation,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    if (displayedCurrencies.size > 1) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.End,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .border(
+                                        width = reorderHandleFocusStrokeWidth(isHandleFocused).dp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = CircleShape,
+                                    )
+                                    .semantics(mergeDescendants = true) { customActions = accessibilityActions }
+                                    .onFocusChanged { isHandleFocused = it.isFocused }
+                                    .focusable()
+                                    .onPreviewKeyEvent { event ->
+                                        if (event.type != KeyEventType.KeyDown || !event.isCtrlPressed) {
+                                            return@onPreviewKeyEvent false
+                                        }
+                                        val direction = when (event.key) {
+                                            Key.DirectionLeft -> GridNavigationDirection.LEFT
+                                            Key.DirectionRight -> GridNavigationDirection.RIGHT
+                                            Key.DirectionUp -> GridNavigationDirection.UP
+                                            Key.DirectionDown -> GridNavigationDirection.DOWN
+                                            else -> return@onPreviewKeyEvent false
+                                        }
+                                        val destination = currencyKeyboardDestination(
+                                            index = index,
+                                            itemCount = displayedCurrencies.size,
+                                            direction = direction,
+                                            isRtl = isRtl,
+                                        ) ?: return@onPreviewKeyEvent false
+                                        onReordered(displayedCurrencies.moved(index, destination))
+                                        true
+                                    }
+                                    .pointerInput(code, displayedCurrencies) {
+                                        detectDragGestures(
+                                            onDragStart = {
+                                                val bounds = boundsByCode[code] ?: return@detectDragGestures
+                                                dragSession = CurrencyDragSession(
+                                                    code = code,
+                                                    baselineOrder = displayedCurrencies,
+                                                    origin = Offset(bounds.centerX, (bounds.top + bounds.bottom) / 2f),
+                                                    targetGap = index,
+                                                )
+                                            },
+                                            onDragCancel = { dragSession = null },
+                                            onDragEnd = {
+                                                val completed = dragSession
+                                                dragSession = null
+                                                if (completed != null && completed.baselineOrder == displayedCurrencies) {
+                                                    val reordered = moveCurrencyToGap(
+                                                        completed.baselineOrder,
+                                                        completed.code,
+                                                        completed.targetGap,
+                                                    )
+                                                    if (reordered != completed.baselineOrder) onReordered(reordered)
+                                                }
+                                            },
+                                        ) { change, dragAmount ->
+                                            change.consume()
+                                            val current = dragSession ?: return@detectDragGestures
+                                            val newOffset = current.offset + dragAmount
+                                            dragSession = current.copy(
+                                                offset = newOffset,
+                                                targetGap = currencyDropGap(
+                                                    current.baselineOrder,
+                                                    boundsByCode,
+                                                    current.origin.x + newOffset.x,
+                                                    current.origin.y + newOffset.y,
+                                                    isRtl,
+                                                ),
                                             )
-                                        },
-                                        onMoveDown = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, index + 1),
-                                            )
-                                        },
-                                        onMoveToTop = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, 0),
-                                            )
-                                        },
-                                        onMoveToBottom = {
-                                            viewModel.onFiatCurrenciesReordered(
-                                                state.selectedFiatCurrencies.moved(index, state.selectedFiatCurrencies.lastIndex),
-                                            )
-                                        },
-                                        onRemove = { viewModel.onFiatCurrencyToggled(code) },
+                                        }
+                                    },
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    Icons.Default.DragHandle,
+                                    contentDescription = stringResource(MR.strings.reorder_currency_content_description, code),
+                                )
+                            }
+                            Box {
+                                IconButton(
+                                    onClick = { edgeMenuExpanded = true },
+                                    modifier = Modifier.size(48.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Default.MoreVert,
+                                        contentDescription = stringResource(
+                                            MR.strings.reorder_currency_options_content_description,
+                                            code,
+                                        ),
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = edgeMenuExpanded,
+                                    onDismissRequest = { edgeMenuExpanded = false },
+                                ) {
+                                    if (index > 0) {
+                                        DropdownMenuItem(
+                                            text = { Text(moveToTopLabel) },
+                                            onClick = {
+                                                edgeMenuExpanded = false
+                                                onReordered(moveCurrencyToEdge(displayedCurrencies, code, CurrencyListEdge.TOP))
+                                            },
+                                        )
+                                    }
+                                    if (index < displayedCurrencies.lastIndex) {
+                                        DropdownMenuItem(
+                                            text = { Text(moveToBottomLabel) },
+                                            onClick = {
+                                                edgeMenuExpanded = false
+                                                onReordered(moveCurrencyToEdge(displayedCurrencies, code, CurrencyListEdge.BOTTOM))
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                            if (currencyCanBeRemoved(code, state.defaultCurrencyCode)) {
+                                IconButton(onClick = { onRemove(code) }, modifier = Modifier.size(48.dp)) {
+                                    Icon(
+                                        Icons.Default.Close,
+                                        contentDescription = stringResource(
+                                            MR.strings.remove_currency_named_content_description,
+                                            code,
+                                        ),
                                     )
                                 }
                             }
@@ -429,79 +662,40 @@ fun PriceScreen(
     }
 }
 
-private fun List<String>.moved(fromIndex: Int, toIndex: Int): List<String> =
-    toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
-
 @Composable
-private fun CurrencyRowMenu(
-    code: String,
-    canMoveUp: Boolean,
-    canMoveDown: Boolean,
-    canRemove: Boolean,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveToTop: () -> Unit,
-    onMoveToBottom: () -> Unit,
-    onRemove: () -> Unit,
+private fun CurrencyGrid(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    Box {
-        IconButton(onClick = { expanded = true }) {
-            Icon(
-                Icons.Default.MoreVert,
-                contentDescription = stringResource(MR.strings.currency_options_content_description, code),
-            )
-        }
-        DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_to_top_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardDoubleArrowUp, contentDescription = null) },
-                enabled = canMoveUp,
-                onClick = {
-                    expanded = false
-                    onMoveToTop()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_up_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardArrowUp, contentDescription = null) },
-                enabled = canMoveUp,
-                onClick = {
-                    expanded = false
-                    onMoveUp()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_down_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardArrowDown, contentDescription = null) },
-                enabled = canMoveDown,
-                onClick = {
-                    expanded = false
-                    onMoveDown()
-                },
-            )
-            DropdownMenuItem(
-                text = { Text(stringResource(MR.strings.move_currency_to_bottom_content_description)) },
-                leadingIcon = { Icon(Icons.Default.KeyboardDoubleArrowDown, contentDescription = null) },
-                enabled = canMoveDown,
-                onClick = {
-                    expanded = false
-                    onMoveToBottom()
-                },
-            )
-            if (canRemove) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(MR.strings.remove_currency_content_description)) },
-                    leadingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
-                    onClick = {
-                        expanded = false
-                        onRemove()
-                    },
-                )
+    Layout(content = content, modifier = modifier) { measurables, constraints ->
+        require(constraints.hasBoundedWidth) { "CurrencyGrid requires bounded width" }
+        val spacing = 8.dp.roundToPx()
+        val columnWidth = ((constraints.maxWidth - spacing) / 2).coerceAtLeast(0)
+        val childConstraints = androidx.compose.ui.unit.Constraints(
+            minWidth = columnWidth,
+            maxWidth = columnWidth,
+            minHeight = 0,
+            maxHeight = constraints.maxHeight,
+        )
+        val placeables = measurables.map { it.measure(childConstraints) }
+        val rowHeights = placeables.chunked(2).map { row -> row.maxOf { it.height } }
+        val height = (rowHeights.sum() + spacing * (rowHeights.size - 1).coerceAtLeast(0))
+            .coerceIn(constraints.minHeight, constraints.maxHeight)
+
+        layout(constraints.maxWidth, height) {
+            var y = 0
+            placeables.chunked(2).forEachIndexed { rowIndex, row ->
+                row.forEachIndexed { columnIndex, placeable ->
+                    placeable.placeRelative(x = columnIndex * (columnWidth + spacing), y = y)
+                }
+                y += rowHeights[rowIndex] + spacing
             }
         }
     }
 }
+
+private fun List<String>.moved(fromIndex: Int, toIndex: Int): List<String> =
+    toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
 
 /**
  * A full-screen takeover (rather than a dropdown) matching the previous Skip-based app's
