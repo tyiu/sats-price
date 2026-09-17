@@ -2,6 +2,8 @@ package xyz.tyiu.satsprice.ui
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class CurrencyGridReorderTest {
     private val order = listOf("USD", "EUR", "JPY", "GBP", "CAD")
@@ -77,5 +79,35 @@ class CurrencyGridReorderTest {
         val evenOrder = order.dropLast(1)
         assertEquals(4, currencyDropGap(evenOrder, bounds - "CAD", 180f, 170f))
         assertEquals(order.size, currencyDropGap(order, emptyMap(), 10f, 10f))
+    }
+
+    @Test
+    fun keyboardDestinationRespectsGridEdgesAndLayoutDirection() {
+        assertEquals(null, currencyKeyboardDestination(0, order.size, GridNavigationDirection.LEFT, isRtl = false))
+        assertEquals(1, currencyKeyboardDestination(0, order.size, GridNavigationDirection.RIGHT, isRtl = false))
+        assertEquals(2, currencyKeyboardDestination(0, order.size, GridNavigationDirection.DOWN, isRtl = false))
+        assertEquals(0, currencyKeyboardDestination(1, order.size, GridNavigationDirection.UP, isRtl = false))
+        assertEquals(0, currencyKeyboardDestination(1, order.size, GridNavigationDirection.RIGHT, isRtl = true))
+        assertEquals(null, currencyKeyboardDestination(4, order.size, GridNavigationDirection.DOWN, isRtl = false))
+    }
+
+    @Test
+    fun focusTreatmentUsesPersistentVisibleStroke() {
+        assertEquals(0f, reorderHandleFocusStrokeWidth(isFocused = false))
+        assertEquals(2f, reorderHandleFocusStrokeWidth(isFocused = true))
+    }
+
+    @Test
+    fun visibleEdgeActionsSupportCrossViewportReordering() {
+        assertEquals(listOf("CAD", "USD", "EUR", "JPY", "GBP"), moveCurrencyToEdge(order, "CAD", CurrencyListEdge.TOP))
+        assertEquals(listOf("EUR", "JPY", "GBP", "CAD", "USD"), moveCurrencyToEdge(order, "USD", CurrencyListEdge.BOTTOM))
+    }
+
+    @Test
+    fun defaultCurrencyRemainsMovableButCannotBeRemoved() {
+        val defaultCurrency = "USD"
+        assertEquals(listOf("EUR", "JPY", "GBP", "CAD", "USD"), moveCurrencyToEdge(order, defaultCurrency, CurrencyListEdge.BOTTOM))
+        assertFalse(currencyCanBeRemoved(defaultCurrency, defaultCurrency))
+        assertTrue(currencyCanBeRemoved("EUR", defaultCurrency))
     }
 }

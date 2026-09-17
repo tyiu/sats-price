@@ -1,6 +1,7 @@
 package xyz.tyiu.satsprice.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.border
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -17,12 +18,14 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.DragHandle
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
@@ -58,6 +61,7 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.boundsInParent
@@ -418,6 +422,8 @@ private fun CurrencyAmountGrid(
             key(code) {
                 val session = dragSession
                 val isDragged = session?.code == code
+                var isHandleFocused by remember(code) { mutableStateOf(false) }
+                var edgeMenuExpanded by remember(code) { mutableStateOf(false) }
                 val draggedIndex = session?.baselineOrder?.indexOf(session.code) ?: -1
                 val isNoOpGap = session?.targetGap == draggedIndex || session?.targetGap == draggedIndex + 1
                 val targetIndex = session?.targetGap?.let { gap ->
@@ -525,22 +531,31 @@ private fun CurrencyAmountGrid(
                             Box(
                                 modifier = Modifier
                                     .size(48.dp)
+                                    .border(
+                                        width = reorderHandleFocusStrokeWidth(isHandleFocused).dp,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = CircleShape,
+                                    )
                                     .semantics(mergeDescendants = true) { customActions = accessibilityActions }
+                                    .onFocusChanged { isHandleFocused = it.isFocused }
                                     .focusable()
                                     .onPreviewKeyEvent { event ->
                                         if (event.type != KeyEventType.KeyDown || !event.isCtrlPressed) {
                                             return@onPreviewKeyEvent false
                                         }
-                                        val destination = when (event.key) {
-                                            Key.DirectionLeft -> index + if (isRtl) 1 else -1
-                                            Key.DirectionRight -> index + if (isRtl) -1 else 1
-                                            Key.DirectionUp -> (index - 2).coerceAtLeast(0)
-                                            Key.DirectionDown -> (index + 2).coerceAtMost(displayedCurrencies.lastIndex)
+                                        val direction = when (event.key) {
+                                            Key.DirectionLeft -> GridNavigationDirection.LEFT
+                                            Key.DirectionRight -> GridNavigationDirection.RIGHT
+                                            Key.DirectionUp -> GridNavigationDirection.UP
+                                            Key.DirectionDown -> GridNavigationDirection.DOWN
                                             else -> return@onPreviewKeyEvent false
                                         }
-                                        if (destination !in displayedCurrencies.indices || destination == index) {
-                                            return@onPreviewKeyEvent false
-                                        }
+                                        val destination = currencyKeyboardDestination(
+                                            index = index,
+                                            itemCount = displayedCurrencies.size,
+                                            direction = direction,
+                                            isRtl = isRtl,
+                                        ) ?: return@onPreviewKeyEvent false
                                         onReordered(displayedCurrencies.moved(index, destination))
                                         true
                                     }
@@ -591,7 +606,44 @@ private fun CurrencyAmountGrid(
                                     contentDescription = stringResource(MR.strings.reorder_currency_content_description, code),
                                 )
                             }
-                            if (code != state.defaultCurrencyCode) {
+                            Box {
+                                IconButton(
+                                    onClick = { edgeMenuExpanded = true },
+                                    modifier = Modifier.size(48.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Default.MoreVert,
+                                        contentDescription = stringResource(
+                                            MR.strings.reorder_currency_options_content_description,
+                                            code,
+                                        ),
+                                    )
+                                }
+                                DropdownMenu(
+                                    expanded = edgeMenuExpanded,
+                                    onDismissRequest = { edgeMenuExpanded = false },
+                                ) {
+                                    if (index > 0) {
+                                        DropdownMenuItem(
+                                            text = { Text(moveToTopLabel) },
+                                            onClick = {
+                                                edgeMenuExpanded = false
+                                                onReordered(moveCurrencyToEdge(displayedCurrencies, code, CurrencyListEdge.TOP))
+                                            },
+                                        )
+                                    }
+                                    if (index < displayedCurrencies.lastIndex) {
+                                        DropdownMenuItem(
+                                            text = { Text(moveToBottomLabel) },
+                                            onClick = {
+                                                edgeMenuExpanded = false
+                                                onReordered(moveCurrencyToEdge(displayedCurrencies, code, CurrencyListEdge.BOTTOM))
+                                            },
+                                        )
+                                    }
+                                }
+                            }
+                            if (currencyCanBeRemoved(code, state.defaultCurrencyCode)) {
                                 IconButton(onClick = { onRemove(code) }, modifier = Modifier.size(48.dp)) {
                                     Icon(
                                         Icons.Default.Close,
