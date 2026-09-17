@@ -7,7 +7,6 @@ struct CurrencyPickerSheet: View {
     let unselectedCurrencies: [CurrencyInfo]
     let pricedCurrencyCodes: [String]
     let sourceName: String
-    let localeCurrencyCode: String?
     let selectedCount: Int
     let onToggle: (String) -> Void
     let onReset: () -> Void
@@ -142,19 +141,11 @@ struct CurrencyPickerSheet: View {
     }
 
     private func currencyLabel(for info: CurrencyInfo) -> String {
-        let text: String
-        if info.code == localeCurrencyCode {
-            text = IosLocalizationKt.localizedFormattedString(
-                resource: MR.strings.shared.currency_option_label_local,
-                args: [info.code, info.displayName]
-            )
-        } else {
-            text = IosLocalizationKt.localizedFormattedString(
-                resource: MR.strings.shared.currency_option_label,
-                args: [info.code, info.displayName]
-            )
-        }
-        if let flag = CurrencyFlagKt.currencyFlagEmoji(code: info.code) {
+        let text = IosLocalizationKt.localizedFormattedString(
+            resource: MR.strings.shared.currency_option_label,
+            args: [info.code, info.displayName]
+        )
+        if let flag = CurrencyFlagKt.currencyFlagEmoji(code: info.code, supportsFlagEmoji: SystemCurrencies_appleKt.supportsFlagEmoji()) {
             return "\(flag) \(text)"
         }
         return text

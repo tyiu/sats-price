@@ -605,7 +605,6 @@ private fun CurrencyPickerScreen(
                             isSelected = true,
                             isPriced = state.isPriced(currentCurrency.code),
                             sourceName = state.sourceName,
-                            localeCurrencyCode = state.localeCurrencyCode,
                             onClick = null,
                         )
                     }
@@ -625,7 +624,6 @@ private fun CurrencyPickerScreen(
                                     isSelected = true,
                                     isPriced = state.isPriced(info.code),
                                     sourceName = state.sourceName,
-                                    localeCurrencyCode = state.localeCurrencyCode,
                                     onClick = { onToggle(info.code) },
                                 )
                             }
@@ -649,7 +647,6 @@ private fun CurrencyPickerScreen(
                                     isSelected = false,
                                     isPriced = true,
                                     sourceName = state.sourceName,
-                                    localeCurrencyCode = state.localeCurrencyCode,
                                     onClick = { onToggle(info.code) },
                                 )
                             }
@@ -671,7 +668,6 @@ private fun CurrencyPickerScreen(
                                     isSelected = false,
                                     isPriced = false,
                                     sourceName = state.sourceName,
-                                    localeCurrencyCode = state.localeCurrencyCode,
                                     onClick = { onToggle(info.code) },
                                 )
                             }
@@ -689,14 +685,9 @@ private fun CurrencyRow(
     isSelected: Boolean,
     isPriced: Boolean,
     sourceName: String,
-    localeCurrencyCode: String?,
     onClick: (() -> Unit)?,
 ) {
-    val text = if (info.code == localeCurrencyCode) {
-        stringResource(MR.strings.currency_option_label_local, info.code, info.displayName)
-    } else {
-        stringResource(MR.strings.currency_option_label, info.code, info.displayName)
-    }
+    val text = stringResource(MR.strings.currency_option_label, info.code, info.displayName)
     val label = currencyFlagEmoji(info.code)?.let { flag -> "$flag $text" } ?: text
     Row(
         modifier = Modifier

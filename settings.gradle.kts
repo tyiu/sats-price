@@ -30,4 +30,6 @@ dependencyResolutionManagement {
 include(":androidApp")
 include(":desktopApp")
 include(":shared")
+include(":sharedUi")
 include(":webApp")
+include(":webHtmlApp")
