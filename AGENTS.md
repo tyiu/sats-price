@@ -112,12 +112,18 @@ the pattern to copy: it returns a locale-formatted `String?` (using
 locale-aware formatting via platform APIs, not translated text), and each
 UI layer wraps it with its own localized "Updated %1$s" string.
 
-`webHtmlApp` is the one UI layer that deliberately breaks this pattern: its
-`Strings.kt` hardcodes English rather than calling `stringResource()`,
-because moko-resources' Compose integration (`moko-resourcesCompose`) pulls
-in `compose.foundation`/`compose.ui` transitively - exactly the dependency
-`webHtmlApp` exists to avoid (see "Module layout" above). Not a template to
-follow elsewhere; a one-off tradeoff specific to that module.
+`webHtmlApp` is the one UI layer that deliberately breaks this pattern: it
+can't call `stringResource()` because moko-resources' Compose integration
+(`moko-resourcesCompose`) pulls in `compose.foundation`/`compose.ui`
+transitively - exactly the dependency `webHtmlApp` exists to avoid (see
+"Module layout" above). Its `Strings.kt` is instead **generated** at build
+time (`:webHtmlApp:generateStrings`, in `webHtmlApp/build.gradle.kts`) by
+parsing `shared/.../moko-resources/base/strings.xml` directly, so that file
+stays the single source of truth instead of a manually maintained,
+silently driftable duplicate - edit the XML, not the generated file. Only
+covers the base (English) locale, since it skips moko's per-locale
+resolution entirely. Not a template to follow elsewhere; a one-off
+tradeoff specific to that module.
 
 ## Locale-aware formatting
 

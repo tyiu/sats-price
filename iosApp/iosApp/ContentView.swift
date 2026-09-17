@@ -274,7 +274,6 @@ struct ContentView: View {
                 unselectedCurrencies: state.unselectedCurrencies,
                 pricedCurrencyCodes: state.pricedCurrencyCodes,
                 sourceName: state.sourceName,
-                localeCurrencyCode: state.localeCurrencyCode,
                 selectedCount: state.selectedCurrencyCodes.count,
                 onToggle: { viewModel.onFiatCurrencyToggled($0) },
                 onReset: { viewModel.onSelectedCurrenciesReset() }
@@ -404,7 +403,7 @@ private struct NumericField: View {
 }
 
 private func currencyFieldLabel(for code: String) -> String {
-    if let flag = CurrencyFlagKt.currencyFlagEmoji(code: code) {
+    if let flag = CurrencyFlagKt.currencyFlagEmoji(code: code, supportsFlagEmoji: SystemCurrencies_appleKt.supportsFlagEmoji()) {
         return "\(flag) \(code)"
     }
     return code

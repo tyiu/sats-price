@@ -71,8 +71,8 @@ fun HtmlApp() {
                     } else {
                         Button(attrs = {
                             classes("icon-button")
-                            attr("aria-label", Strings.refresh)
-                            attr("title", Strings.refresh)
+                            attr("aria-label", Strings.refreshContentDescription)
+                            attr("title", Strings.refreshContentDescription)
                             onClick { viewModel.refresh() }
                         }) { Text("↻") }
                     }
@@ -223,7 +223,7 @@ private fun CurrencyRowMenu(
     Div({ classes("menu-anchor") }) {
         Button(attrs = {
             classes("icon-button")
-            attr("aria-label", Strings.currencyOptions(code))
+            attr("aria-label", Strings.currencyOptionsContentDescription(code))
             attr("aria-haspopup", "true")
             attr("aria-expanded", if (expanded) "true" else "false")
             onClick { expanded = true }
@@ -235,12 +235,15 @@ private fun CurrencyRowMenu(
                 onClick { expanded = false }
             })
             Div({ classes("menu-popup") }) {
-                MenuItem(Strings.moveToTop, enabled = canMoveUp) { expanded = false; onMoveToTop() }
-                MenuItem(Strings.moveUp, enabled = canMoveUp) { expanded = false; onMoveUp() }
-                MenuItem(Strings.moveDown, enabled = canMoveDown) { expanded = false; onMoveDown() }
-                MenuItem(Strings.moveToBottom, enabled = canMoveDown) { expanded = false; onMoveToBottom() }
+                MenuItem(Strings.moveCurrencyToTopContentDescription, enabled = canMoveUp) { expanded = false; onMoveToTop() }
+                MenuItem(Strings.moveCurrencyUpContentDescription, enabled = canMoveUp) { expanded = false; onMoveUp() }
+                MenuItem(Strings.moveCurrencyDownContentDescription, enabled = canMoveDown) { expanded = false; onMoveDown() }
+                MenuItem(Strings.moveCurrencyToBottomContentDescription, enabled = canMoveDown) {
+                    expanded = false
+                    onMoveToBottom()
+                }
                 if (canRemove) {
-                    MenuItem(Strings.remove, destructive = true) { expanded = false; onRemove() }
+                    MenuItem(Strings.removeCurrencyContentDescription, destructive = true) { expanded = false; onRemove() }
                 }
             }
         }

@@ -30,8 +30,8 @@ internal fun HtmlCurrencyPicker(
     if (showResetConfirmation) {
         Div({ classes("modal-overlay") }) {
             Div({ classes("modal") }) {
-                H2 { Text(Strings.resetConfirmationTitle) }
-                Div { Text(Strings.resetConfirmationMessage(state.defaultCurrencyCode)) }
+                H2 { Text(Strings.resetSelectedCurrenciesConfirmationTitle) }
+                Div { Text(Strings.resetSelectedCurrenciesConfirmationMessage(state.defaultCurrencyCode)) }
                 Div({ classes("row", "modal-actions") }) {
                     Button(attrs = { onClick { showResetConfirmation = false } }) { Text(Strings.cancel) }
                     Button(attrs = {
@@ -40,7 +40,7 @@ internal fun HtmlCurrencyPicker(
                             showResetConfirmation = false
                             onReset()
                         }
-                    }) { Text(Strings.resetButton) }
+                    }) { Text(Strings.resetSelectedCurrenciesButton) }
                 }
             }
         }
@@ -51,7 +51,9 @@ internal fun HtmlCurrencyPicker(
             H2 { Text(Strings.currenciesSectionTitle) }
             Div({ classes("row") }) {
                 if (state.selectedFiatCurrencies.size > 1) {
-                    Button(attrs = { onClick { showResetConfirmation = true } }) { Text(Strings.resetButton) }
+                    Button(attrs = { onClick { showResetConfirmation = true } }) {
+                        Text(Strings.resetSelectedCurrenciesButton)
+                    }
                 }
                 Button(attrs = { onClick { onDone() } }) { Text(Strings.done) }
             }
