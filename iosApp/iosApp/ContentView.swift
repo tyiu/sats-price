@@ -1,10 +1,27 @@
+import CoreTransferable
 import Foundation
 import Shared
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct ContentView: View {
     @StateObject private var viewModel = ConverterViewModel()
     @State private var showCurrencyPicker = false
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
+    @ScaledMetric(relativeTo: .body) private var controlSize: CGFloat = 44
+
+    private var boundedControlSize: CGFloat { min(max(controlSize, 44), 64) }
+
+    private var usesSingleColumnCurrencyGrid: Bool {
+        dynamicTypeSize >= .xxxLarge
+    }
+
+    private var currencyGridColumns: [GridItem] {
+        if usesSingleColumnCurrencyGrid {
+            return [GridItem(.flexible())]
+        }
+        return [GridItem(.flexible(), spacing: 12), GridItem(.flexible())]
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,21 +34,11 @@ struct ContentView: View {
             }
             .navigationTitle("SatsPrice")
             #if os(iOS)
-            // macOS Lists support drag-to-reorder directly; iOS only shows reorder handles
-            // once edit mode is active, which this toggles. Nothing to reorder or delete with
-            // only one currency shown, so the button itself is pointless then.
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if let state = viewModel.state, displayedRows(for: state).count > 1 {
-                        EditButton()
-                    }
-                }
                 // NumericField's .decimalPad/.numberPad keyboards have no Return/Done key of
                 // their own (unlike a standard text keyboard). `.scrollDismissesKeyboard` alone
-                // isn't a reliable substitute here — Form's sections without .onMove/.onDelete
-                // (Price Source, Bitcoin) don't consistently wire up the drag-to-dismiss gesture,
-                // so it only ever worked when dragging within the Currencies section. This is a
-                // deterministic fallback that works regardless of which field is focused.
+                // isn't a reliable substitute across every Form section, so this is a
+                // deterministic fallback regardless of which field is focused.
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button {
@@ -46,8 +53,7 @@ struct ContentView: View {
                     }
                 }
             }
-            // Kept alongside the Done button above: a free bonus in the Currencies section,
-            // where it does work reliably (see the toolbar comment for where it falls short).
+            // Kept alongside the Done button above as a convenient gesture where Form supports it.
             .scrollDismissesKeyboard(.interactively)
             #endif
         }
@@ -74,19 +80,21 @@ struct ContentView: View {
         return IosLocalizationKt.localizedString(resource: MR.strings.shared.loading_rates_status)
     }
 
-    #if os(macOS)
-    /// [codes] with [moving] relocated to sit right before [target] — how macOS's manual
-    /// drag-and-drop (see `.dropDestination` above) computes its new currency order, since
-    /// there's no List to hand the reordering off to natively.
-    private func reorderedCodes(_ codes: [String], moving: String, toBeBefore target: String) -> [String] {
+    /// Returns a unique row-major order with [moving] inserted before or after [target].
+    private func reorderedCodes(
+        _ codes: [String],
+        moving: String,
+        relativeTo target: String,
+        placeAfter: Bool
+    ) -> [String] {
         guard moving != target, let fromIndex = codes.firstIndex(of: moving) else { return codes }
         var reordered = codes
         reordered.remove(at: fromIndex)
-        let insertIndex = reordered.firstIndex(of: target) ?? reordered.count
+        guard let targetIndex = reordered.firstIndex(of: target) else { return codes }
+        let insertIndex = targetIndex + (placeAfter ? 1 : 0)
         reordered.insert(moving, at: insertIndex)
         return reordered
     }
-    #endif
 
     @ViewBuilder
     private func form(for state: IosConverterState) -> some View {
@@ -110,56 +118,87 @@ struct ContentView: View {
                     }
                 }
 
-                HStack {
-                    Text(IosLocalizationKt.localizedFormattedString(
-                        resource: MR.strings.shared.btc_to_currency,
-                        args: [state.defaultCurrencyCode]
-                    ))
-                    Spacer()
-                    if state.isManualSource {
-                        NumericField(
-                            placeholder: "",
-                            value: state.manualRateInput,
-                            keyboardType: .decimalPad,
-                            sanitize: sanitizeDecimalInput,
-                            onChange: { viewModel.onManualRateChanged($0) },
-                            alignment: .trailing
-                        )
-                    } else if !state.defaultCurrencyRate.isEmpty {
-                        Text(NumberFormatKt.groupDigits(value: state.defaultCurrencyRate))
-                    }
-                    if !state.isManualSource {
-                        if state.isLoading {
-                            ProgressView()
-                        } else {
-                            Button {
-                                viewModel.refresh()
-                            } label: {
-                                Image(systemName: "arrow.clockwise")
+                let quoteLayout = usesSingleColumnCurrencyGrid
+                    ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                    : AnyLayout(HStackLayout(alignment: .top, spacing: 12))
+
+                quoteLayout {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(IosLocalizationKt.localizedFormattedString(
+                            resource: MR.strings.shared.btc_to_currency,
+                            args: [state.defaultCurrencyCode]
+                        ))
+                        .accessibilityHidden(state.isManualSource)
+                        HStack {
+                            if state.isManualSource {
+                                NumericField(
+                                    placeholder: "",
+                                    value: state.manualRateInput,
+                                    keyboardType: .decimalPad,
+                                    sanitize: sanitizeDecimalInput,
+                                    onChange: { viewModel.onManualRateChanged($0) },
+                                    alignment: .trailing
+                                )
+                                .textFieldStyle(.roundedBorder)
+                                .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
+                                    resource: MR.strings.shared.btc_to_currency,
+                                    args: [state.defaultCurrencyCode]
+                                ))
+                            } else {
+                                Spacer(minLength: 0)
+                                if !state.defaultCurrencyRate.isEmpty {
+                                    Text(NumberFormatKt.groupDigits(value: state.defaultCurrencyRate))
+                                        .lineLimit(usesSingleColumnCurrencyGrid ? nil : 1)
+                                        .minimumScaleFactor(usesSingleColumnCurrencyGrid ? 1 : 0.7)
+                                }
+                                if state.isLoading {
+                                    ProgressView()
+                                } else {
+                                    Button {
+                                        viewModel.refresh()
+                                    } label: {
+                                        Image(systemName: "arrow.clockwise")
+                                            .frame(width: boundedControlSize, height: boundedControlSize)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.borderless)
+                                    .accessibilityLabel(IosLocalizationKt.localizedString(
+                                        resource: MR.strings.shared.refresh_content_description
+                                    ))
+                                }
                             }
-                            .buttonStyle(.borderless)
                         }
                     }
-                }
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                HStack {
-                    Text(IosLocalizationKt.localizedFormattedString(
-                        resource: MR.strings.shared.currency_to_sats,
-                        args: [state.defaultCurrencyCode]
-                    ))
-                    Spacer()
-                    if state.isManualSource {
-                        NumericField(
-                            placeholder: "",
-                            value: state.manualSatsPerCurrencyInput,
-                            keyboardType: .numberPad,
-                            sanitize: sanitizeIntegerInput,
-                            onChange: { viewModel.onManualSatsPerCurrencyChanged($0) },
-                            alignment: .trailing
-                        )
-                    } else if !state.oneCurrencyToSats.isEmpty {
-                        Text(NumberFormatKt.groupDigits(value: state.oneCurrencyToSats))
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(IosLocalizationKt.localizedFormattedString(
+                            resource: MR.strings.shared.currency_to_sats,
+                            args: [state.defaultCurrencyCode]
+                        ))
+                        .accessibilityHidden(state.isManualSource)
+                        if state.isManualSource {
+                            NumericField(
+                                placeholder: "",
+                                value: state.manualSatsPerCurrencyInput,
+                                keyboardType: .numberPad,
+                                sanitize: sanitizeIntegerInput,
+                                onChange: { viewModel.onManualSatsPerCurrencyChanged($0) },
+                                alignment: .trailing
+                            )
+                            .textFieldStyle(.roundedBorder)
+                            .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
+                                resource: MR.strings.shared.currency_to_sats,
+                                args: [state.defaultCurrencyCode]
+                            ))
+                        } else if !state.oneCurrencyToSats.isEmpty {
+                            Text(NumberFormatKt.groupDigits(value: state.oneCurrencyToSats))
+                                .lineLimit(usesSingleColumnCurrencyGrid ? nil : 1)
+                                .minimumScaleFactor(usesSingleColumnCurrencyGrid ? 1 : 0.7)
+                                .frame(maxWidth: .infinity, alignment: .trailing)
+                        }
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
 
@@ -169,6 +208,76 @@ struct ContentView: View {
                         Text(error).foregroundColor(.red)
                         Spacer()
                         Button(IosLocalizationKt.localizedString(resource: MR.strings.shared.retry)) { viewModel.refresh() }
+                    }
+                }
+            }
+
+            Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
+                if !state.isManualSource {
+                    Button(
+                        state.selectedCurrencyCodes.count <= 1
+                            ? IosLocalizationKt.localizedString(resource: MR.strings.shared.add_currency)
+                            : IosLocalizationKt.localizedFormattedString(
+                                resource: MR.strings.shared.currencies_selected_count,
+                                args: [state.selectedCurrencyCodes.count]
+                            )
+                    ) {
+                        showCurrencyPicker = true
+                    }
+                }
+
+                let displayedRows = displayedRows(for: state)
+
+                LazyVGrid(
+                    columns: currencyGridColumns,
+                    alignment: .leading,
+                    spacing: 12
+                ) {
+                    ForEach(displayedRows, id: \.code) { row in
+                        let index = displayedRows.firstIndex { $0.code == row.code } ?? 0
+                        let isPriced = state.pricedCurrencyCodes.contains(row.code)
+                        CurrencyDropCell(usesVerticalDropAxis: usesSingleColumnCurrencyGrid) { draggedCode, placeAfter in
+                            let codes = displayedRows.map(\.code)
+                            guard codes.contains(draggedCode) else { return false }
+                            let reordered = reorderedCodes(
+                                codes,
+                                moving: draggedCode,
+                                relativeTo: row.code,
+                                placeAfter: placeAfter
+                            )
+                            if reordered != codes {
+                                viewModel.onFiatCurrenciesReordered(reordered)
+                            }
+                            return true
+                        } content: {
+                            currencyAmountCell(
+                                row: row,
+                                isPriced: isPriced,
+                                state: state,
+                                canReorder: displayedRows.count > 1,
+                                index: index,
+                                displayedCodes: displayedRows.map(\.code),
+                                onRemove: { viewModel.onFiatCurrencyToggled(row.code) }
+                            )
+                            .accessibilityElement(children: .contain)
+                        }
+                    }
+
+                    if !usesSingleColumnCurrencyGrid && displayedRows.count > 1 && displayedRows.count % 2 == 1 {
+                        CurrencyDropCell(usesVerticalDropAxis: false) { draggedCode, _ in
+                            let codes = displayedRows.map(\.code)
+                            guard let sourceIndex = codes.firstIndex(of: draggedCode) else { return false }
+                            let reordered = codes.moving(from: sourceIndex, to: codes.count - 1)
+                            if reordered != codes {
+                                viewModel.onFiatCurrenciesReordered(reordered)
+                            }
+                            return true
+                        } content: {
+                            Color.clear
+                                .frame(maxWidth: .infinity, minHeight: 44, maxHeight: .infinity)
+                                .contentShape(Rectangle())
+                                .accessibilityHidden(true)
+                        }
                     }
                 }
             }
@@ -194,75 +303,6 @@ struct ContentView: View {
                         .foregroundColor(.red)
                 }
             }
-
-            Section(IosLocalizationKt.localizedString(resource: MR.strings.shared.currencies_section_title)) {
-                if !state.isManualSource {
-                    Button(
-                        state.selectedCurrencyCodes.count <= 1
-                            ? IosLocalizationKt.localizedString(resource: MR.strings.shared.add_currency)
-                            : IosLocalizationKt.localizedFormattedString(
-                                resource: MR.strings.shared.currencies_selected_count,
-                                args: [state.selectedCurrencyCodes.count]
-                            )
-                    ) {
-                        showCurrencyPicker = true
-                    }
-                }
-
-                let displayedRows = displayedRows(for: state)
-
-                ForEach(displayedRows, id: \.code) { row in
-                    amountRow(
-                        label: currencyFieldLabel(for: row.code),
-                        value: row.amount,
-                        keyboardType: .decimalPad,
-                        sanitize: sanitizeDecimalInput,
-                        onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) },
-                        isPriced: state.pricedCurrencyCodes.contains(row.code),
-                        sourceName: state.sourceName,
-                        isManualSource: state.isManualSource
-                    )
-                    .deleteDisabled(row.code == state.defaultCurrencyCode)
-                    #if os(macOS)
-                    // Form isn't List-backed on macOS, so drag-and-drop reordering has to be
-                    // wired up manually rather than coming for free from .onMove below.
-                    .draggable(row.code)
-                    .dropDestination(for: String.self) { draggedCodes, _ in
-                        guard let draggedCode = draggedCodes.first else { return false }
-                        viewModel.onFiatCurrenciesReordered(
-                            reorderedCodes(displayedRows.map(\.code), moving: draggedCode, toBeBefore: row.code)
-                        )
-                        return true
-                    }
-                    .contextMenu {
-                        if row.code != state.defaultCurrencyCode {
-                            Button(role: .destructive) {
-                                viewModel.onFiatCurrencyToggled(row.code)
-                            } label: {
-                                Label(
-                                    IosLocalizationKt.localizedString(
-                                        resource: MR.strings.shared.remove_currency_content_description
-                                    ),
-                                    systemImage: "trash"
-                                )
-                            }
-                        }
-                    }
-                    #endif
-                }
-                .onMove(perform: displayedRows.count > 1 ? { indices, newOffset in
-                    var codes = displayedRows.map(\.code)
-                    codes.move(fromOffsets: indices, toOffset: newOffset)
-                    viewModel.onFiatCurrenciesReordered(codes)
-                } : nil)
-                #if os(iOS)
-                .onDelete(perform: displayedRows.count > 1 ? { indexSet in
-                    for index in indexSet {
-                        viewModel.onFiatCurrencyToggled(displayedRows[index].code)
-                    }
-                } : nil)
-                #endif
-            }
         }
         #if os(macOS)
         .formStyle(.grouped)
@@ -284,6 +324,103 @@ struct ContentView: View {
             viewModel.onBtcAmountChanged(Self.maxSupplyBtcAmount)
             return .handled
         })
+    }
+
+    @ViewBuilder
+    private func currencyAmountCell(
+        row: FiatRow,
+        isPriced: Bool,
+        state: IosConverterState,
+        canReorder: Bool,
+        index: Int,
+        displayedCodes: [String],
+        onRemove: @escaping () -> Void
+    ) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(currencyFieldLabel(for: row.code))
+                .accessibilityHidden(true)
+
+            if canReorder {
+                HStack(spacing: 12) {
+                    Spacer(minLength: 0)
+                    Image(systemName: "line.3.horizontal")
+                        .frame(width: boundedControlSize, height: boundedControlSize)
+                        .contentShape(Rectangle())
+                        .draggable(CurrencyCodeTransfer(code: row.code))
+                        #if os(macOS)
+                        .focusable()
+                        #endif
+                        .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
+                            resource: MR.strings.shared.reorder_currency_content_description,
+                            args: [row.code]
+                        ))
+                        .accessibilityActions {
+                            if index > 0 {
+                                Button(IosLocalizationKt.localizedString(
+                                    resource: MR.strings.shared.move_currency_to_top_content_description
+                                )) {
+                                    viewModel.onFiatCurrenciesReordered(displayedCodes.moving(from: index, to: 0))
+                                }
+                                Button(IosLocalizationKt.localizedString(
+                                    resource: MR.strings.shared.move_currency_up_content_description
+                                )) {
+                                    viewModel.onFiatCurrenciesReordered(displayedCodes.moving(from: index, to: index - 1))
+                                }
+                            }
+                            if index < displayedCodes.count - 1 {
+                                Button(IosLocalizationKt.localizedString(
+                                    resource: MR.strings.shared.move_currency_down_content_description
+                                )) {
+                                    viewModel.onFiatCurrenciesReordered(displayedCodes.moving(from: index, to: index + 1))
+                                }
+                                Button(IosLocalizationKt.localizedString(
+                                    resource: MR.strings.shared.move_currency_to_bottom_content_description
+                                )) {
+                                    viewModel.onFiatCurrenciesReordered(
+                                        displayedCodes.moving(from: index, to: displayedCodes.count - 1)
+                                    )
+                                }
+                            }
+                        }
+                    if row.code != state.defaultCurrencyCode {
+                        Button(role: .destructive, action: onRemove) {
+                            Image(systemName: "xmark")
+                                .frame(width: boundedControlSize, height: boundedControlSize)
+                                .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel(IosLocalizationKt.localizedFormattedString(
+                            resource: MR.strings.shared.remove_currency_named_content_description,
+                            args: [row.code]
+                        ))
+                    }
+                }
+            }
+
+            NumericField(
+                placeholder: "",
+                value: isPriced ? row.amount : "",
+                keyboardType: .decimalPad,
+                sanitize: sanitizeDecimalInput,
+                onChange: { viewModel.onFiatAmountChanged(code: row.code, value: $0) },
+                alignment: .trailing
+            )
+            .textFieldStyle(.roundedBorder)
+            .disabled(!isPriced)
+            .accessibilityLabel(currencyFieldLabel(for: row.code))
+
+            if !isPriced && !state.isManualSource {
+                Text(IosLocalizationKt.localizedFormattedString(
+                    resource: MR.strings.shared.currency_not_priced,
+                    args: [state.sourceName]
+                ))
+                .font(.caption2)
+                .foregroundColor(.red)
+                .lineLimit(2)
+            }
+        }
+        .padding(8)
+        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 10))
     }
 
     // `maxSupplyBtcAmount` is the sanitized digit-only form CurrencyConverter.MAX_BTC_SUPPLY
@@ -318,34 +455,101 @@ struct ContentView: View {
         value: String,
         keyboardType: NumericFieldKeyboard,
         sanitize: @escaping (String) -> String,
-        onChange: @escaping (String) -> Void,
-        isPriced: Bool = true,
-        sourceName: String = "",
-        isManualSource: Bool = false
+        onChange: @escaping (String) -> Void
     ) -> some View {
         HStack {
-            VStack(alignment: .leading) {
-                Text(label)
-                if !isPriced && !isManualSource {
-                    Text(IosLocalizationKt.localizedFormattedString(
-                        resource: MR.strings.shared.currency_not_priced,
-                        args: [sourceName]
-                    ))
-                    .font(.caption2)
-                    .foregroundColor(.red)
-                }
-            }
+            Text(label)
+                .accessibilityHidden(true)
             Spacer()
             NumericField(
                 placeholder: "",
-                value: isPriced ? value : "",
+                value: value,
                 keyboardType: keyboardType,
                 sanitize: sanitize,
                 onChange: onChange,
                 alignment: .trailing
             )
-            .disabled(!isPriced)
+            .accessibilityLabel(label)
         }
+    }
+}
+
+private extension Array {
+    func moving(from sourceIndex: Int, to destinationIndex: Int) -> [Element] {
+        guard indices.contains(sourceIndex), indices.contains(destinationIndex) else { return self }
+        guard sourceIndex != destinationIndex else { return self }
+        var result = self
+        let element = result.remove(at: sourceIndex)
+        result.insert(element, at: destinationIndex)
+        return result
+    }
+}
+
+private extension UTType {
+    static let satsPriceCurrencyCode = UTType(
+        exportedAs: "xyz.tyiu.SatsPrice.currency-code",
+        conformingTo: .data
+    )
+}
+
+private struct CurrencyCodeTransfer: Codable, Transferable {
+    let code: String
+
+    static var transferRepresentation: some TransferRepresentation {
+        CodableRepresentation(contentType: .satsPriceCurrencyCode)
+    }
+}
+
+private struct CurrencyCellSizePreferenceKey: PreferenceKey {
+    static var defaultValue: CGSize { .zero }
+
+    static func reduce(value: inout CGSize, nextValue: () -> CGSize) {
+        value = nextValue()
+    }
+}
+
+private struct CurrencyDropCell<Content: View>: View {
+    let usesVerticalDropAxis: Bool
+    let onDrop: (String, Bool) -> Bool
+    let content: Content
+
+    @State private var measuredSize: CGSize = .zero
+    @State private var isTargeted = false
+
+    init(
+        usesVerticalDropAxis: Bool,
+        onDrop: @escaping (String, Bool) -> Bool,
+        @ViewBuilder content: () -> Content
+    ) {
+        self.usesVerticalDropAxis = usesVerticalDropAxis
+        self.onDrop = onDrop
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .background {
+                GeometryReader { geometry in
+                    Color.clear
+                        .preference(key: CurrencyCellSizePreferenceKey.self, value: geometry.size)
+                }
+            }
+            .onPreferenceChange(CurrencyCellSizePreferenceKey.self) { measuredSize = $0 }
+            .overlay {
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(isTargeted ? Color.accentColor : Color.clear, lineWidth: 2)
+            }
+            .dropDestination(for: CurrencyCodeTransfer.self) { transfers, location in
+                guard transfers.count == 1, let transfer = transfers.first else {
+                    return false
+                }
+                let placeAfter = usesVerticalDropAxis
+                    ? measuredSize.height > 0 && location.y >= measuredSize.height / 2
+                    : measuredSize.width > 0 && location.x >= measuredSize.width / 2
+                return onDrop(transfer.code, placeAfter)
+            } isTargeted: {
+                isTargeted = $0
+            }
     }
 }
 
